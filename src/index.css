@@ -1,0 +1,85 @@
+/* Reset some basic styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* Set up the base layout styles */
+  body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+  }
+  
+  header {
+    background: #333;
+    color: white;
+    padding: 10px 0;
+    text-align: center;
+  }
+  
+  nav {
+    background: #444;
+    color: white;
+    text-align: center;
+  }
+  
+  nav ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  nav ul li {
+    display: inline-block;
+    margin-right: 20px;
+  }
+  
+  nav ul li a {
+    color: white;
+    text-decoration: none;
+  }
+  
+  /* Main content and sidebar */
+  main {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 20px;
+  }
+  
+  .content {
+    flex: 1;
+    min-width: 300px;
+    margin-right: 20px;
+  }
+  
+  aside {
+    flex-basis: 300px;
+    background: #f4f4f4;
+    padding: 20px;
+    border-radius: 5px;
+  }
+  
+  /* Footer */
+  footer {
+    background: #333;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    margin-top: 20px;
+  }
+  
+  /* Responsive Design with Media Queries */
+  @media (max-width: 768px) {
+    main {
+      flex-direction: column;
+    }
+  
+    .content {
+      margin-right: 0;
+    }
+  
+    aside {
+      margin-top: 20px;
+    }
+  }
+  
