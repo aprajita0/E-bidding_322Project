@@ -25,10 +25,12 @@ const createRole = async () => {
     console.error('Error creating role:', error);
   }
 };
-
+*/
 const newUser = async () => { 
   try{
     const newUser = new User({
+      first_name: 'John',
+      last_name: 'Doe',
       username: 'john_doe',
       password: 'password123',  
       email: 'john@example.com',
@@ -45,14 +47,14 @@ const newUser = async () => {
     console.error('Error creating User:', error);
   }
 };
-*/
+
 
 
 mongoose.
 connect(uri)
 .then(() => {
   console.log('Connected to MongoDB');
-  /*newUser();*/
+  newUser();
 }).catch((error)=>{
   console.log(error)
 })

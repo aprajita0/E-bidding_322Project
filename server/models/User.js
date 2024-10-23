@@ -3,6 +3,8 @@ const { Schema } = mongoose;
 
 const userSchema = new Schema({
  //We don't need to specify the _id field because MongoDB automatically creates it.
+    first_name: { type: String, maxlength: 50 },
+    last_name: { type: String, maxlength: 50 },
     username: { type: String, required: true, maxlength: 50 },
     password: { type: String, required: true, maxlength: 50 },
     email: { type: String, required: true, maxlength: 100 },
