@@ -25,7 +25,7 @@ const createRole = async () => {
     console.error('Error creating role:', error);
   }
 };
-*/
+
 const newUser = async () => { 
   try{
     const newUser = new User({
@@ -48,13 +48,13 @@ const newUser = async () => {
   }
 };
 
-
+*/
 
 mongoose.
 connect(uri)
 .then(() => {
   console.log('Connected to MongoDB');
-  newUser();
+  //newUser();
 }).catch((error)=>{
   console.log(error)
 })
