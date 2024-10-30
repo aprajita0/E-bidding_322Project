@@ -23,7 +23,6 @@ function App() {
                         <img src={trustsphere_logo} alt="Logo" className="logo" />
                     </div>
                     <div className={`menu ${menuOpen ? 'open' : ''}`} onClick={toggleMenu}>
-                        {/* You can add an icon here for menu */}
                         Menu
                     </div>
                     <ul className={`menu-list ${menuOpen ? 'open' : ''}`}>
