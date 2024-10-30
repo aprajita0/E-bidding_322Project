@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import './app.css';
 import Home from './frontend/pages/home';
-import U_login from './frontend/pages/user_login';            
+import U_login from './frontend/pages/user_login';
+import Deposit from './frontend/pages/deposit';       
+import Withdraw from './frontend/pages/withdraw';        
 import V_registration from './frontend/pages/visitor_registration';
 import trustsphere_logo from './frontend/assets/logo.png';
 import '@fontsource/dm-sans'; 
@@ -47,6 +49,8 @@ function App() {
                     <Route path="/browse_listings" element={isLoggedIn ? <div>Browse</div> : <Navigate to="/U_login" />} />
                     <Route path="/my_account" element={isLoggedIn ? <div>My Account Page</div> : <Navigate to="/U_login" />} />
                     <Route path="/V_registration" element={<V_registration />} />
+                    <Route path="/Deposit" element={<Deposit />} />
+                    <Route path="/Withdraw" element={<Withdraw />} />
                 </Routes>
             </div>
         </Router>
