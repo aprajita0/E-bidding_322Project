@@ -4,7 +4,8 @@ import './app.css';
 import Home from './frontend/pages/home';
 import U_login from './frontend/pages/user_login';
 import Deposit from './frontend/pages/deposit';       
-import Withdraw from './frontend/pages/withdraw';        
+import Withdraw from './frontend/pages/withdraw';     
+import Add_Listings from './frontend/pages/add_listings';   
 import V_registration from './frontend/pages/visitor_registration';
 import trustsphere_logo from './frontend/assets/logo.png';
 import '@fontsource/dm-sans'; 
@@ -51,6 +52,7 @@ function App() {
                     <Route path="/V_registration" element={<V_registration />} />
                     <Route path="/Deposit" element={<Deposit />} />
                     <Route path="/Withdraw" element={<Withdraw />} />
+                    <Route path="/Add_Listings" element={<Add_Listings />} />
                 </Routes>
             </div>
         </Router>
@@ -58,4 +60,3 @@ function App() {
 }
 
 export default App;
-
