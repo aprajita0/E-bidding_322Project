@@ -50,6 +50,7 @@ img {
     color: #033f63;
     overflow-wrap: break-word;
     word-break: break-word; 
+    font-weight: bold;
 }
 
 .slogan_button {
@@ -471,3 +472,4 @@ img {
         font-size: 12px;
     }
 }
+
