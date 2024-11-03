@@ -6,11 +6,11 @@ const userSchema = new Schema({
     first_name: { type: String, maxlength: 50 },
     last_name: { type: String, maxlength: 50 },
     username: { type: String, required: true, maxlength: 50 },
-    password: { type: String, required: true, maxlength: 50 },
+    password: { type: String, required: true},
     email: { type: String, required: true, maxlength: 100 },
     address_line_1: { type: String, maxlength: 100 },
     address_line_2: { type: String, maxlength: 100 },
-    role_id: { type: Schema.Types.ObjectId, ref: 'Role' },
+    role: { type: String, enum: ['reguser', 'superuser', 'visitor'], default: 'visitor' },
     account_balance: { type: mongoose.Types.Decimal128, default: 0.00 },
     suspension_count: { type: Number, default: 0 },
     account_status: { type: Boolean, default: true }
