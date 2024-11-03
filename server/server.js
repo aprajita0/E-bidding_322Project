@@ -2,7 +2,7 @@ require('dotenv').config({ path: './server/.env' });
 const uri = process.env.MONGO_URI;
 const express = require('express');
 const mongoose = require('mongoose');
-const userRoutes = require('./routes/userRoutes'); // Import user routes
+const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 app.use(express.json());
@@ -17,7 +17,7 @@ app.listen(4000, () => {
     console.log('Server is running on port 4000');
 });
 
-mongoose.connect("mongodb+srv://admin:1234@e-biddingdb.kjq3q.mongodb.net/?retryWrites=true&w=majority&appName=e-biddingDB")
+mongoose.connect(uri)
     .then(() => {
         console.log('Connected to MongoDB');
     })
