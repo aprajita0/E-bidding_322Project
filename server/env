@@ -1,2 +1,0 @@
-MONGO_URI="mongodb+srv://admin:1234@e-biddingdb.kjq3q.mongodb.net/?retryWrites=true&w=majority&appName=e-biddingDB"
-JWT_SECRET=c369d8afdec2f56d08ca002fac7915ed00f0320bed587e5581efdd0b15a35d908fe750aabcda578bfb75fd81130046c89e908285a6d90f846b382ff6e3faf573

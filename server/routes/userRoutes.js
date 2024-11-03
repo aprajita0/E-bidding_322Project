@@ -2,9 +2,8 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User'); // Update this path if needed
-
 const router = express.Router();
-const JWT_SECRET = 'your_jwt_secret'; // Keep this secret in environment variables in production
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Registration endpoint
 router.post('/register', async (req, res) => {
@@ -57,11 +56,7 @@ router.post('/login', async (req, res) => {
         }
 
         
-        const token = jwt.sign(
-            { userId: user._id, role: user.role },
-            JWT_SECRET,
-            { expiresIn: '1h' }
-        );
+        const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' });
 
         res.json({ message: 'Login successful', token });
     } catch (err) {
