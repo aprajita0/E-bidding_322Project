@@ -1,0 +1,474 @@
+* {
+    box-sizing: border-box;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+.home-container {  
+    font-family: 'DM Sans', sans-serif;
+    box-sizing: border-box;
+    width: 100%; 
+}
+
+.banner {
+    display: flex;                    
+    align-items: center;
+    justify-content: space-between;
+    background-color: #f1f2eb;
+    width: 100%;
+    flex-wrap: nowrap; 
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.slogan-container {
+    display: flex;
+    flex-direction: column; 
+    align-items: flex-start; 
+    max-width: 50%; 
+    padding: 10px; 
+    flex: 1;
+}
+
+.highlight {
+    font-size: 18px;
+    margin-left: 25px;
+    color: #625834;
+    width: 450px;
+    margin-bottom: 10px;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.slogan {
+    font-size: 30px;
+    margin-left: 25px;
+    color: #033f63;
+    overflow-wrap: break-word;
+    word-break: break-word; 
+    font-weight: bold;
+}
+
+.slogan_button {
+    margin-top: 10px; 
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #033f63;
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 25px;
+    transition: background-color 0.3s ease;
+}
+
+.slogan_button:hover {
+    background-color: #022b4a;
+}
+
+.banner-image {
+    flex: 1.8; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.home_image {
+    width: 100%;
+    max-width: 1100px; 
+    height: auto; 
+    max-height: 400px; 
+    border-bottom-left-radius: 200px;
+    display: block;
+}
+
+.about-container {
+    display: flex;             
+    justify-content: flex-start;
+    background-color: #f1f2eb;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.img-container {
+    display: flex;
+    flex-direction: column; 
+    align-items: flex-start; 
+    max-width: 20%; 
+    flex: 1;
+}
+
+.about {
+    font-size: 1.4vw;
+    color: #625834;
+    width: 100%; 
+    max-width: 800px;
+    padding: 30px;
+    text-align: left; 
+    flex: 2; 
+}
+
+.about-info {
+    font-size: 1.0vw; 
+    color: #625834;
+    width: 100%;
+    max-width: 2400px;
+    text-align: left; 
+    padding: 10px; 
+    box-sizing: border-box; 
+}
+
+.about-image {
+    z-index: 1;
+    max-width: 100%; 
+    width: 600px;
+    max-height: 100%;
+    height: 480px;
+}
+
+.services {
+    padding: 15px;
+}
+
+.services-label {
+    font-size: 22px;
+    font-family: 'DM Sans', sans-serif;
+    color: #625834;
+    padding-bottom:15px;
+    padding-left: 5px;
+}
+
+.service-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 10px; 
+    width: 100%; 
+    box-sizing: border-box; 
+}
+
+.service-box {
+    background-color: #b2d4eb;
+    text-align: center;
+    min-height: 220px;
+    height: 180px;
+    width: 100%;  
+    max-width: 470px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    flex-direction: column;
+    justify-content: space-between; 
+    align-items: center;
+    text-align: center;
+    overflow: hidden;
+}
+
+.service1-image {
+    max-width: 100%; 
+    width: 1400px;
+    max-height: 100%;
+    height: 240px;
+    object-fit: cover;
+}
+
+.service-bidding {
+    font-size: 18px;
+    font-family: 'DM Sans', sans-serif;
+    color: #625834;
+    max-width: 700px;
+    padding: 25px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto; 
+    align-items: center;
+    justify-content: center;
+}
+
+.service-bidding-info {
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    color: #625834;
+    width: 80%;
+    max-width: 500px;
+    text-align: center;
+    margin: 0 auto;
+    display: flex; 
+    justify-content: center;
+    align-items: center; 
+}
+
+.service-selling {
+    font-size: 18px;
+    font-family: 'DM Sans', sans-serif;
+    color: #625834;
+    max-width: 700px;
+    padding: 25px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto; 
+}
+
+.service-selling-info {
+    font-size: 16px;
+    font-family: 'DM Sans', sans-serif;
+    color: #625834;
+    width: 80%;
+    max-width: 500px;
+    text-align: center;
+    margin: 0 auto;
+    display: block; 
+    justify-content: center;
+    align-items: center; 
+}
+
+.service-buying {
+    font-size: 18px;
+    font-family: 'DM Sans', sans-serif;
+    color: #625834;
+    max-width: 700px;
+    padding: 25px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto; 
+}
+
+.service-buying-info {
+    font-size: 16px;
+    font-family: 'DM Sans', sans-serif;
+    color: #625834;
+    width: 80%;
+    max-width: 500px;
+    text-align: center;
+    margin: 0 auto;
+    display: block; 
+    justify-content: center;
+    align-items: center; 
+}
+
+@media (max-width: 1400px) {
+    .about-image {
+        width: 550px;
+        height: 450px;
+        border-bottom-right-radius: 20px;
+    }
+}
+
+@media (max-width: 1300px) {
+    .about-image {
+        width: 520px;
+        height: 400px;
+        border-bottom-right-radius: 20px;
+    }
+}
+
+@media (max-width: 1250px) {
+    .about-image {
+        width: 500px;
+        height: 380px;
+        border-bottom-right-radius: 20px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .home_image {
+        max-width: 900px; 
+        max-height: 350px; 
+    }
+
+    .slogan {
+        font-size: 20px;
+    }
+
+    .highlight {
+        font-size: 16px;
+    }
+
+    .img-container {
+        max-width: 10%;
+    }
+    
+    .about-image {
+        width: 460px;
+        height: 340px;
+        border-bottom-right-radius: 20px;
+    }
+
+    .service-bidding {
+        font-size: 12px;
+    }
+    
+    .service-bidding-info {
+        font-size: 12px;
+    }
+    
+    .service-selling {
+        font-size: 12px;
+    }
+    
+    .service-selling-info {
+        font-size: 12px;
+    }
+    
+    .service-buying {
+        font-size: 12px;
+    }
+    
+    .service-buying-info {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 1000px) {
+    .about-image {
+        width: 420px;
+        height: 300px;
+        border-bottom-right-radius: 20px;
+    }
+}
+
+@media (max-width: 900px) {
+    .about-image {
+        width: 380px;
+        height: 260px;
+        border-bottom-right-radius: 20px;
+    }
+}
+
+@media (max-width: 800px) {
+    .about-image {
+        width: 340px;
+        height: 220px;
+        border-bottom-right-radius: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .banner {
+        flex-wrap: wrap; 
+    }
+
+    .slogan-container {
+        max-width: 100%; 
+        text-align: center;
+        align-items: center;
+    }
+
+    .banner-image {
+        max-width: 100%; 
+    }
+
+    .home_image {
+        max-width: 600px; 
+        max-height: 300px; 
+        height: 180px;
+        width: 340px;
+        border-radius: 0%;
+    }
+
+    .about-container {
+        display: flex;             
+        justify-content: flex-start; 
+        background-color: #f1f2eb;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+    }
+    
+    .about-info {
+        font-size: 1.2vh; 
+        width: 400px;
+        overflow: hidden;
+    }
+
+    .service-grid {
+        grid-template-columns: 1fr 1fr; 
+    }
+
+    .service-box {
+        max-width: 90%; 
+        height: 260px;
+    }
+
+    .service1-image {
+        max-width: 100%; 
+        width: 1400px;
+        max-height: 100%;
+        height: 280px;
+        object-fit: cover;
+    }
+
+    .service-bidding {
+        font-size: 12px;
+    }
+    
+    .service-bidding-info {
+        font-size: 12px;
+    }
+    
+    .service-selling {
+        font-size: 12px;
+    }
+    
+    .service-selling-info {
+        font-size: 12px;
+    }
+    
+    .service-buying {
+        font-size: 12px;
+    }
+    
+    .service-buying-info {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .slogan {
+        font-size: 18px;
+    }
+
+    .service-box {
+        max-width: 95%; 
+        height: 270px;
+    }
+
+    .service1-image {
+        max-width: 100%; 
+        width: 1400px;
+        max-height: 100%;
+        height: 280px;
+        object-fit: cover;
+    }
+    
+    .service-bidding {
+        font-size: 12px;
+    }
+    
+    .service-bidding-info {
+        font-size: 12px;
+    }
+    
+    .service-selling {
+        font-size: 12px;
+    }
+    
+    .service-selling-info {
+        font-size: 12px;
+    }
+    
+    .service-buying {
+        font-size: 12px;
+    }
+    
+    .service-buying-info {
+        font-size: 12px;
+    }
+}

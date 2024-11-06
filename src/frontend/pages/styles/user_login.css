@@ -1,0 +1,87 @@
+.login-container {
+    background-color: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 89vh;
+}
+
+.login-sign {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 36px;
+    font-family: 'DM Sans', sans-serif;
+    color: #033f63;
+    font-weight: bold;
+}
+
+.login-box {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 10%;
+    width: 100%;
+    max-width: 500px;
+    min-height: 400px;
+    box-sizing: border-box;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.login-label {
+    font-size: 16px;
+    color: #033f63;
+    font-family: 'DM Sans', sans-serif;
+    margin-bottom: 10px;
+}
+
+.login-input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    border-radius: 4px;
+    width: 100%; 
+    box-sizing: border-box; 
+}
+
+.login-pass {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.sign-in {
+    display: inline-block;
+    margin-right: 42px;
+    padding: 12px;
+    background-color: #033f63; 
+    color: #ffffff; 
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    width: 45%;
+    margin-top: 20px; 
+    text-align: center;
+}
+
+.register-page {
+    display: inline-block;
+    padding: 12px;
+    background-color: #033f63; 
+    color: #ffffff; 
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    width: 45%;
+    margin-top: 20px; 
+    text-align: center;
+}
+
+
