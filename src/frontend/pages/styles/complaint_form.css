@@ -1,0 +1,106 @@
+.complaint-container {
+    background-color: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 89vh;
+}
+
+.complaint-sign {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 36px;
+    font-family: 'DM Sans', sans-serif;
+    color: #033f63;
+    font-weight: bold;
+}
+
+.complaint-box {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 10%;
+    width: 100%;
+    max-width: 700px;
+    min-height: 400px;
+    box-sizing: border-box;
+}
+
+.complaint-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form_container {
+    display: flex;  
+    align-items: center;     
+    justify-content: start; 
+    gap: 20px;
+}
+
+.complaint-blurb {
+    font-size: 16px;
+    color: #033f63;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.complaint-label {
+    margin-top: 50px;
+    font-size: 16px;
+    color: #033f63;
+    width: 400px;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.complaint-input {
+    margin-top: 50px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    border-radius: 4px;
+    width: 100%; 
+    box-sizing: border-box; 
+}
+
+.complaint-description {
+    margin-top: 30px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    border-radius: 4px;
+    width: 100%; 
+    resize: vertical;
+    height: 80px;
+    box-sizing: border-box; 
+}
+
+.return-profile {
+    display: inline-block;
+    margin-right: 42px;
+    padding: 12px;
+    background-color: #033f63; 
+    color: #ffffff; 
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    width: 45%;
+    margin-top: 20px; 
+    text-align: center;
+}
+
+.complaint-finish {
+    display: inline-block;
+    padding: 12px;
+    background-color: #033f63; 
+    color: #ffffff; 
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    width: 45%;
+    margin-top: 20px; 
+    text-align: center;
+}
+
