@@ -26,14 +26,15 @@ function LogoutButton({ setIsLoggedIn }) {
         <button
             style={{
                 position: 'absolute',
-                top: '15px',
+                top: '25px',
                 right: '20px',
                 color: 'white', 
-                backgroundColor: '#625834',
+                fontfamily: 'DM Sans',
+                backgroundColor: '#c7d8ad',
                 border: 'none',
                 padding: '8px 16px',
                 cursor: 'pointer',
-                fontSize: '14px',
+                fontSize: '17px',
                 borderRadius: '4px'
             }}
             onClick={handleLogout}
