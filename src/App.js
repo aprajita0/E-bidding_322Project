@@ -29,7 +29,7 @@ function LogoutButton({ setIsLoggedIn }) {
                 top: '25px',
                 right: '20px',
                 color: 'white', 
-                fontfamily: 'DM Sans',
+                fontFamily: 'DM Sans',
                 backgroundColor: '#c7d8ad',
                 border: 'none',
                 padding: '8px 16px',
@@ -58,7 +58,7 @@ function App() {
 
     return (
         <Router>
-            <div>
+            <div className="app-container">
                 <nav>
                     <div className="logo">
                         <img src={trustsphere_logo} alt="Logo" className="logo" />
@@ -84,22 +84,29 @@ function App() {
                     {isLoggedIn && <LogoutButton setIsLoggedIn={setIsLoggedIn} />}
                 </nav>
 
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/U_login" element={<U_login onLogin={handleLogin} />} />
-                    <Route path="/browse_listings" element={isLoggedIn ? <browse_listings /> : <Navigate to="/U_login" />} />
-                    <Route path="/my_account" element={isLoggedIn ? <div>My Account Page</div> : <Navigate to="/U_login" />} />
-                    <Route path="/V_registration" element={<V_registration />} />
-                    <Route path="/Deposit" element={isLoggedIn ? <Deposit /> : <Navigate to="/U_login" />} />
-                    <Route path="/Withdraw" element={isLoggedIn ? <Withdraw /> : <Navigate to="/U_login" />} />
-                    <Route path="/Add_Listings" element={isLoggedIn ? <Add_Listings /> : <Navigate to="/U_login" />} />
-                    <Route path="/Complaint" element={isLoggedIn ? <Complaint /> : <Navigate to="/U_login" />} />
-                    <Route path="/Balance_menu" element={isLoggedIn ? <Balance_menu /> : <Navigate to="/U_login" />} />
-                </Routes>
+                <div className="content">
+                    <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/U_login" element={<U_login onLogin={handleLogin} />} />
+                        <Route path="/browse_listings" element={isLoggedIn ? <browse_listings /> : <Navigate to="/U_login" />} />
+                        <Route path="/my_account" element={isLoggedIn ? <div>My Account Page</div> : <Navigate to="/U_login" />} />
+                        <Route path="/V_registration" element={<V_registration />} />
+                        <Route path="/Deposit" element={isLoggedIn ? <Deposit /> : <Navigate to="/U_login" />} />
+                        <Route path="/Withdraw" element={isLoggedIn ? <Withdraw /> : <Navigate to="/U_login" />} />
+                        <Route path="/Add_Listings" element={isLoggedIn ? <Add_Listings /> : <Navigate to="/U_login" />} />
+                        <Route path="/Complaint" element={isLoggedIn ? <Complaint /> : <Navigate to="/U_login" />} />
+                        <Route path="/Balance_menu" element={isLoggedIn ? <Balance_menu /> : <Navigate to="/U_login" />} />
+                    </Routes>
+                </div>
+                <footer className="footer-box">
+                    <div class="footer-content"></div>
+                    <span class="trustSphere-title">TrustSphere</span>
+                    <span class="divider">|</span>
+                    <span class="trustSphere-address"> The City College of New York <br /> 160 Convent Ave <br /> New York, NY 10031</span>
+                </footer>
             </div>
         </Router>
     );
 }
 
 export default App;
-
