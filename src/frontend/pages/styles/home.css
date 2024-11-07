@@ -96,6 +96,7 @@ img {
     padding: 0;
     margin: 0;
     box-sizing: border-box;
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2); 
 }
 
 .img-container {
@@ -176,6 +177,10 @@ img {
     text-align: center;
     overflow: hidden;
     box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2); 
+}
+
+.service-box:hover {
+    transform: translate(0, -20px);
 }
 
 .service1-image {
@@ -483,3 +488,4 @@ img {
         font-size: 12px;
     }
 }
+
