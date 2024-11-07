@@ -4,6 +4,8 @@
     align-items: center;
     justify-content: center;
     min-height: 89vh;
+    padding-top: 30px;
+    margin-bottom: 30px;
 }
 
 .complaint-sign {
@@ -23,6 +25,7 @@
     max-width: 700px;
     min-height: 400px;
     box-sizing: border-box;
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2); 
 }
 
 .complaint-form {
@@ -103,4 +106,6 @@
     margin-top: 20px; 
     text-align: center;
 }
+
+
 
