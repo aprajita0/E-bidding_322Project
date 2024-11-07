@@ -23,6 +23,7 @@
     max-width: 500px;
     min-height: 400px;
     box-sizing: border-box;
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2); 
 }
 
 .login-form {
