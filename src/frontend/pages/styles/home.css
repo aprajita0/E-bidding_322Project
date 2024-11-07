@@ -107,7 +107,7 @@ img {
 }
 
 .about {
-    font-size: 20px;
+    font-size: 25px;
     font-weight: bolder;
     color: #625834;
     width: 100%; 
@@ -137,24 +137,28 @@ img {
 }
 
 .services {
-    padding: 15px;
+    padding: 13px;
+    margin-top: 15px;
 }
 
 .services-label {
-    font-size: 22px;
+    font-size: 25px;
     font-family: 'DM Sans', sans-serif;
     font-weight: bolder;
     color: #625834;
-    padding-bottom:15px;
-    padding-left: 5px;
+    padding-bottom:18px;
+    align-items: center;
+    justify-content: center;
+    display: flex;
 }
 
 .service-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr); 
-    gap: 10px; 
+    gap: 8px; 
     width: 100%; 
-    box-sizing: border-box; 
+    box-sizing: border-box;
+    margin-top: 12px;
 }
 
 .service-box {
@@ -171,6 +175,7 @@ img {
     align-items: center;
     text-align: center;
     overflow: hidden;
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2); 
 }
 
 .service1-image {
