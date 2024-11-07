@@ -107,7 +107,8 @@ img {
 }
 
 .about {
-    font-size: 1.4vw;
+    font-size: 20px;
+    font-weight: bolder;
     color: #625834;
     width: 100%; 
     max-width: 800px;
@@ -117,7 +118,8 @@ img {
 }
 
 .about-info {
-    font-size: 1.0vw; 
+    font-size: 16px; 
+    font-weight: lighter;
     color: #625834;
     width: 100%;
     max-width: 2400px;
@@ -141,6 +143,7 @@ img {
 .services-label {
     font-size: 22px;
     font-family: 'DM Sans', sans-serif;
+    font-weight: bolder;
     color: #625834;
     padding-bottom:15px;
     padding-left: 5px;
@@ -181,6 +184,7 @@ img {
 .service-bidding {
     font-size: 18px;
     font-family: 'DM Sans', sans-serif;
+    font-weight: bold;
     color: #625834;
     max-width: 700px;
     padding: 25px;
@@ -206,6 +210,7 @@ img {
 
 .service-selling {
     font-size: 18px;
+    font-weight: bold;
     font-family: 'DM Sans', sans-serif;
     color: #625834;
     max-width: 700px;
@@ -230,6 +235,7 @@ img {
 
 .service-buying {
     font-size: 18px;
+    font-weight: bold;
     font-family: 'DM Sans', sans-serif;
     color: #625834;
     max-width: 700px;
