@@ -61,7 +61,7 @@ img {
     color: white;
     font-family: 'DM Sans', sans-serif;
     border: none;
-    border-radius: 5px;
+    border-radius: 40px;
     cursor: pointer;
     margin-left: 25px;
     transition: background-color 0.3s ease;
