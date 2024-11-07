@@ -26,7 +26,7 @@ function LogoutButton({ setIsLoggedIn }) {
         <button
             style={{
                 position: 'absolute',
-                top: '25px',
+                top: '20px',
                 right: '20px',
                 color: 'white', 
                 fontFamily: 'DM Sans',
