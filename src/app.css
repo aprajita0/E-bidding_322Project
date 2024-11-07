@@ -1,4 +1,8 @@
+
 body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; 
   margin: 0; 
   padding: 0; 
   width: 100%; 
@@ -19,16 +23,20 @@ nav {
 .logo {
   width: 175px;
   height: 35px;
-  margin-left:0px;
+  margin-left:5px;
   margin-right: 15px; 
   margin-top: 0px;
   flex-shrink: 0;
 }
 
+.logo:hover {
+  scale: 1.05;
+}
+
 nav ul {
   list-style: none;
   display: flex;
-  gap: 60px;
+  gap: 40px;
   margin: 0; 
   padding: 0; 
   flex-grow: 1; 
@@ -37,7 +45,7 @@ nav ul {
 nav ul li a {
   color: white; 
   text-decoration: none; 
-  margin-left: 10px;
+  margin-left: 30px;
   font-family: 'DM Sans', sans-serif;
   font-size: 18px; 
 }
@@ -50,6 +58,41 @@ nav ul li a:hover {
 
 .menu {
   display: none; 
+}
+
+.footer-box {
+  background-color: #c7d8ad; 
+  display: flex;
+  align-items: center;
+  justify-content: center; 
+  padding: 20px;
+  font-size: 15px;
+  color: white;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: auto;
+}
+
+.footer-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.trustSphere-title {
+  font-size: 25px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.divider {
+  font-size: 25px;
+  padding: 10px;
+  color: white;
+}
+
+.trustSphere-address{
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
 }
 
 @media (max-width: 600px) {
@@ -97,8 +140,4 @@ nav ul li a:hover {
     background-color: #625834; 
     padding: 8px 8px; 
   }
-
 }
-
-
-
