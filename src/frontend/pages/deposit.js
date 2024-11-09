@@ -143,7 +143,7 @@ const Deposit = () => {
                         <input className="deposit-input" type="text" id="zip-code" placeholder="Enter your zip code" required/>
                     </div>
                     <div>
-                        <button className="return-profile" type="submit">Return</button>
+                        <button className="return-profile" type="button" onClick={() => navigate('/balance_menu')}>Return</button>
                         <button className="deposit-finish"  type="button" onClick={handleDeposit}>Deposit</button>
                     </div>
                 </form>
