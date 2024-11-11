@@ -7,6 +7,7 @@ const Balance_menu = () => {
     const navigate = useNavigate();
     const [accountBalance, setAccountBalance] = useState(0);
     const [error, setError] = useState('');
+    const role = localStorage.getItem('role');
 
     const handleDeposit = () => {
         navigate('/deposit');
@@ -14,6 +15,16 @@ const Balance_menu = () => {
 
     const handleWithdraw = () => {
         navigate('/withdraw');
+    };
+    
+    const handleReturn = () => {
+        if (role === 'user') {
+            navigate('/user_profile')
+        } else if (role === 'visitor') {
+            navigate('/withdraw');
+        } else if (role === 'superuser') {
+            navigate('/superusers_profile');
+        }
     };
 
     useEffect(() => {
@@ -65,7 +76,7 @@ const Balance_menu = () => {
                     <div>
                         <button className="withdraw-nav" type="button" onClick={handleWithdraw}>Withdraw</button>
                         <button className="deposit-nav" type="button" onClick={handleDeposit}>Deposit</button>
-                        <button className="return-profile" type="button" onClick={() => navigate('/profile')}>Return</button>
+                        <button className="return-profile" type="button" onClick={handleReturn}>Return</button>
                     </div>
                 </form>
             </div>
@@ -74,3 +85,4 @@ const Balance_menu = () => {
 };
 
 export default Balance_menu;
+
