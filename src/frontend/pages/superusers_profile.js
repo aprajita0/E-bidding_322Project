@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import './styles/user_profile.css';
+import './styles/superusers_profile.css';
 import { useNavigate } from 'react-router-dom';
 import '@fontsource/dm-sans/700.css'; 
-import exchange_image from '../assets/exchange.png';
-import message_image from '../assets/message.png';
 import profile_pic from '../assets/profile_pic.png';
 
 const Superusers_profile = () => {
@@ -27,6 +25,19 @@ const Superusers_profile = () => {
     const handleRead = () => {
         navigate('/');
     };
+
+    const handleAcceptApp = () => {
+        navigate('/');
+    };
+
+    const handleDenyApp = () => {
+        navigate('/');
+    };
+
+    const handleUnsuspend = () => {
+        navigate('/');
+    };
+
 
     const bids = [
         { id: 1, amount: 100, deadline: '2024-11-15' },
@@ -132,8 +143,29 @@ const Superusers_profile = () => {
                 </div>
               </div>
               <div className="functionality-box">
-                <img src={exchange_image} alt="my-listings-image" className="my-listings-image" />
-              </div>
+                <div className="my-listings">Suspended Accounts:</div>
+                <div className="my-listings-container">
+                    <div className="my-listings_label">Suspensions:</div>
+                    <select className="show-listings" id="listing_select" value={listingSelect} onChange={(e) => setListingSelect(e.target.value)} required>
+                        <option value="">Select suspended accounts</option>
+                        <option value="selling">Appy1</option>
+                        <option value="renting">App2</option>
+                        <option value="buying">App3</option>
+                    </select>
+                </div>
+                <div className="my-listings-container">
+                    <div className="my-listings_label">Account Details:</div>
+                    <select className="show-listings" id="listing_select" value={listingSelect} onChange={(e) => setListingSelect(e.target.value)} required>
+                        <option value="">Account Details</option>
+                        <option value="selling">Appy1</option>
+                        <option value="renting">App2</option>
+                        <option value="buying">App3</option>
+                    </select>
+                </div>
+                <div>
+                    <button className="read" type="button" onClick={handleUnsuspend}> Unsuspend</button>
+                </div>
+                </div>
               <div className="functionality-box">
                 <div className="my-listings">My Inbox</div>
                 <div className="my-listings-container">
@@ -155,8 +187,30 @@ const Superusers_profile = () => {
                 </div>
               </div>
               <div className="functionality-box">
-                <img src={message_image} alt="my-listings-image" className="my-listings-image" />
-              </div>
+                <div className="my-listings">Approve/Deny User Applications</div>
+                <div className="my-listings-container">
+                    <div className="my-listings_label">Pending:</div>
+                    <select className="show-listings" id="listing_select" value={listingSelect} onChange={(e) => setListingSelect(e.target.value)} required>
+                        <option value="">Select an Application</option>
+                        <option value="selling">Appy1</option>
+                        <option value="renting">App2</option>
+                        <option value="buying">App3</option>
+                    </select>
+                </div>
+                <div className="my-listings-container">
+                    <div className="my-listings_label">Account Details:</div>
+                    <select className="show-listings" id="listing_select" value={listingSelect} onChange={(e) => setListingSelect(e.target.value)} required>
+                        <option value="">Select an Application</option>
+                        <option value="selling">Appy1</option>
+                        <option value="renting">App2</option>
+                        <option value="buying">App3</option>
+                    </select>
+                </div>
+                <div>
+                    <button className="accept-bid" type="button" onClick={handleAcceptApp}>Accept</button>
+                    <button className="deny-bid" type="button" onClick={handleDenyApp}>Deny</button>
+                </div>
+                </div>
             </div>
             <div className="add-container">
                 <button className="add-button" onClick={() => navigate('/add_listings')}>+</button>
