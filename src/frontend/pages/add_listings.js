@@ -11,6 +11,17 @@ const Add_Listings = () => {
 
     const [accountBalance, setAccountBalance] = useState(0);
     const [itemType, setItemType] = useState(''); 
+    const role = localStorage.getItem('role');
+
+    const handleReturn = () => {
+        if (role === 'user') {
+            navigate('/user_profile')
+        } else if (role === 'visitor') {
+            navigate('/withdraw');
+        } else if (role === 'superuser') {
+            navigate('/superusers_profile');
+        }
+    };
 
     return (
         <div className="add_listings-container">
@@ -46,8 +57,8 @@ const Add_Listings = () => {
                         <input className="listing-input" type="datetime-local" id="listing_date" placeholder="Date Listing" required/>
                     </div>
                     <div className="listings-container button-container">
-                        <button className="return-profile" type="submit">Return</button>
-                        <button className="upload-finish" type="button" onClick={handleListing}>Upload My Listing</button>
+                        <button className="return-profile"  type="button" onClick={handleReturn}></button>
+                        <button className="upload-finish" type="submit" onClick={handleListing}>Upload My Listing</button>
                     </div>
                 </form>
             </div>
@@ -56,3 +67,4 @@ const Add_Listings = () => {
 }
 
 export default Add_Listings;
+
