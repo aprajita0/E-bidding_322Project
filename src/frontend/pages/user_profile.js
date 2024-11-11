@@ -155,7 +155,15 @@ const User_profile = () => {
                 </div>
               </div>
               <div className="functionality-box">
-                <img src={message_image} alt="my-listings-image" className="my-listings-image" />
+              <div className="my-listings">Dissatisfied with an Item You Bidded On?</div>
+                <div className="my-listings-container">
+                    <div className="file-label">At TrustSphere, we deeply value our customers and are committed to 
+                        ensuring your satisfaction with every experience. If you're not completely happy with your purchase, 
+                        we want to make it right. Please let us know how we can help by submitting a complaint form today, 
+                        and our team will work diligently to address your concerns and rectify the situation. Your trust is 
+                        our priority, and we’re here to support you</div>
+                    </div>
+                    <button className="access-file" onClick={() => navigate('/complaint_form')}>File a Complaint</button>
               </div>
             </div>
             <div className="add-container">
@@ -167,3 +175,4 @@ const User_profile = () => {
 };
 
 export default User_profile;
+
