@@ -4,8 +4,6 @@
     align-items: center;
     justify-content: center;
     min-height: 89vh;
-    padding-top: 30px;
-    margin-bottom: 30px;
 }
 
 .deposit-sign {
@@ -22,10 +20,9 @@
     padding: 30px;
     border-radius: 10%;
     width: 100%;
-    max-width: 700px;
+    max-width: 500px;
     min-height: 400px;
     box-sizing: border-box;
-    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2); 
 }
 
 .deposit-form {
@@ -79,7 +76,6 @@
 
 .return-profile {
     display: inline-block;
-    margin-right: 42px;
     padding: 12px;
     background-color: #033f63; 
     color: #ffffff; 
@@ -93,7 +89,7 @@
     text-align: center;
 }
 
-.deposit-finish {
+.withdraw-nav {
     display: inline-block;
     padding: 12px;
     background-color: #033f63; 
@@ -108,5 +104,20 @@
     text-align: center;
 }
 
+.deposit-nav {
+    display: inline-block;
+    padding: 12px;
+    background-color: #033f63; 
+    color: #ffffff; 
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    width: 45%;
+    margin-top: 20px; 
+    margin-left: 42px;
+    text-align: center;
+}
 
 

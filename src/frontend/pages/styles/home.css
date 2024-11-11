@@ -17,7 +17,7 @@ img {
     display: flex;                    
     align-items: center;
     justify-content: space-between;
-    background-color: #f1f2eb;
+    background-color: #ffffff;
     width: 100%;
     flex-wrap: nowrap; 
     padding: 0;
@@ -61,7 +61,7 @@ img {
     color: white;
     font-family: 'DM Sans', sans-serif;
     border: none;
-    border-radius: 5px;
+    border-radius: 40px;
     cursor: pointer;
     margin-left: 25px;
     transition: background-color 0.3s ease;
@@ -96,6 +96,7 @@ img {
     padding: 0;
     margin: 0;
     box-sizing: border-box;
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2); 
 }
 
 .img-container {
@@ -107,7 +108,8 @@ img {
 }
 
 .about {
-    font-size: 1.4vw;
+    font-size: 25px;
+    font-weight: bolder;
     color: #625834;
     width: 100%; 
     max-width: 800px;
@@ -117,7 +119,8 @@ img {
 }
 
 .about-info {
-    font-size: 1.0vw; 
+    font-size: 16px; 
+    font-weight: lighter;
     color: #625834;
     width: 100%;
     max-width: 2400px;
@@ -135,23 +138,28 @@ img {
 }
 
 .services {
-    padding: 15px;
+    padding: 13px;
+    margin-top: 15px;
 }
 
 .services-label {
-    font-size: 22px;
+    font-size: 25px;
     font-family: 'DM Sans', sans-serif;
+    font-weight: bolder;
     color: #625834;
-    padding-bottom:15px;
-    padding-left: 5px;
+    padding-bottom:18px;
+    align-items: center;
+    justify-content: center;
+    display: flex;
 }
 
 .service-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr); 
-    gap: 10px; 
+    gap: 8px; 
     width: 100%; 
-    box-sizing: border-box; 
+    box-sizing: border-box;
+    margin-top: 12px;
 }
 
 .service-box {
@@ -168,6 +176,11 @@ img {
     align-items: center;
     text-align: center;
     overflow: hidden;
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2); 
+}
+
+.service-box:hover {
+    transform: translate(0, -20px);
 }
 
 .service1-image {
@@ -181,6 +194,7 @@ img {
 .service-bidding {
     font-size: 18px;
     font-family: 'DM Sans', sans-serif;
+    font-weight: bold;
     color: #625834;
     max-width: 700px;
     padding: 25px;
@@ -206,6 +220,7 @@ img {
 
 .service-selling {
     font-size: 18px;
+    font-weight: bold;
     font-family: 'DM Sans', sans-serif;
     color: #625834;
     max-width: 700px;
@@ -230,6 +245,7 @@ img {
 
 .service-buying {
     font-size: 18px;
+    font-weight: bold;
     font-family: 'DM Sans', sans-serif;
     color: #625834;
     max-width: 700px;

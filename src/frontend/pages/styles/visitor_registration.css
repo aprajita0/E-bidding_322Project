@@ -4,6 +4,8 @@
     align-items: center;
     justify-content: center;
     min-height: 100vh;
+    padding-top: 30px;
+    margin-bottom: 30px;
 }
 
 .registration-sign {
@@ -23,6 +25,7 @@
     max-width: 500px;
     min-height: 650px;
     box-sizing: border-box;
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2); 
 }
 
 .registration-form {
@@ -100,5 +103,7 @@
     text-align: center;
     margin-left: 20px;
 }
+
+
 
 

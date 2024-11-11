@@ -1,29 +1,104 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '@fontsource/dm-sans'; 
 import './styles/deposit.css'; 
 
-
 const Deposit = () => {
     const navigate = useNavigate();
-    const handleDeposit = () => {
-        navigate();
-    };
-
+    const [depositAmount, setDepositAmount] = useState('');
     const [accountBalance, setAccountBalance] = useState(0);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        const fetchBalance = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/users/add-balance', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    let balance = data.account_balance;
+
+                    if (balance && typeof balance === 'object' && balance.$numberDecimal) {
+                        balance = parseFloat(balance.$numberDecimal);
+                    } else {
+                        balance = parseFloat(balance) || 0;
+                    }
+
+                    setAccountBalance(balance);
+                } else {
+                    const result = await response.json();
+                    setError(result.error || 'Cannot show balance');
+                }
+            } catch (err) {
+                console.error('Error fetching balance:', err);
+                setError('Server error');
+            }
+        };
+
+        fetchBalance();
+    }, []);
+
+    const handleDeposit = async () => {
+        setError('');
+
+        if (!depositAmount || depositAmount <= 0) {
+            setError('Please enter a valid amount');
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/users/add-balance', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ amount: depositAmount }),
+            });
+
+            if (response.ok) {
+                setDepositAmount('');
+                navigate('/profile');
+            } else {
+                const result = await response.json();
+                setError(result.error || 'Deposit failed');
+            }
+        } catch (err) {
+            console.error('Error during deposit:', err);
+            setError('Server error');
+        }
+    };
 
     return (
         <div className="deposit-container">
             <div className="deposit-box">
                 <h2 className="deposit-sign">Deposit Money</h2>
                 <form className="deposit-form">
-                    <div className="balance-container"> 
+                    <div className="balance-container">
                         <label className="balance-label" htmlFor="balance">Current Account Balance: </label>
-                        <div className="account-balance">${accountBalance}</div>
+                        <div className="account-balance"> ${accountBalance}</div>
                     </div>
-                    <div className="balance-container"> 
-                        <label className="balance-label" htmlFor="balance">Amount Depositing:  </label>
-                        <input className="deposit-input" type="number" id="deposit_amount"  min="0" step="0.01" placeholder="Enter an amount" required oninput="validity.valid||(value='');"/>
+                    <div className="balance-container">
+                        <label className="balance-label" htmlFor="balance">Amount Depositing: </label>
+                        <input
+                            className="deposit-input"
+                            type="number"
+                            id="deposit_amount"
+                            min="0"
+                            step="0.01"
+                            placeholder="Enter an amount"
+                            required
+                            value={depositAmount}
+                            onChange={(e) => setDepositAmount(e.target.value)}
+                        />
                     </div>
                     <div className="balance-container"> 
                         <label className="field-label" htmlFor="balance">Enter your Credit Card Information  </label>
@@ -68,7 +143,7 @@ const Deposit = () => {
                         <input className="deposit-input" type="text" id="zip-code" placeholder="Enter your zip code" required/>
                     </div>
                     <div>
-                        <button className="return-profile" type="submit">Return</button>
+                        <button className="return-profile" type="button" onClick={() => navigate('/balance_menu')}>Return</button>
                         <button className="deposit-finish"  type="button" onClick={handleDeposit}>Deposit</button>
                     </div>
                 </form>

@@ -1,19 +1,20 @@
 {
-  "name": "e-bidding-project",
+  "name": "frontend",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "react-scripts start"
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "react": "^18.0.0",
-    "react-dom": "^18.3.1",
-    "react-router-dom": "^6.26.2",
-    "react-scripts": "^5.0.1"
+    "react-dom": "^18.0.0",
+    "react-scripts": "^5.0.0"
   },
+  "proxy": "http://localhost:4000",
   "browserslist": {
     "production": [
       ">0.2%",

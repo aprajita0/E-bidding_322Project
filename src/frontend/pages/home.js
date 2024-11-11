@@ -31,7 +31,7 @@ const Home = () => {
           <img src={about_image} alt="about-image" className="about-image" />
         </div>
         <div className="about">TrustSphere 
-          <div className="about-info">At TrustSphere, we believe that trust, transparency, and mmutual opportunity are at the heart 
+          <div className="about-info">At TrustSphere, we believe that trust, transparency, and mutual opportunity are at the heart 
           of every great marketplace. Founded with the vision to empower both individuals and businesses, TrustSphere is an 
           E-bidding platform where buyers and sellers connect in a secure, competitive, and seamless environment. Whether 
           you are searching for the best deals or looking to unlock the highest value for your products and services, our 
