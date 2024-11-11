@@ -75,12 +75,17 @@ router.post('/login', async (req, res) => {
 
         
         const token = jwt.sign(
-            { id: user._id.toString(), username: user.username }, // Convert `_id` to string
+            { id: user._id.toString(), username: user.username}, // Convert `_id` to string
             JWT_SECRET,
             { expiresIn: '1h' }
         );
 
-        res.json({ message: 'Login successful', token });
+        res.json({
+            message: 'Login successful',
+            token,
+            username: user.username,
+            role: user.role
+        });
     } catch (err) {
         res.status(500).json({ error: 'Error logging in', details: err.message });
     }
@@ -160,5 +165,6 @@ router.post('/withdraw-balance', authMiddleware, async (req, res) => {
         res.status(500).json({ error: 'Internal server error.' });
     }
 });
+
 
 module.exports = router;
