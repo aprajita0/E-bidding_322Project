@@ -6,8 +6,19 @@ import './styles/complaint_form.css';
 
 const Complaint_form = () => {
     const navigate = useNavigate();
+    const role = localStorage.getItem('role');
     const handleSubmit = () => {
         navigate();
+    };
+
+    const handleReturn = () => {
+        if (role === 'user') {
+            navigate('/user_profile')
+        } else if (role === 'visitor') {
+            navigate('/withdraw');
+        } else if (role === 'superuser') {
+            navigate('/superusers_profile');
+        }
     };
 
     const [item, setItem] = useState(''); 
@@ -37,8 +48,8 @@ const Complaint_form = () => {
                         className="complaint-description" id="complaint-details" placeholder="Enter the details for the complaint" requiredrows="4"></textarea>
                         </div>
                     <div>
-                        <button className="return-profile" type="submit">Return</button>
-                        <button className="complaint-finish"  type="button" onClick={handleSubmit}>Submit</button>
+                        <button className="return-profile" type="button" onClick={handleReturn}>Return</button>
+                        <button className="complaint-finish"  type="submit" onClick={handleSubmit}>Submit</button>
                     </div>
                 </form>
             </div>
@@ -47,3 +58,4 @@ const Complaint_form = () => {
 }
 
 export default Complaint_form;
+
