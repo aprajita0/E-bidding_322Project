@@ -290,6 +290,37 @@
     color: #ffffff;
 }
 
+.file-label {
+    font-size: 16px;
+    color: #033f63;
+    margin: 0 auto; 
+    width: auto;
+    max-width: 500px;
+    justify-content: center; 
+    font-family: 'DM Sans', sans-serif;
+    display: flex; 
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.access-file {
+    width: 200px;
+    height: 40px;
+    background-color: #033f63;
+    color: #ffffff;
+    border-radius: 30px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.access-file:hover {
+    background-color: #022c47;
+    color: #ffffff;
+}
+
+
+
 @media (max-width: 768px) {
     .user_profile-grid {
         grid-template-columns: 1fr; 
@@ -323,4 +354,5 @@
         height: 80px;
     }
 }
+
 
