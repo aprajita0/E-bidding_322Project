@@ -7,6 +7,8 @@ import Deposit from './frontend/pages/deposit';
 import Complaint from './frontend/pages/complaint_form';
 import Withdraw from './frontend/pages/withdraw';
 import Balance_menu from './frontend/pages/balance_menu';
+import User_profile from './frontend/pages/user_profile';
+import Superusers_profile from './frontend/pages/superusers_profile';
 import Add_Listings from './frontend/pages/add_listings';
 import V_registration from './frontend/pages/visitor_registration';
 import browse_listings from './frontend/pages/browse_listings';
@@ -35,7 +37,9 @@ function LogoutButton({ setIsLoggedIn }) {
                 padding: '8px 16px',
                 cursor: 'pointer',
                 fontSize: '17px',
-                borderRadius: '4px'
+                borderRadius: '4px',
+                backgroundColor: '#625834',
+                borderRadius: '20px'
             }}
             onClick={handleLogout}
         >
@@ -46,6 +50,7 @@ function LogoutButton({ setIsLoggedIn }) {
 
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
+    const role = localStorage.getItem('role');
     const [menuOpen, setMenuOpen] = useState(false);
 
     const toggleMenu = () => {
@@ -75,8 +80,14 @@ function App() {
                         </li>
                         <li>
                             {isLoggedIn ? (
-                                <Link to="/my_account">Profile</Link>
-                            ) : (
+                                role === 'user' ? (
+                                <Link to="/user_profile">Profile</Link>
+                            ) : role === 'visitor' ? (
+                                <Link to="/">Profile</Link>
+                            ) : role === 'superuser' ? (
+                                <Link to="/superuser_profile">Superuser Profile</Link>
+                            ) : null
+                        ) : (                            
                                 <Link to="/U_login">Login/Registration</Link>
                             )}
                         </li>
@@ -91,6 +102,8 @@ function App() {
                         <Route path="/browse_listings" element={isLoggedIn ? <browse_listings /> : <Navigate to="/U_login" />} />
                         <Route path="/my_account" element={isLoggedIn ? <div>My Account Page</div> : <Navigate to="/U_login" />} />
                         <Route path="/V_registration" element={<V_registration />} />
+                        <Route path="/User_profile" element={<User_profile />} />
+                        <Route path="/Superusers_profile" element={<Superusers_profile />} />
                         <Route path="/Deposit" element={isLoggedIn ? <Deposit /> : <Navigate to="/U_login" />} />
                         <Route path="/Withdraw" element={isLoggedIn ? <Withdraw /> : <Navigate to="/U_login" />} />
                         <Route path="/Add_Listings" element={isLoggedIn ? <Add_Listings /> : <Navigate to="/U_login" />} />
@@ -110,3 +123,4 @@ function App() {
 }
 
 export default App;
+
