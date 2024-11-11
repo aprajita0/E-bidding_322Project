@@ -28,19 +28,27 @@ const U_login = ({ onLogin }) => {
             if (response.ok) {
                 const data = await response.json();
                 console.log('Login successful:', data);
-
+                localStorage.setItem('username', data.username);
+                localStorage.setItem('role', data.role);
                 localStorage.setItem('token', data.token); 
                 onLogin();
-                navigate('/balance_menu');
+                if (data.role === 'user') {
+                    navigate('/user_profile');
+                } else if (data.role === 'visitor') {
+                    navigate('/withdraw');
+                }else if (data.role === 'superuser') {
+                    navigate('/superusers_profile');
+                }
             } else {
                 const result = await response.json();
-                setError(result.message || 'Login failed. Please try again.');
+                setError(result.message || 'Login failed, try again.');
             }
         } catch (err) {
             console.error('Error during login:', err);
-            setError('Server error. Please try again later.');
+            setError('Server error');
         }
     };
+
 
     return (
         <div className="login-container">
