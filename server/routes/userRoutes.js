@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const User = require('../models/User'); 
+const Listing = require('../models/Listings');
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -160,6 +161,16 @@ router.post('/withdraw-balance', authMiddleware, async (req, res) => {
         await user.save();
 
         res.status(200).json({ message: 'Balance withdrawn successfully', newBalance: user.account_balance });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
+
+router.get('/get-listing', async (req, res) => {
+    try {
+        const listings = await Listing.find({});
+        res.status(200).json(listings);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal server error.' });
