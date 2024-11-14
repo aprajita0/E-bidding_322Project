@@ -178,17 +178,21 @@ router.get('/get-listing', async (req, res) => {
 });
 
 router.post('/add-listing', authMiddleware, async (req, res) => {
-    const { name, description, type, amount } = req.body;
+    const { name, description, type, price_from, price_to} = req.body;
 
     try {
         // Validate required fields
-        if (!name || !description || !type || !amount) {
+        if (!name || !description || !type || !price_from || !price_to) {
             return res.status(400).json({ error: 'All fields are required.' });
         }
 
         // Validate amount is a positive number
-        if (isNaN(amount) || amount <= 0) {
-            return res.status(400).json({ error: 'Invalid amount specified.' });
+        if (isNaN(price_from) || price_from <= 0) {
+            return res.status(400).json({ error: 'Invalid price_from specified.' });
+        }
+
+        if (isNaN(price_to) || price_to <= 0) {
+            return res.status(400).json({ error: 'Invalid price_to specified.' });
         }
 
         // Create and save a new listing
@@ -197,8 +201,9 @@ router.post('/add-listing', authMiddleware, async (req, res) => {
             name,
             description,
             type,
-            amount: mongoose.Types.Decimal128.fromString(amount.toString()),
-            date_listed: new Date(), // Automatically set the date
+            price_from: mongoose.Types.Decimal128.fromString(price_from.toString()),
+            price_to: mongoose.Types.Decimal128.fromString(price_to.toString()),
+            date_listed: new Date(), 
         });
 
         await listing.save();
@@ -222,7 +227,7 @@ router.get('/get-user-listings', authMiddleware, async (req, res) => {
 });
 
 
-//Add a new route to get a specific listing by ID
+//New route to get a specific listing by ID
 router.get('/get-listing/:id', async (req, res) => {
     try {
         const listing = await Listing.findById(req.params.id);

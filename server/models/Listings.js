@@ -6,7 +6,9 @@ const listingSchema = new Schema({
     name: { type: String, maxlength: 250, required: true },
     description: { type: String },
     type: { type: String, maxlength: 50 },
-    amount: { type: mongoose.Types.Decimal128, required: true },
+    price_from: { type: mongoose.Types.Decimal128, required: true },
+    price_to: { type: mongoose.Types.Decimal128, required: true },
+
     date_listed: { type: Date, default: Date.now }
   });
   
