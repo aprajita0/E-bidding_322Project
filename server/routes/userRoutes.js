@@ -171,7 +171,7 @@ router.get('/get-listing', async (req, res) => {
     try {
         const listings = await Listing.find({});
         res.status(200).json(listings);
-    } catch (error) {
+    } catch (error) {   
         console.error(error);
         res.status(500).json({ error: 'Internal server error.' });
     }
@@ -210,8 +210,31 @@ router.post('/add-listing', authMiddleware, async (req, res) => {
     }
 });
 
+router.get('/get-user-listings', authMiddleware, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        const listings = await Listing.find({ user_id: user.id });
+        res.status(200).json(listings);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
 
 
+//Add a new route to get a specific listing by ID
+router.get('/get-listing/:id', async (req, res) => {
+    try {
+        const listing = await Listing.findById(req.params.id);
+        if (!listing) {
+            return res.status(404).json({ error: 'Listing not found.' });
+        }
 
+        res.status(200).json(listing);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
 
 module.exports = router;
