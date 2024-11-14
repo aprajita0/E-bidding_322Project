@@ -1,350 +1,254 @@
-* {
-    box-sizing: border-box;
-}
+import React, { useState, useEffect } from 'react';
+import './styles/superusers_profile.css';
+import { useNavigate } from 'react-router-dom';
+import '@fontsource/dm-sans/700.css'; 
+import profile_pic from '../assets/profile_pic.png';
 
-.profile-container {
-    font-family: 'DM Sans', sans-serif;
-    width: 100%;
-}
+const Superusers_profile = () => {
+    const navigate = useNavigate();
+    const [error, setError] = useState('');
+    const [accountBalance, setAccountBalance] = useState(0);
+    const [listingSelect, setListingSelect] = useState(''); 
+    const [bidSelect, setBidSelect] = useState('');
+    const [messageSelect, setMessageSelect] = useState(''); 
+    const [selectedMessage, setSelectedMessage] = useState(''); 
+    const [username, setUsername] = useState('');
+    const [userListings, setUserListings] = useState([]);
 
-.top-profile {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    padding-bottom: 20px;
-}
+    const handleAccept = () => {
+        navigate('/');
+    };
 
-.welcome {
-    font-size: 40px;
-    margin-right: auto;
-    color: #033f63;
-    font-weight: bold;
-}
+    const handleDeny = () => {
+        navigate('/');
+    };
 
-.profile_image {
-    width: 100px;
-    height: 100px;
-    background-color: #ddd;
-    border-radius: 50%;
-    margin-left: 50px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
+    const handleRead = () => {
+        navigate('/');
+    };
 
-.user-grid {
-    margin-top: 15px;
-    margin-left: 60px;
-    margin-right: 60px;
-    margin-bottom: 40px;
-}
+    const handleAcceptApp = () => {
+        navigate('/');
+    };
 
-.user_profile-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    width: 90%;
-    max-height: 600px;
-    overflow-y: auto;
-    overflow-x: auto;
-    padding: 10px;
-}
+    const handleDenyApp = () => {
+        navigate('/');
+    };
 
-.functionality-box {
-    background-color: #b2d4eb;
-    text-align: center;
-    min-height: 220px;
-    height: 180px;
-    width: 100%;
-    max-width: 770px;
-    margin: 0 auto;
-    box-sizing: border-box;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    text-align: center;
-    overflow: auto;
-    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
-}
-
-.functionality-box:hover {
-    transform: translate(0, -20px);
-}
-
-.my-listings {
-    font-size: 20px;
-    font-family: 'DM Sans', sans-serif;
-    font-weight: bold;
-    color: #033f63;
-    max-width: 700px;
-    padding: 25px;
-    text-align: center;
-    margin-left: auto;
-    margin-right: auto;
-    align-items: center;
-    justify-content: center;
-}
-
-.balance-container {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end; 
-    margin-top: 20px;
-    width: auto;
-}
-
-.profile-balance {
-    font-size: 16px;
-    color: #033f63;
-    width: 60px;
-    font-family: 'DM Sans', sans-serif;
-}
-
-.show-balance {
-    padding: 10px;
-    color: #033f63;
-    border: 1px solid #ccc;
-    font-size: 18px;
-    border-radius: 4px;
-    width: 200px;
-    box-sizing: border-box;
-}
-
-.balance-button {
-    width: 220px;
-    height: 40px;
-    margin-right: 45px;
-    background-color: #033f63;
-    color: #ffffff;
-    border-radius: 30px;
-    font-size: 16px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.balance-button:hover {
-    background-color: #022c47;
-    color: #ffffff;
-}
-
-.add-container {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 10px;
-}
-
-.add-button {
-    width: 80px;
-    height: 80px;
-    background-color: #033f63;
-    color: white;
-    border-radius: 50%;
-    font-size: 35px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.2);
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.add-button:hover {
-    background-color: #022c47;
-    color: #ffffff;
-}
-
-.my-listings-container {
-    display: flex;
-    flex-direction: row;
-    gap: 5px;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 10px;
-}
-
-.my-listings_label {
-    font-size: 18px;
-    color: #033f63;
-    margin-left: 20px;
-    width: auto;
-    max-width: 140px;
-    font-family: 'DM Sans', sans-serif;
-    display: inline-flex;
-    align-items: center;
-    box-sizing: border-box;
-}
-
-.show-listings {
-    padding: 10px;
-    border: 1px solid #ccc;
-    font-size: 14px;
-    margin-right: 20px;
-    max-width: 70%;
-    width: 100%;
-    border-radius: 4px;
-    box-sizing: border-box;
-    margin-left: auto;
-    overflow-y: auto;
-}
-
-.my-listings-button {
-    display: inline-flex;
-    align-items: center;
-    box-sizing: border-box;
-    gap: 20px;
-}
-
-.accept-bid {
-    width: 120px;
-    height: 40px;
-    background-color: #033f63;
-    color: #ffffff;
-    border-radius: 30px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
-    margin-right: 20px;
-}
-
-.deny-bid {
-    width: 120px;
-    height: 40px;
-    background-color: #033f63;
-    color: #ffffff;
-    border-radius: 30px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.accept-bid:hover {
-    background-color: #022c47;
-    color: #ffffff;
-}
-
-.deny-bid:hover {
-    background-color: #022c47;
-    color: #ffffff;
-}
-
-.show-messages {
-    padding: 10px;
-    border: 1px solid #ccc;
-    font-size: 14px;
-    margin-right: 20px;
-    max-width: 70%;
-    width: 100%;
-    border-radius: 4px;
-    box-sizing: border-box;
-    margin-left: auto;
-    overflow-y: auto;
-}
-
-.message-info {
-    padding: 10px;
-    color: #033f63;
-    background-color: white;
-    border: 1px solid #ccc;
-    display: block;
-    justify-content: center;
-    align-self: center;
-    font-size: 14px;
-    border-radius: 4px;
-    width: 93%;
-    box-sizing: border-box;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 10px;
-}
-
-.read {
-    width: 120px;
-    height: 40px;
-    background-color: #033f63;
-    color: #ffffff;
-    border-radius: 30px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
-    margin-left: auto;
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-right: 20px;
-}
-
-.read:hover {
-    background-color: #022c47;
-    color: #ffffff;
-}
-
-.file-label {
-    font-size: 16px;
-    color: #033f63;
-    margin: 0 auto; 
-    width: auto;
-    max-width: 500px;
-    justify-content: center; 
-    font-family: 'DM Sans', sans-serif;
-    display: flex; 
-    align-items: center;
-    box-sizing: border-box;
-}
-
-.access-file {
-    width: 200px;
-    height: 40px;
-    background-color: #033f63;
-    color: #ffffff;
-    border-radius: 30px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.access-file:hover {
-    background-color: #022c47;
-    color: #ffffff;
-}
+    const handleUnsuspend = () => {
+        navigate('/');
+    };
 
 
+    const bids = [
+        { id: 1, amount: 100, deadline: '2024-11-15' },
+    ];
 
-@media (max-width: 768px) {
-    .user_profile-grid {
-        grid-template-columns: 1fr; 
-    }
+    const messages = [
+        { id: 1, content: 'Temporary until i get the api' },
+    ];
 
-    .welcome {
-        font-size: 30px; 
-    }
+    const formatAmount = (amount) => {
+        if (amount && typeof amount === 'object' && amount.$numberDecimal) {
+            return amount.$numberDecimal.toString();
+        }
+        return amount;
+    };
 
-    .my-listings {
-        font-size: 30px; 
-    }
+    useEffect(() => {
+        const fetchBalance = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const username = localStorage.getItem('username');
+                setUsername(username);
+                const response = await fetch('/api/users/get-balance', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
 
-    .profile_image{
-        width: 80px; 
-        height: 80px;
-    }
+                if (response.ok) {
+                    const data = await response.json();
+                    const balance = data.account_balance;
+                    if (balance && typeof balance === 'object' && balance.$numberDecimal) {
+                        setAccountBalance(parseFloat(balance.$numberDecimal));
+                    } else {
+                        setAccountBalance(balance);
+                    }
+                } else {
+                    const result = await response.json();
+                    setError(result.error || 'Cannot show balance');
+                }
+            } catch (err) {
+                console.error('Error fetching balance:', err);
+                setError('Server error');
+            }
+        };
 
-    .balance-button{
-        width: 80px; 
-        height: 80px;
-    }
+        const fetchUserListings = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/users/get-user-listings', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
 
-    .read {
-        width: 80px; 
-        height: 80px;
-    }
+                if (response.ok) {
+                    const data = await response.json();
+                    setUserListings(data);
+                } else {
+                    console.error('Failed to fetch your listings');
+                }
+            } catch (err) {
+                console.error('Error fetching your listings:', err);
+            }
+        };
 
-    .add-button {
-        width: 80px; 
-        height: 80px;
-    }
-}
+        fetchBalance();
+        fetchUserListings();
+    }, []); 
+
+    const handleBidSelectChange = (e) => {
+        const selectedBidId = parseInt(e.target.value);
+        const selectedBid = bids.find(bid => bid.id === selectedBidId);
+        setBidSelect(selectedBidId);
+    };
+
+    const handleMessageSelect = (e) => {
+        const selectedMessageId = parseInt(e.target.value);
+        setMessageSelect(selectedMessageId);
+
+        const selectedMsg = messages.find(msg => msg.id === selectedMessageId);
+        setSelectedMessage(selectedMsg ? selectedMsg.content : ''); 
+    };
+
+  return (
+    <div className="profile-container">
+        <div className="balance-container">
+            <label className="profile-balance" htmlFor="profile-balance">Account Balance: </label>
+            <div className="show-balance">${accountBalance}</div>
+            <button className="balance-button" onClick={() => navigate('/balance_menu')}>Manage Account Balance</button>
+        </div>
+        <section className="banner">
+            <div className="top-profile">
+                <img src={profile_pic} alt="Image" className ="profile_image" />
+              <div className="welcome">Welcome, {username}</div>
+            </div>
+          </section>
+          <section className="user-grid">
+            <div className="user_profile-grid">
+              <div className="functionality-box">
+                <div className="my-listings">My Current Listings</div>
+                <div className="my-listings-container">
+                    <div className="my-listings_label">Select a Listing:</div>
+                    <select className="show-listings" id="listing_select" value={listingSelect} onChange={(e) => setListingSelect(e.target.value)} required>
+                        <option value="">Select a Listing</option>
+                        {userListings.map((listing) => (
+                            <option key={listing._id} value={listing._id}>
+                                {listing.name}, Price Range: ${formatAmount(listing.amount)}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div className="my-listings-container">
+                    <div className="my-listings_label">Select a Bid:</div>
+                    <select className="show-listings" id="bid_select" value={bidSelect} onChange={handleBidSelectChange} required>
+                        <option value="">Select a Bid</option>
+                        {bids.map((bid) => (
+                            <option key={bid.id} value={bid.id}>
+                                Amount Offered: ${bid.amount}, Deadline: {bid.deadline}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div>
+                    <button className="accept-bid" type="button" onClick={handleAccept}>Accept</button>
+                    <button className="deny-bid" type="button" onClick={handleDeny}>Deny</button>
+                </div>
+              </div>
+              <div className="functionality-box">
+                <div className="my-listings">Suspended Accounts:</div>
+                <div className="my-listings-container">
+                    <div className="my-listings_label">Suspensions:</div>
+                    <select className="show-listings" id="listing_select" value={listingSelect} onChange={(e) => setListingSelect(e.target.value)} required>
+                        <option value="">Select suspended accounts</option>
+                        <option value="selling">Appy1</option>
+                        <option value="renting">App2</option>
+                        <option value="buying">App3</option>
+                    </select>
+                </div>
+                <div className="my-listings-container">
+                    <div className="my-listings_label">Account Details:</div>
+                    <select className="show-listings" id="listing_select" value={listingSelect} onChange={(e) => setListingSelect(e.target.value)} required>
+                        <option value="">Account Details</option>
+                        <option value="selling">Appy1</option>
+                        <option value="renting">App2</option>
+                        <option value="buying">App3</option>
+                    </select>
+                </div>
+                <div>
+                    <button className="read" type="button" onClick={handleUnsuspend}> Unsuspend</button>
+                </div>
+                </div>
+              <div className="functionality-box">
+                <div className="my-listings">My Inbox</div>
+                <div className="my-listings-container">
+                    <div className="my-listings_label">New Messages:</div>
+                    <select className="show-messages" id="message_select" value={messageSelect} onChange={handleMessageSelect} required>
+                        <option value="">Open a Message</option>
+                        {messages.map((msg) => (
+                            <option key={msg.id} value={msg.id}>
+                                {msg.content}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                {selectedMessage && (
+                    <div className="message-info"> {selectedMessage}</div>
+                )}
+                <div>
+                    <button className="read" type="button" onClick={handleRead}>Read</button>
+                </div>
+              </div>
+              <div className="functionality-box">
+                <div className="my-listings">Approve/Deny User Applications</div>
+                <div className="my-listings-container">
+                    <div className="my-listings_label">Pending:</div>
+                    <select className="show-listings" id="listing_select" value={listingSelect} onChange={(e) => setListingSelect(e.target.value)} required>
+                        <option value="">Select an Application</option>
+                        <option value="selling">Appy1</option>
+                        <option value="renting">App2</option>
+                        <option value="buying">App3</option>
+                    </select>
+                </div>
+                <div className="my-listings-container">
+                    <div className="my-listings_label">Account Details:</div>
+                    <select className="show-listings" id="listing_select" value={listingSelect} onChange={(e) => setListingSelect(e.target.value)} required>
+                        <option value="">Select an Application</option>
+                        <option value="selling">Appy1</option>
+                        <option value="renting">App2</option>
+                        <option value="buying">App3</option>
+                    </select>
+                </div>
+                <div>
+                    <button className="accept-bid" type="button" onClick={handleAcceptApp}>Accept</button>
+                    <button className="deny-bid" type="button" onClick={handleDenyApp}>Deny</button>
+                </div>
+                </div>
+            </div>
+            <div className="add-container">
+                <button className="add-button" onClick={() => navigate('/add_listings')}>+</button>
+            </div>
+          </section>
+    </div>
+  );
+};
+
+export default Superusers_profile;
 
 
