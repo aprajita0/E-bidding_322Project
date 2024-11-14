@@ -11,7 +11,8 @@ import User_profile from './frontend/pages/user_profile';
 import Superusers_profile from './frontend/pages/superusers_profile';
 import Add_Listings from './frontend/pages/add_listings';
 import V_registration from './frontend/pages/visitor_registration';
-import browse_listings from './frontend/pages/browse_listings';
+import Browse_listings from './frontend/pages/browse_listings';
+import Listing_clicked from './frontend/components/listing_clicked';
 import trustsphere_logo from './frontend/assets/logo.png';
 import '@fontsource/dm-sans';
 
@@ -99,11 +100,12 @@ function App() {
                     <Routes>
                         <Route path="/" element={<Home />} />
                         <Route path="/U_login" element={<U_login onLogin={handleLogin} />} />
-                        <Route path="/browse_listings" element={isLoggedIn ? <browse_listings /> : <Navigate to="/U_login" />} />
+                        <Route path="/Browse_listings" element={isLoggedIn ? <Browse_listings /> : <Navigate to="/U_login" />} />
                         <Route path="/my_account" element={isLoggedIn ? <div>My Account Page</div> : <Navigate to="/U_login" />} />
                         <Route path="/V_registration" element={<V_registration />} />
                         <Route path="/User_profile" element={<User_profile />} />
                         <Route path="/Superusers_profile" element={<Superusers_profile />} />
+                        <Route path="/browse_listings/:id" element={<Listing_clicked />} />
                         <Route path="/Deposit" element={isLoggedIn ? <Deposit /> : <Navigate to="/U_login" />} />
                         <Route path="/Withdraw" element={isLoggedIn ? <Withdraw /> : <Navigate to="/U_login" />} />
                         <Route path="/Add_Listings" element={isLoggedIn ? <Add_Listings /> : <Navigate to="/U_login" />} />
@@ -123,4 +125,5 @@ function App() {
 }
 
 export default App;
+
 
