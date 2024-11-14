@@ -177,5 +177,41 @@ router.get('/get-listing', async (req, res) => {
     }
 });
 
+router.post('/add-listing', authMiddleware, async (req, res) => {
+    const { name, description, type, amount } = req.body;
+
+    try {
+        // Validate required fields
+        if (!name || !description || !type || !amount) {
+            return res.status(400).json({ error: 'All fields are required.' });
+        }
+
+        // Validate amount is a positive number
+        if (isNaN(amount) || amount <= 0) {
+            return res.status(400).json({ error: 'Invalid amount specified.' });
+        }
+
+        // Create and save a new listing
+        const listing = new Listing({
+            user_id: req.user.id, // Authenticated user's ID
+            name,
+            description,
+            type,
+            amount: mongoose.Types.Decimal128.fromString(amount.toString()),
+            date_listed: new Date(), // Automatically set the date
+        });
+
+        await listing.save();
+
+        res.status(201).json({ message: 'Listing added successfully', listing });
+    } catch (error) {
+        console.error('Error adding listing:', error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
+
+
+
+
 
 module.exports = router;
