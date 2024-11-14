@@ -1,0 +1,42 @@
+.listing-card {
+    border: 1px solid #ccc;
+    cursor: pointer;
+    transition: box-shadow 0.3s ease-in-out;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.card-name {
+    font-size: 18px;
+    font-weight: bold;
+    padding-top: 15px;
+    padding-left: 15px;
+    padding-right: 15px;
+    color: #033f63;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.card-description {
+    font-size: 16px;
+    padding: 15px;
+    color: #033f63;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.card-label {
+    font-size: 16px;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-bottom: 10px;
+    color: #033f63;
+    font-family: 'DM Sans', sans-serif;
+}
+
+
+.browse-listings {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
