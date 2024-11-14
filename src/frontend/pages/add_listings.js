@@ -57,7 +57,7 @@ const Add_Listings = () => {
                         <input className="listing-input" type="datetime-local" id="listing_date" placeholder="Date Listing" required/>
                     </div>
                     <div className="listings-container button-container">
-                        <button className="return-profile"  type="button" onClick={handleReturn}></button>
+                        <button className="return-user-profile"  type="button" onClick={handleReturn}>Return</button>
                         <button className="upload-finish" type="submit" onClick={handleListing}>Upload My Listing</button>
                     </div>
                 </form>
@@ -67,4 +67,3 @@ const Add_Listings = () => {
 }
 
 export default Add_Listings;
-
