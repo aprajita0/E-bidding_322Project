@@ -1,0 +1,111 @@
+.details-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.details-name {
+    font-size: 35px;
+    font-weight: bold;
+    padding-top: 15px;
+    color: #033f63;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.details-description {
+    font-size: 20px;
+    color: #033f63;
+    padding-top: 10px;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.details-type {
+    font-size: 18px;
+    color: #033f63;
+    padding-top: 30px;
+    padding-bottom: 5px;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.details-amount {
+    font-size: 18px;
+    color: #033f63;
+    padding-top: 10px;
+    padding-bottom: 5px;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.details-date {
+    font-size: 18px;
+    color: #033f63;
+    padding-top: 10px;
+    padding-bottom: 5px;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.comments-section {
+    font-size: 20px;
+    font-weight: bold;
+    color: #033f63;
+    padding-top: 30px;
+    padding-bottom: 5px;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.add-comment {
+    padding: 5px;
+    border: 1px solid #ccc;
+    font-size: 18px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    width: 100%;
+    min-width: 300px; 
+    max-width: 100%; 
+    box-sizing: border-box;
+    resize: vertical; 
+}
+
+
+.comment-button {
+    background-color: #625834; 
+    color: white; 
+    display: flex;
+    margin-left: auto;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 18px; 
+    cursor: pointer;
+    border-radius: 20px; 
+    padding: 8px 8px; 
+    transition: background-color 0.3s ease;
+}
+
+.comment-button:hover {
+    background-color: #484126; 
+    transform: translate(-5px, -5px);
+  }
+
+
+.listing-button {
+    background-color: #625834; 
+    color: white; 
+    display: flex;
+    margin-left: auto;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 18px; 
+    cursor: pointer;
+    border-radius: 20px; 
+    margin-top: 20px;
+    padding: 8px 8px; 
+    transition: background-color 0.3s ease;
+}
+
+.listing-button:hover {
+    background-color: #484126; 
+    transform: translate(-5px, -5px);
+  }
