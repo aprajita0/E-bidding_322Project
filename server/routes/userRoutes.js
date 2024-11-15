@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const User = require('../models/User'); 
 const Listing = require('../models/Listings');
+const Notification = require('../models/Notification');
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -197,7 +198,7 @@ router.post('/add-listing', authMiddleware, async (req, res) => {
 
         // Create and save a new listing
         const listing = new Listing({
-            user_id: req.user.id, // Authenticated user's ID
+            user_id: req.user.id, //
             name,
             description,
             type,
@@ -241,5 +242,29 @@ router.get('/get-listing/:id', async (req, res) => {
         res.status(500).json({ error: 'Internal server error.' });
     }
 });
+
+router.post('/add-notification', authMiddleware, async (req, res) => {
+    try {
+        const { to_id, notification_type } = req.body;
+        const user = await User.findById(req.user.id);
+
+        if (!to_id || !notification_type) {
+            return res.status(400).json({ error: 'All fields are required.' });
+        }
+
+        const notification = new Notification({
+            to_id,
+            notification_type,
+        });
+
+        await notification.save();
+
+        res.status(201).json({ message: 'Notification added successfully', notification });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
+
 
 module.exports = router;
