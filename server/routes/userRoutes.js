@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const User = require('../models/User'); 
 const Listing = require('../models/Listings');
 const Notification = require('../models/Notification');
+const Raffle = require('../models/Raffle');
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -266,5 +267,40 @@ router.post('/add-notification', authMiddleware, async (req, res) => {
     }
 });
 
+router.post('/add-raffle', authMiddleware, async (req, res) => {
+    try {
+        const { raffle_name, prize, start_date, end_date } = req.body;
+        const user = await User.findById(req.user.id);
+
+        if (!raffle_name || !prize || !start_date || !end_date) {
+            return res.status(400).json({ error: 'All fields are required.' });
+        }
+
+        const raffle = new Raffle({
+            raffle_name,
+            prize,
+            start_date,
+            end_date,
+        });
+
+        await raffle.save();
+
+        res.status(201).json({ message: 'Raffle added successfully', raffle });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
+
+router.get('/get-raffles', authMiddleware, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        const raffles = await Raffle.find({});
+        res.status(200).json(raffles);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
 
 module.exports = router;
