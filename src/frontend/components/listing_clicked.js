@@ -9,11 +9,20 @@ const Listing_clicked = () => {
     const [error, setError] = useState(''); 
 
 
-    const formatAmount = (amount) => {
-        if (amount && typeof amount === 'object' && amount.$numberDecimal) {
-            return amount.$numberDecimal;
+    const formatMin = (price_from) => {
+        if (price_from && typeof price_from === 'object' && price_from.$numberDecimal) {
+            price_from = price_from.$numberDecimal; 
         }
-        return amount;
+        const number = Number(price_from);
+        return isNaN(number) ? "Not entered" : number.toFixed(2);
+    };
+
+    const formatMax = (price_to) => {
+        if (price_to && typeof price_to === 'object' && price_to.$numberDecimal) {
+            price_to = price_to.$numberDecimal; 
+        }
+        const number = Number(price_to);
+        return isNaN(number) ? "Not entered" : number.toFixed(2);
     };
 
     useEffect(() => {
@@ -56,7 +65,7 @@ const Listing_clicked = () => {
             <div className="details-name"> {listing.name}</div>
             <div className="details-description"> Description: {listing.description}</div>
             <div className="details-type"> Type: {listing.type}</div>
-            <div className="details-amount"> Price Range: ${formatAmount(listing.amount)}</div>
+            <div className="details-amount"> Price Range: ${formatMin(listing.price_from)} - ${formatMax(listing.price_to)}</div>
             <div className="details-date"> Date Listed: {new Date(listing.date_listed).toLocaleDateString()}</div>
             <div className="comments-section"> Comments Section:</div>
             <textarea className="add-comment" id="add-comment" placeholder="Add your comment" maxLength="250"></textarea>
@@ -67,4 +76,5 @@ const Listing_clicked = () => {
 };
 
 export default Listing_clicked;
+
 
