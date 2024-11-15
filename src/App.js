@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate} from 'react-router-dom';
 import './app.css';
 import Home from './frontend/pages/home';
 import U_login from './frontend/pages/user_login';
@@ -53,6 +53,19 @@ function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
     const role = localStorage.getItem('role');
     const [menuOpen, setMenuOpen] = useState(false);
+
+    useEffect(() => {
+        const handleUnload = () => {
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('token');
+        };
+        window.addEventListener('beforeunload', handleUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleUnload);
+        };
+    }, []);
+
 
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
@@ -125,5 +138,4 @@ function App() {
 }
 
 export default App;
-
 
