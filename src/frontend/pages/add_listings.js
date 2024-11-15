@@ -7,7 +7,8 @@ const Add_Listings = () => {
     const [itemName, setItemName] = useState('');
     const [itemDescription, setItemDescription] = useState('');
     const [itemType, setItemType] = useState('');
-    const [listingAmount, setListingAmount] = useState('');
+    const [listingMin, setListingMin] = useState('');
+    const [listingMax, setListingMax] = useState('');
     const [listingDate, setListingDate] = useState('');
     const navigate = useNavigate();
     const role = localStorage.getItem('role');
@@ -29,8 +30,9 @@ const Add_Listings = () => {
             name: itemName,
             description: itemDescription,
             type: itemType,
-            amount: listingAmount,
-            date_listed: listingDate
+            price_from: listingMin,
+            price_to: listingMax,
+            date_listed: new Date(listingDate)
         };
 
         try {
@@ -69,37 +71,15 @@ const Add_Listings = () => {
                 <form className="add_listings-form" onSubmit={handleListing}>
                     <div className="listings-container">
                         <label className="field-label" htmlFor="item_name">Item/Service Name</label>
-                        <input
-                            className="listing-input"
-                            type="text"
-                            id="item_name"
-                            placeholder="Enter the name of the item/service"
-                            value={itemName}
-                            onChange={(e) => setItemName(e.target.value)}
-                            required
-                        />
+                        <input className="listing-input" type="text" id="item_name" placeholder="Enter the name of the item/service" value={itemName} onChange={(e) => setItemName(e.target.value)} required />
                     </div>
                     <div className="listings-container">
                         <label className="field-label" htmlFor="item_description">Item/Service Description</label>
-                        <input
-                            className="listing-input"
-                            type="text"
-                            id="item_description"
-                            placeholder="Enter your description"
-                            value={itemDescription}
-                            onChange={(e) => setItemDescription(e.target.value)}
-                            required
-                        />
+                        <input className="listing-input" type="text" id="item_description" placeholder="Enter your description" value={itemDescription} onChange={(e) => setItemDescription(e.target.value)} required />
                     </div>
                     <div className="listings-container">
                         <label className="field-label" htmlFor="item_type">Item/Service Type</label>
-                        <select
-                            className="listing-input"
-                            id="item_type"
-                            value={itemType}
-                            onChange={(e) => setItemType(e.target.value)}
-                            required
-                        >
+                        <select className="listing-input" id="item_type" value={itemType} onChange={(e) => setItemType(e.target.value)} required>
                             <option value="">Select Item/Service Type</option>
                             <option value="selling">Selling</option>
                             <option value="renting">Renting</option>
@@ -107,29 +87,16 @@ const Add_Listings = () => {
                         </select>
                     </div>
                     <div className="listings-container">
-                        <label className="field-label" htmlFor="listing_amount">Listing Amount</label>
-                        <input
-                            className="listing-input"
-                            type="number"
-                            id="listing_amount"
-                            placeholder="Enter an amount"
-                            value={listingAmount}
-                            onChange={(e) => setListingAmount(e.target.value)}
-                            min="0"
-                            step="0.01"
-                            required
-                        />
+                        <label className="field-label" htmlFor="listing_min">Price From</label>
+                        <input className="listing-input" type="number" id="listing_min" placeholder="Enter the minimum price desired" value={listingMin} onChange={(e) => setListingMin(e.target.value)} min="0" step="0.01" required />
+                    </div>
+                    <div className="listings-container">
+                        <label className="field-label" htmlFor="listing_max">Price To</label>
+                        <input className="listing-input" type="number" id="listing_max" placeholder="Enter the maximum price accepting" value={listingMax} onChange={(e) => setListingMax(e.target.value)} min="0" step="0.01" required />
                     </div>
                     <div className="listings-container">
                         <label className="field-label" htmlFor="listing_date">Date Listing</label>
-                        <input
-                            className="listing-input"
-                            type="datetime-local"
-                            id="listing_date"
-                            value={listingDate}
-                            onChange={(e) => setListingDate(e.target.value)}
-                            required
-                        />
+                        <input className="listing-input" type="datetime-local" id="listing_date" value={listingDate} onChange={(e) => setListingDate(e.target.value)} required />
                     </div>
                     <div className="listings-container button-container">
                         <button className="return-user-profile" type="button" onClick={handleReturn}>Return</button>
@@ -142,3 +109,4 @@ const Add_Listings = () => {
 };
 
 export default Add_Listings;
+
