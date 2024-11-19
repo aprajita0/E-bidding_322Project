@@ -235,7 +235,6 @@ router.get('/get-user-listings', authMiddleware, async (req, res) => {
     }
 });
 
-
 //New route to get a specific listing by ID
 router.get('/get-listing/:id', async (req, res) => {
     try {
