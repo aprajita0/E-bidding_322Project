@@ -5,6 +5,7 @@ import './styles/deposit.css';
 
 const Deposit = () => {
     const navigate = useNavigate();
+    const role = localStorage.getItem('role');
     const [depositAmount, setDepositAmount] = useState('');
     const [accountBalance, setAccountBalance] = useState(0);
     const [error, setError] = useState('');
@@ -13,7 +14,7 @@ const Deposit = () => {
         const fetchBalance = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch('/api/users/add-balance', {
+                const response = await fetch('/api/users/get-balance', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -66,7 +67,11 @@ const Deposit = () => {
 
             if (response.ok) {
                 setDepositAmount('');
-                navigate('/profile');
+                if (role === 'user') {
+                    navigate('/user_profile');
+                } else if (role === 'superuser') {
+                    navigate('/superusers_profile');
+                }
             } else {
                 const result = await response.json();
                 setError(result.error || 'Deposit failed');

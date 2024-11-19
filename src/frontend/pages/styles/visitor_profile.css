@@ -1,0 +1,166 @@
+/*profile pic and banner*/
+
+* {
+    box-sizing: border-box;
+}
+
+.profile-container {
+    font-family: 'DM Sans', sans-serif;
+    width: 100%;
+}
+
+.top-profile {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 20px;
+}
+
+.welcome {
+    font-size: 40px;
+    margin-right: auto;
+    color: #033f63;
+    font-weight: bold;
+}
+
+.profile_image {
+    width: 100px;
+    height: 100px;
+    background-color: #ddd;
+    border-radius: 50%;
+    margin-left: 50px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* ability to browse listings and comment from profile */
+
+/* container for all the listings */
+.profile-listings-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    background-color: #f9f9f9; 
+    border-radius: 8px; 
+    width: 100%; 
+    max-width: 800px; 
+    margin: 0 auto; 
+}
+
+/* individual listing styling */
+.listing {
+    background-color: #ffffff; 
+    border: 1px solid #ddd; 
+    border-radius: 8px; 
+    padding: 20px; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+}
+
+/* title of each listing */
+.listing h3 {
+    font-size: 1.5rem; 
+    color: #333; 
+    margin-bottom: 10px; 
+}
+
+/* description text of each listing */
+.listing p {
+    font-size: 1rem;
+    color: #555; 
+    margin-bottom: 15px; 
+}
+
+/* textarea for adding comments */
+textarea {
+    width: 100%; 
+    height: 100px; 
+    padding: 10px; 
+    font-size: 1rem; 
+    border-radius: 8px; 
+    border: 1px solid #ddd; 
+    resize: none; 
+    margin-bottom: 10px; 
+}
+
+/* button for submitting the comment */
+button {
+    padding: 10px 20px; 
+    background-color: #4CAF50; 
+    color: white; 
+    border: none; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    font-size: 1rem; 
+    transition: background-color 0.3s ease; 
+}
+
+
+button:hover {
+    background-color: #45a049; /* Darker green when the button is hovered */
+}
+
+
+.application-container {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 20px;
+    width: 100%;
+    max-width: 500px;
+    margin: 20px auto;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* start appl. button*/
+.application-container button {
+    background-color: #4CAF50;
+    color: white;
+    font-size: 16px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-bottom: 20px;
+}
+
+.application-container button:hover {
+    background-color: #45a049;
+}
+
+/*answer*/
+.application-container input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+/*arithmetic question */
+.application-container label {
+    font-size: 18px;
+    margin-top: 10px;
+    display: block;
+}
+
+.application-container p {
+    font-size: 14px;
+    color: #333;
+    margin-top: 10px;
+    font-weight: bold;
+    text-align: center;
+}
+
+@media (max-width: 600px) {
+    .application-container {
+        padding: 15px;
+    }
+
+    .application-container button {
+        width: 100%;
+    }
+}
+
+

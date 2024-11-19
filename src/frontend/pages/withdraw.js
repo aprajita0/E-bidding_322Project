@@ -5,7 +5,7 @@ import './styles/withdraw.css';
 
 const Withdraw = () => {
     const navigate = useNavigate();
-
+    const role = localStorage.getItem('role');
     const [accountBalance, setAccountBalance] = useState(0);
     const [withdrawAmount, setWithdrawAmount] = useState('');
     const [error, setError] = useState(''); 
@@ -72,7 +72,11 @@ const Withdraw = () => {
             if (response.ok) {
                 setWithdrawAmount('');
                 
-                navigate('/profile');
+                if (role === 'user') {
+                    navigate('/user_profile');
+                } else if (role === 'superuser') {
+                    navigate('/superusers_profile');
+                }
             } else {
                 const result = await response.json();
                 setError(result.error || 'Withdrawal failed');
@@ -154,7 +158,7 @@ const Withdraw = () => {
                     </div>
 
                     <div>
-                        <button className="return-profile" type="button" onClick={() => navigate('/profile')}>Return</button>
+                        <button className="return-profile" type="button" onClick={() => navigate('/balance_menu')}>Return</button>
                         <button className="withdraw-finish" type="button" onClick={handleWithdraw}>Withdraw</button>
                     </div>
                 </form>
@@ -164,3 +168,5 @@ const Withdraw = () => {
 }
 
 export default Withdraw;
+
+

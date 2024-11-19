@@ -10,6 +10,7 @@ import Balance_menu from './frontend/pages/balance_menu';
 import User_profile from './frontend/pages/user_profile';
 import Superusers_profile from './frontend/pages/superusers_profile';
 import Add_Listings from './frontend/pages/add_listings';
+import Visitor_profile from './frontend/pages/visitor_profile';
 import V_registration from './frontend/pages/visitor_registration';
 import Browse_listings from './frontend/pages/browse_listings';
 import Listing_clicked from './frontend/components/listing_clicked';
@@ -97,9 +98,9 @@ function App() {
                                 role === 'user' ? (
                                 <Link to="/user_profile">Profile</Link>
                             ) : role === 'visitor' ? (
-                                <Link to="/">Profile</Link>
+                                <Link to="/visitor_profile">Profile</Link>
                             ) : role === 'superuser' ? (
-                                <Link to="/superuser_profile">Superuser Profile</Link>
+                                <Link to="/superuser_profile">Profile</Link>
                             ) : null
                         ) : (                            
                                 <Link to="/U_login">Login/Registration</Link>
@@ -118,6 +119,7 @@ function App() {
                         <Route path="/V_registration" element={<V_registration />} />
                         <Route path="/User_profile" element={<User_profile />} />
                         <Route path="/Superusers_profile" element={<Superusers_profile />} />
+                        <Route path="/Visitor_profile" element={<Visitor_profile />} />
                         <Route path="/browse_listings/:id" element={<Listing_clicked />} />
                         <Route path="/Deposit" element={isLoggedIn ? <Deposit /> : <Navigate to="/U_login" />} />
                         <Route path="/Withdraw" element={isLoggedIn ? <Withdraw /> : <Navigate to="/U_login" />} />
