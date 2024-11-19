@@ -3,6 +3,7 @@ import './styles/superusers_profile.css';
 import { useNavigate } from 'react-router-dom';
 import '@fontsource/dm-sans/700.css'; 
 import profile_pic from '../assets/profile_pic.png';
+import exchange_image from '../assets/exchange.png';
 
 const Superusers_profile = () => {
     const navigate = useNavigate();
@@ -195,6 +196,26 @@ const Superusers_profile = () => {
                     <button className="read" type="button" onClick={handleUnsuspend}> Unsuspend</button>
                 </div>
                 </div>
+                <div className="functionality-box">
+                <div className="my-listings">Review Complaints</div>
+                <div className="my-listings-container">
+                    <div className="my-listings_label">Pending:</div>
+                    <select className="show-listings" id="listing_select"  required>
+                        <option value="">Select a Complaint</option>
+                        <option value="selling">Comp1</option>
+                    </select>
+                </div>
+                <div className="my-listings-container">
+                    <div className="my-listings_label">Complaint Details:</div>
+                    <select className="show-listings" id="listing_select" required>
+                        <option value="">Complaint Details</option>
+                        <option value="selling">Appy1</option>
+                    </select>
+                </div>
+                <div>
+                    <button className="read" type="button" >Resolve</button>
+                </div>
+            </div>
               <div className="functionality-box">
                 <div className="my-listings">My Inbox</div>
                 <div className="my-listings-container">
@@ -239,7 +260,10 @@ const Superusers_profile = () => {
                     <button className="accept-bid" type="button" onClick={handleAcceptApp}>Accept</button>
                     <button className="deny-bid" type="button" onClick={handleDenyApp}>Deny</button>
                 </div>
-                </div>
+            </div>
+            <div className="functionality-box">
+                <img src={exchange_image} alt="my-listings-image" className="my-listings-image" />
+            </div>
             </div>
             <div className="add-container">
                 <button className="add-button" onClick={() => navigate('/add_listings')}>+</button>
