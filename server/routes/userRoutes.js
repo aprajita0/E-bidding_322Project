@@ -310,4 +310,76 @@ router.get('/get-raffles', authMiddleware, async (req, res) => {
     }
 });
 
+//bid-listing
+router.post('/bid-listing', authMiddleware, async (req, res) => {
+    const { listing_id, amount, bid_expiration } = req.body;
+
+    try {
+        console.log('POST /api/users/bid-listing reached');
+
+        // Validate the required fields
+        if (!listing_id || !amount || !bid_expiration) {
+            console.error('Validation failed: Missing required fields.');
+            return res.status(400).json({
+                error: 'Validation failed: Listing ID, amount, and bid expiration are required.',
+            });
+        }
+
+        // Validate the listing
+        const listing = await Listing.findById(listing_id);
+        if (!listing) {
+            console.error(`Listing not found for ID: ${listing_id}`);
+            return res.status(404).json({ error: 'Listing not found.' });
+        }
+
+        // Validate the amount is greater than the listing price
+        if (parseFloat(amount) <= parseFloat(listing.price_from)) {
+            console.error(`Bid amount (${amount}) must be greater than the listing price (${listing.price_from}).`);
+            return res.status(400).json({
+                error: `Bid amount must be greater than the listing price (${listing.price_from}).`,
+            });
+        }
+
+        // Parse and validate the expiration date
+        const expirationDate = new Date(bid_expiration);
+        if (isNaN(expirationDate.getTime())) {
+            console.error('Validation failed: Invalid expiration date format.');
+            return res.status(400).json({ error: 'Invalid bid expiration date format.' });
+        }
+
+        // Validate the user's account balance
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            console.error(`User not found for ID: ${req.user.id}`);
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        const userBalance = parseFloat(user.account_balance.toString());
+        if (userBalance < parseFloat(amount)) {
+            console.error(`Insufficient balance. User balance: ${userBalance}, Bid amount: ${amount}`);
+            return res.status(400).json({
+                error: 'Insufficient balance to place this bid.',
+            });
+        }
+
+        // Create the bid
+        const bid = new Bid({
+            listing_id,
+            bidder_id: req.user.id,
+            amount: mongoose.Types.Decimal128.fromString(amount.toString()),
+            bid_expiration: expirationDate,
+        });
+
+        // Save the bid
+        await bid.save();
+
+        console.log(`Bid created successfully: ${JSON.stringify(bid)}`);
+        res.status(201).json({ message: 'Bid created successfully', bid });
+    } catch (error) {
+        console.error(`Error creating bid: ${error.message}`);
+        res.status(500).json({ error: 'Internal server error.', details: error.message });
+    }
+});
+
+
 module.exports = router;
