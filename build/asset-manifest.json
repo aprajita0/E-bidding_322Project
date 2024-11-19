@@ -1,0 +1,29 @@
+{
+  "files": {
+    "main.css": "/static/css/main.6c5985d0.css",
+    "main.js": "/static/js/main.d52cea0e.js",
+    "static/media/selling.png": "/static/media/selling.3e5e6ecb967ab15bb97a.png",
+    "static/media/about.png": "/static/media/about.d2828fa28e5dd6a72264.png",
+    "static/media/searching.png": "/static/media/searching.048fdcb4c1cdeeb704a4.png",
+    "static/media/online_shopper.png": "/static/media/online_shopper.2495e92d38b1f4ebe21e.png",
+    "static/media/exchange.png": "/static/media/exchange.b1d6e0303fe75bcbb195.png",
+    "static/media/trading1.png": "/static/media/trading1.f96d6a76de9767ac4c94.png",
+    "static/media/profile_pic.png": "/static/media/profile_pic.2f48dc100fcf3e5631a2.png",
+    "static/media/logo.png": "/static/media/logo.7ae7b8dc57ddf57283de.png",
+    "static/media/dm-sans-latin-700-normal.woff": "/static/media/dm-sans-latin-700-normal.b4ab443fcc8b49a38613.woff",
+    "static/media/dm-sans-latin-400-normal.woff": "/static/media/dm-sans-latin-400-normal.693210afc0f6e924904e.woff",
+    "static/media/dm-sans-latin-700-normal.woff2": "/static/media/dm-sans-latin-700-normal.0dcffb8101e822c86ad3.woff2",
+    "static/media/dm-sans-latin-400-normal.woff2": "/static/media/dm-sans-latin-400-normal.d6dd259ebf3e3a66be69.woff2",
+    "static/media/dm-sans-latin-ext-700-normal.woff": "/static/media/dm-sans-latin-ext-700-normal.49f7dcd2051ccd1dc7b8.woff",
+    "static/media/dm-sans-latin-ext-400-normal.woff": "/static/media/dm-sans-latin-ext-400-normal.413af63a119bbef9e8cd.woff",
+    "static/media/dm-sans-latin-ext-700-normal.woff2": "/static/media/dm-sans-latin-ext-700-normal.5193ddf86e3068e64e4a.woff2",
+    "static/media/dm-sans-latin-ext-400-normal.woff2": "/static/media/dm-sans-latin-ext-400-normal.f65533d614ce4031f8a9.woff2",
+    "index.html": "/index.html",
+    "main.6c5985d0.css.map": "/static/css/main.6c5985d0.css.map",
+    "main.d52cea0e.js.map": "/static/js/main.d52cea0e.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.6c5985d0.css",
+    "static/js/main.d52cea0e.js"
+  ]
+}
