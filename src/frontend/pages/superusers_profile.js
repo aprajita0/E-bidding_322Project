@@ -49,11 +49,20 @@ const Superusers_profile = () => {
         { id: 1, content: 'Temporary until i get the api' },
     ];
 
-    const formatAmount = (amount) => {
-        if (amount && typeof amount === 'object' && amount.$numberDecimal) {
-            return amount.$numberDecimal.toString();
+    const formatMin = (price_from) => {
+        if (price_from && typeof price_from === 'object' && price_from.$numberDecimal) {
+            price_from = price_from.$numberDecimal; 
         }
-        return amount;
+        const number = Number(price_from);
+        return isNaN(number) ? "Not entered" : number.toFixed(2);
+    };
+
+    const formatMax = (price_to) => {
+        if (price_to && typeof price_to === 'object' && price_to.$numberDecimal) {
+            price_to = price_to.$numberDecimal; 
+        }
+        const number = Number(price_to);
+        return isNaN(number) ? "Not entered" : number.toFixed(2);
     };
 
     useEffect(() => {
@@ -151,7 +160,7 @@ const Superusers_profile = () => {
                         <option value="">Select a Listing</option>
                         {userListings.map((listing) => (
                             <option key={listing._id} value={listing._id}>
-                                {listing.name}, Price Range: ${formatAmount(listing.amount)}
+                                {listing.name}, Price Range: ${formatMin(listing.price_from)} - ${formatMax(listing.price_to)}
                             </option>
                         ))}
                     </select>
@@ -274,5 +283,4 @@ const Superusers_profile = () => {
 };
 
 export default Superusers_profile;
-
 
