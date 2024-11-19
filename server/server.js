@@ -31,3 +31,6 @@ mongoose.connect(uri)
     .catch((error) => {
         console.log(error);
     });
+
+
+console.log('User routes loaded');

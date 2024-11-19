@@ -3,9 +3,14 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const User = require('../models/User'); 
+const RegularUser = require('../models/RegUser');
+const Visitor = require('../models/Visitor'); 
+const SuperUser = require('../models/SuperUser'); 
 const Listing = require('../models/Listings');
+const Bid = require('../models/Bid'); 
 const Notification = require('../models/Notification');
 const Raffle = require('../models/Raffle');
+const Rating = require('../models/Ratings');
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -302,5 +307,227 @@ router.get('/get-raffles', authMiddleware, async (req, res) => {
         res.status(500).json({ error: 'Internal server error.' });
     }
 });
+
+// Suspend a regular user based on ratings
+router.post('/suspend-reguser', async (req, res) => {
+    try {
+        const { user_id } = req.body;
+
+        if (!user_id) {
+            return res.status(400).json({ error: 'User ID is required.' });
+        }
+
+        // Check if the user exists and is a regular user
+        const user = await User.findById(user_id);
+        if (!user || user.role !== 'reguser') {
+            return res.status(404).json({ error: 'User not found or not a regular user.' });
+        }
+
+        // Fetch the user's ratings
+        const ratings = await Rating.find({ rater_id: user_id });
+        if (ratings.length < 3) {
+            return res.status(400).json({ error: 'User does not have enough ratings to evaluate suspension.' });
+        }
+
+        // Calculate the average rating
+        const averageRating = ratings.reduce((sum, rating) => sum + rating.rating, 0) / ratings.length;
+
+        if (averageRating < 2) {
+            // Suspend the user
+            user.account_status = false; // Suspended
+            user.suspension_count += 1;
+
+            // Check if the user is permanently banned
+            if (user.suspension_count >= 3) {
+                user.role = 'banned'; // Forcibly remove the user
+            }
+
+            await user.save();
+
+            res.status(200).json({ message: 'User suspended successfully.', user });
+        } else {
+            res.status(400).json({ error: 'User does not meet the suspension criteria.' });
+        }
+    } catch (error) {
+        console.error('Error suspending user:', error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
+
+ //bid-listing
+router.post('/bid-listing', authMiddleware, async (req, res) => {
+    const { listing_id, amount, bid_expiration } = req.body;
+
+    try {
+        console.log('POST /api/users/bid-listing reached');
+
+        // Validate the required fields
+        if (!listing_id || !amount || !bid_expiration) {
+            console.error('Validation failed: Missing required fields.');
+            return res.status(400).json({
+                error: 'Validation failed: Listing ID, amount, and bid expiration are required.',
+            });
+        }
+
+        // Validate the listing
+        const listing = await Listing.findById(listing_id);
+        if (!listing) {
+            console.error(`Listing not found for ID: ${listing_id}`);
+            return res.status(404).json({ error: 'Listing not found.' });
+        }
+
+        // Validate the amount is greater than the listing price
+        if (parseFloat(amount) <= parseFloat(listing.price_from)) {
+            console.error(`Bid amount (${amount}) must be greater than the listing price (${listing.price_from}).`);
+            return res.status(400).json({
+                error: `Bid amount must be greater than the listing price (${listing.price_from}).`,
+            });
+        }
+
+        // Parse and validate the expiration date
+        const expirationDate = new Date(bid_expiration);
+        if (isNaN(expirationDate.getTime())) {
+            console.error('Validation failed: Invalid expiration date format.');
+            return res.status(400).json({ error: 'Invalid bid expiration date format.' });
+        }
+
+        // Validate the user's account balance
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            console.error(`User not found for ID: ${req.user.id}`);
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        const userBalance = parseFloat(user.account_balance.toString());
+        if (userBalance < parseFloat(amount)) {
+            console.error(`Insufficient balance. User balance: ${userBalance}, Bid amount: ${amount}`);
+            return res.status(400).json({
+                error: 'Insufficient balance to place this bid.',
+            });
+        }
+
+        // Create the bid
+        const bid = new Bid({
+            listing_id,
+            bidder_id: req.user.id,
+            amount: mongoose.Types.Decimal128.fromString(amount.toString()),
+            bid_expiration: expirationDate,
+        });
+
+        // Save the bid
+        await bid.save();
+
+        console.log(`Bid created successfully: ${JSON.stringify(bid)}`);
+        res.status(201).json({ message: 'Bid created successfully', bid });
+    } catch (error) {
+        console.error(`Error creating bid: ${error.message}`);
+        res.status(500).json({ error: 'Internal server error.', details: error.message });
+    }
+});
+
+
+
+
+router.post('/approve-reguser', authMiddleware, async (req, res) => {
+    try {
+        const { visitor_id } = req.body;
+
+        // Ensure the requester is a super-user
+        const superUser = await User.findById(req.user.id);
+        if (!superUser || superUser.role !== 'superuser') {
+            return res.status(403).json({ error: 'Access denied. Only super-users can approve users.' });
+        }
+
+        // Check if the visitor exists and their application is pending
+        const visitor = await Visitor.findOne({ user_id: visitor_id });
+        if (!visitor || visitor.application_status !== 'Pending') {
+            return res.status(404).json({ error: 'Visitor application not found or not in a pending state.' });
+        }
+
+        // Ensure CAPTCHA was passed
+        if (!visitor.CAPTCHA_question) {
+            return res.status(400).json({ error: 'Visitor did not complete the CAPTCHA verification.' });
+        }
+
+        // Approve the visitor
+        const user = await User.findById(visitor_id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found for the visitor.' });
+        }
+
+        // Update the user's role to regular user
+        user.role = 'reguser';
+        await user.save();
+
+        // Create a RegularUser entry
+        const regularUser = new RegularUser({ user_id: user._id });
+        await regularUser.save();
+
+        // Update the visitor's application status
+        visitor.application_status = 'Approved';
+        await visitor.save();
+
+        // Increment the super-user's approved_users count
+        const superUserStats = await SuperUser.findOne({ user_id: req.user.id });
+        if (superUserStats) {
+            superUserStats.approved_users += 1;
+            await superUserStats.save();
+        }
+
+        res.status(200).json({
+            message: 'Visitor successfully approved as a regular user.',
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                role: user.role,
+            },
+        });
+    } catch (error) {
+        console.error('Error approving visitor:', error.message);
+        res.status(500).json({ error: 'Internal server error.', details: error.message });
+    }
+});
+
+// Route to mark a notification as read
+router.patch('/notifications/read', async (req, res) => {
+    const { notificationId } = req.body; // Extract notification ID from the request body
+
+    try {
+        // Validate input
+        if (!notificationId) {
+            return res.status(400).json({ error: 'Notification ID is required.' });
+        }
+
+        // Find the notification by its ID
+        const notification = await Notification.findById(notificationId);
+        if (!notification) {
+            return res.status(404).json({ error: 'Notification not found.' });
+        }
+
+        // Optionally, verify if the authenticated user owns the notification
+        if (notification.to_id.toString() !== req.user.id) {
+            return res.status(403).json({ error: 'Unauthorized access to this notification.' });
+        }
+
+        // Mark the notification as read
+        notification.read_status = true;
+        await notification.save();
+
+        res.status(200).json({
+            message: 'Notification marked as read.',
+            notification,
+        });
+    } catch (error) {
+        console.error('Error marking notification as read:', error);
+        res.status(500).json({
+            error: 'Internal server error.',
+            details: error.message,
+        });
+    }
+});
+
+
+
 
 module.exports = router;
