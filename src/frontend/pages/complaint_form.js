@@ -14,8 +14,6 @@ const Complaint_form = () => {
     const handleReturn = () => {
         if (role === 'user') {
             navigate('/user_profile')
-        } else if (role === 'visitor') {
-            navigate('/withdraw');
         } else if (role === 'superuser') {
             navigate('/superusers_profile');
         }
