@@ -486,5 +486,39 @@ router.post('/approve-reguser', authMiddleware, async (req, res) => {
     }
 });
 
+router.post('/read-notify', authMiddleware, async (req, res) => {
+    try {
+        const { notification_id } = req.body; // Extract notification ID from the request body
+
+        // Validate request body
+        if (!notification_id) {
+            return res.status(400).json({ error: 'Notification ID is required.' });
+        }
+
+        // Find the notification
+        const notification = await Notification.findById(notification_id);
+        if (!notification) {
+            return res.status(404).json({ error: 'Notification not found.' });
+        }
+
+        // Check if the current user is the recipient of the notification
+        if (notification.to_id.toString() !== req.user.id) {
+            return res.status(403).json({ error: 'Access denied. You are not the recipient of this notification.' });
+        }
+
+        // Mark the notification as read
+        notification.read_status = true;
+        await notification.save();
+
+        res.status(200).json({
+            message: 'Notification marked as read successfully.',
+            notification,
+        });
+    } catch (error) {
+        console.error('Error marking notification as read:', error.message);
+        res.status(500).json({ error: 'Internal server error.', details: error.message });
+    }
+});
+
 
 module.exports = router;
