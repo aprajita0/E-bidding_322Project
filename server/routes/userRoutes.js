@@ -380,5 +380,49 @@ router.post('/bid-listing', authMiddleware, async (req, res) => {
     }
 });
 
+router.post('/suspend-reguser', async (req, res) => {
+    try {
+        const { user_id } = req.body;
+
+        if (!user_id) {
+            return res.status(400).json({ error: 'User ID is required.' });
+        }
+
+        // Check if the user exists and is a regular user
+        const user = await User.findById(user_id);
+        if (!user || user.role !== 'reguser') {
+            return res.status(404).json({ error: 'User not found or not a regular user.' });
+        }
+
+        // Fetch the user's ratings
+        const ratings = await Rating.find({ rater_id: user_id });
+        if (ratings.length < 3) {
+            return res.status(400).json({ error: 'User does not have enough ratings to evaluate suspension.' });
+        }
+
+        // Calculate the average rating
+        const averageRating = ratings.reduce((sum, rating) => sum + rating.rating, 0) / ratings.length;
+
+        if (averageRating < 2) {
+            // Suspend the user
+            user.account_status = false; // Suspended
+            user.suspension_count += 1;
+
+            // Check if the user is permanently banned
+            if (user.suspension_count >= 3) {
+                user.role = 'banned'; // Forcibly remove the user
+            }
+
+            await user.save();
+
+            res.status(200).json({ message: 'User suspended successfully.', user });
+        } else {
+            res.status(400).json({ error: 'User does not meet the suspension criteria.' });
+        }
+    } catch (error) {
+        console.error('Error suspending user:', error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
 
 module.exports = router;
