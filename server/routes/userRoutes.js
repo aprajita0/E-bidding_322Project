@@ -520,5 +520,42 @@ router.post('/read-notify', authMiddleware, async (req, res) => {
     }
 });
 
+router.get('/get-bids', authMiddleware, async (req, res) => {
+    try {
+        const { listing_id } = req.body; // Now extract listing_id from the body
+
+        // Validate that listing_id is provided in the body
+        if (!listing_id) {
+            return res.status(400).json({ error: 'Listing ID is required in the request body.' });
+        }
+
+        // Find the listing to ensure it exists
+        const listing = await Listing.findById(listing_id);
+        if (!listing) {
+            return res.status(404).json({ error: 'Listing not found.' });
+        }
+
+        // Check if the current user is the owner of the listing
+        if (listing.user_id.toString() !== req.user.id) {
+            return res.status(403).json({ error: 'Access denied. You are not the owner of this listing.' });
+        }
+
+        // Fetch all bids for the specified listing
+        const bids = await Bid.find({ listing_id }).select('amount bid_expiration -_id'); // Exclude unnecessary fields
+
+        // Return the bids
+        res.status(200).json({
+            message: 'Bids retrieved successfully.',
+            bids,
+        });
+    } catch (error) {
+        console.error('Error fetching bids:', error.message);
+        res.status(500).json({ error: 'Internal server error.', details: error.message });
+    }
+});
+
+  
+
+
 
 module.exports = router;
