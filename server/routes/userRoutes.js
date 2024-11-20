@@ -425,4 +425,66 @@ router.post('/suspend-reguser', async (req, res) => {
     }
 });
 
+router.post('/approve-reguser', authMiddleware, async (req, res) => {
+    try {
+        const { visitor_id } = req.body; // Extract visitor_id from the request body
+
+        // Ensure the requester is a super-user
+        const superUser = await User.findById(req.user.id);
+        if (!superUser || superUser.role !== 'superuser') {
+            return res.status(403).json({ error: 'Access denied. Only super-users can approve users.' });
+        }
+
+        // Check if the visitor exists and their application is pending
+        const visitor = await Visitor.findOne({ user_id: visitor_id });
+        if (!visitor || visitor.application_status !== 'Pending') {
+            return res.status(404).json({ error: 'Visitor application not found or not in a pending state.' });
+        }
+
+        // Ensure CAPTCHA was passed
+        if (!visitor.CAPTCHA_question) {
+            return res.status(400).json({ error: 'Visitor did not complete the CAPTCHA verification.' });
+        }
+
+        // Approve the visitor
+        const user = await User.findById(visitor_id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found for the visitor.' });
+        }
+
+        // Update the user's role to regular user
+        user.role = 'reguser';
+        await user.save();
+
+        // Create a RegularUser entry
+        const regularUser = new RegularUser({ user_id: user._id });
+        await regularUser.save();
+
+        // Update the visitor's application status
+        visitor.application_status = 'Approved';
+        await visitor.save();
+
+        // Increment the super-user's approved_users count
+        const superUserStats = await SuperUser.findOne({ user_id: req.user.id });
+        if (superUserStats) {
+            superUserStats.approved_users += 1;
+            await superUserStats.save();
+        }
+
+        res.status(200).json({
+            message: 'Visitor successfully approved as a regular user.',
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                role: user.role,
+            },
+        });
+    } catch (error) {
+        console.error('Error approving visitor:', error.message);
+        res.status(500).json({ error: 'Internal server error.', details: error.message });
+    }
+});
+
+
 module.exports = router;
