@@ -49,22 +49,26 @@
     font-family: 'DM Sans', sans-serif;
 }
 
+.vertical-line {
+    border: 1px solid #ccc;
+    font-size: 16px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 100%; 
+    box-sizing: border-box;
+    resize: vertical; 
+}
+
+
 .label-comments {
     font-size: 18px;
     color: #033f63;
-    padding-top: 50px;
+    padding-top: 10px;
     padding-bottom: 5px;
     font-family: 'DM Sans', sans-serif;
 }
 
-.comments-section {
-    font-size: 20px;
-    font-weight: bold;
-    color: #033f63;
-    padding-top: 30px;
-    padding-bottom: 5px;
-    font-family: 'DM Sans', sans-serif;
-}
 
 .add-comment {
     padding: 5px;
@@ -139,3 +143,19 @@
     transform: translate(-5px, -5px);
   }
 
+  .bid-button {
+    background-color: #625834; 
+    display: flex;
+    margin-left: auto;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 18px; 
+    cursor: pointer;
+    border-radius: 20px; 
+    padding: 8px 8px; 
+    margin-bottom: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.bid-button:hover {
+    background-color: #484126; 
+  }
