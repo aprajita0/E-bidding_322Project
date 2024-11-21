@@ -5,6 +5,7 @@ import './listing_clicked.css';
 const Listing_clicked = () => {
     const navigate = useNavigate(); 
     const {id} = useParams();   
+    const role = localStorage.getItem('role');
     const [listing, setListing] = useState(null); 
     const [comment, setComment] = useState('');
     const [comments, setComments] = useState([]); 
@@ -69,6 +70,20 @@ const Listing_clicked = () => {
         setComment(e.target.value);
     };
 
+    const handleBid = (e) => {
+        if (role === 'user') {
+            navigate('');
+        } else if (role === 'vip') {
+            navigate('');
+        }else if (role === 'superuser') {
+            navigate('');
+        }else if (role === 'visitor') {
+            alert('Oops! Only users are allowed to access this feature, apply to be a user via your profile today to place a bid')
+    }
+    
+        
+    };
+
     const handleCommentSubmit = async () => {
         const token = localStorage.getItem('token'); 
 
@@ -117,6 +132,9 @@ const Listing_clicked = () => {
             <div className="details-type"> Type: {listing.type}</div>
             <div className="details-amount"> Price Range: ${formatMin(listing.price_from)} - ${formatMax(listing.price_to)}</div>
             <div className="details-date"> Date Listed: {new Date(listing.date_listed).toLocaleDateString()}</div>
+            <button className="bid-button" onClick={handleBid}> Place a Bid</button>
+            <div class="vertical-line"></div>
+
             <div className="label-comments"> Comments:</div>
             <textarea
                 className="add-comment"
@@ -147,5 +165,4 @@ const Listing_clicked = () => {
 };
 
 export default Listing_clicked;
-
 
