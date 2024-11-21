@@ -76,27 +76,33 @@ router.post('/login', async (req, res) => {
         if (!user) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
-
         
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        
+        if (user.account_status === false) {
+            return res.status(403).json({ message: 'Account is suspended' });
+        }
+
+        // Generate JWT token
         const token = jwt.sign(
-            { id: user._id.toString(), username: user.username}, // Convert `_id` to string
+            { id: user._id.toString(), role: user.role },
             JWT_SECRET,
             { expiresIn: '1h' }
         );
 
+        // Respond with success
         res.json({
             message: 'Login successful',
             token,
             username: user.username,
-            role: user.role
+            role: user.role,
         });
     } catch (err) {
+        // Handle server errors
+        console.error('Login error:', err);
         res.status(500).json({ error: 'Error logging in', details: err.message });
     }
 });
@@ -553,6 +559,110 @@ router.get('/get-bids', authMiddleware, async (req, res) => {
         res.status(500).json({ error: 'Internal server error.', details: error.message });
     }
 });
+
+router.post('/rate-transactions', authMiddleware, async (req, res) => {
+    try {
+        const { transaction_id, rating } = req.body;
+        
+        if (!transaction_id || !rating) {
+            return res.status(400).json({ error: 'Transaction ID and rating are required.' });
+        }
+
+
+        const transaction = await Transaction.findById(transaction_id);
+        if (!transaction) {
+            return res.status(404).json({ error: 'Transaction not found.' });
+        }
+
+        
+        if (transaction.buyer_id.toString() !== req.user.id) {
+            return res.status(403).json({ error: 'Access denied. You are not a participant in this transaction.' });
+        }
+
+        
+        const parsedRating = parseFloat(rating);
+        if (isNaN(parsedRating) || parsedRating < 1 || parsedRating > 5) {
+            return res.status(400).json({ error: 'Rating must be a number between 1 and 5.' });
+        }
+
+        // Check if the user has already rated this transaction
+        const existingRating = await Rating.findOne({ rater_id: req.user.id, transaction_id });
+        if (existingRating) {
+            return res.status(400).json({ error: 'You have already rated this transaction.' });
+        }
+
+        // Create and save the new rating
+        const newRating = new Rating({
+            rater_id: req.user.id,
+            transaction_id,
+            rating: parsedRating,
+        });
+
+        await newRating.save();
+
+        res.status(201).json({ message: 'Rating submitted successfully.', rating: newRating });
+    } catch (error) {
+        console.error('Error rating transaction:', error.message);
+        res.status(500).json({ error: 'Internal server error.', details: error.message });
+    }
+});
+
+
+router.get('/get-listing-rating', authMiddleware, async (req, res) => {
+    try {
+        const { listingId } = req.body;
+    
+        const transactions = await Transaction.find({ listing_id: listingId });
+    
+        if (transactions.length === 0) {
+          return res.status(404).json({ message: 'No transactions found for this listing.' });
+        }
+    
+        // Extract transaction IDs
+        const transactionIds = transactions.map((transaction) => transaction._id);
+    
+        // Find ratings associated with these transactions
+        const ratings = await Rating.find({ transaction_id: { $in: transactionIds } })
+        if (ratings.length === 0) {
+          return res.status(404).json({ message: 'No ratings found for this listing.' });
+        }
+    
+        res.status(200).json(ratings);
+      } catch (error) {
+        console.error('Error fetching ratings:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+      }
+});
+
+
+router.post('/unban-user', authMiddleware, async (req, res) => {
+    try {
+      const superUser = await User.findById(req.user.id);
+      if (!superUser || superUser.role !== 'superuser') {
+        return res.status(403).json({ error: 'Access denied. Only super-users can unsuspend users.' });
+      }
+  
+      // Extract the user ID to unsuspend from the request body
+      const { userId } = req.body;
+      if (!userId) {
+        return res.status(400).json({ error: 'User ID is required.' });
+      }
+  
+      // Find the user to be unsuspended
+      const userToUnsuspend = await User.findById(userId);
+      if (!userToUnsuspend) {
+        return res.status(404).json({ error: 'User not found.' });
+      }
+  
+      userToUnsuspend.account_status = true;
+      await userToUnsuspend.save();
+  
+      res.status(200).json({ message: `User ${userToUnsuspend.username} has been unsuspended successfully.` });
+    } catch (error) {
+      console.error('Error unsuspending user:', error);
+      res.status(500).json({ error: 'Server error. Please try again later.' });
+    }
+  });
 
   
 
