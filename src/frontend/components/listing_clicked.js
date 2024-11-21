@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import './listing_clicked.css';
+import './listing_clicked.css'; 
 
 const Listing_clicked = () => {
     const navigate = useNavigate(); 
     const {id} = useParams();   
     const [listing, setListing] = useState(null); 
-    const [error, setError] = useState(''); 
-
+    const [comment, setComment] = useState('');
+    const [comments, setComments] = useState([]); 
+    const [error, setError] = useState('');
 
     const formatMin = (price_from) => {
         if (price_from && typeof price_from === 'object' && price_from.$numberDecimal) {
@@ -25,31 +26,81 @@ const Listing_clicked = () => {
         return isNaN(number) ? "Not entered" : number.toFixed(2);
     };
 
-    useEffect(() => {
-        const fetchListingDetails = async () => {
-            try {
-                const response = await fetch(`/api/users/get-listing/${id}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    setListing(data);
-                } else {
-                    setError('Failed to fetch');
-                }
-            } catch (error) {
-                console.error('Error fetching listing details:', error);
-                setError('An error occurred while fetching the');
-            } 
-        };
+    const fetchListingDetails = async () => {
+        try {
+            const response = await fetch(`/api/users/get-listing/${id}`);
+            if (response.ok) {
+                const data = await response.json();
+                setListing(data);
+            } else {
+                setError('Failed to fetch listing details');
+            }
+        } catch (error) {
+            console.error('Error fetching listing details:', error);
+            setError('An error occurred while fetching the listing details');
+        } 
+    };
 
+    // Fetch comments for the listing
+    const fetchComments = async () => {
+        try {
+            const response = await fetch(`/api/users/get-comments/${id}`);
+            if (response.ok) {
+                const data = await response.json();
+                setComments(data); 
+            } else {
+                setError('Failed to fetch comments');
+            }
+        } catch (error) {
+            console.error('Error fetching comments:', error);
+        }
+    };
+
+    useEffect(() => {
         fetchListingDetails();
+        fetchComments(); 
     }, [id]);
 
     const handleReturn = () => {
         navigate('/browse_listings');  
     };
 
-    const handleComment = () => {
-        navigate('/browse_listings');  
+    const handleCommentChange = (e) => {
+        setComment(e.target.value);
+    };
+
+    const handleCommentSubmit = async () => {
+        const token = localStorage.getItem('token'); 
+
+        if (!comment.trim()) {
+            alert('Please enter your comment');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/users/add-comment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`, 
+                },
+                body: JSON.stringify({
+                    listing_id: id,
+                    comment: comment,
+                }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                alert('Comment uploaded!');
+                setComment(''); 
+                fetchComments(); 
+            } else {
+                alert('Error uploading comment, please try again.');
+            }
+        } catch (error) {
+            console.error('Error adding comment:', error);
+        }
     };
 
     if (error) {
@@ -59,7 +110,6 @@ const Listing_clicked = () => {
         return <div>Loading...</div>;
     }
 
-
     return (
         <div className="details-container">
             <div className="details-name"> {listing.name}</div>
@@ -67,10 +117,31 @@ const Listing_clicked = () => {
             <div className="details-type"> Type: {listing.type}</div>
             <div className="details-amount"> Price Range: ${formatMin(listing.price_from)} - ${formatMax(listing.price_to)}</div>
             <div className="details-date"> Date Listed: {new Date(listing.date_listed).toLocaleDateString()}</div>
-            <div className="comments-section"> Comments Section:</div>
-            <textarea className="add-comment" id="add-comment" placeholder="Add your comment" maxLength="250"></textarea>
-            <button className="comment-button"  type="submit" onClick={handleComment}>Submit Comment</button>
-            <button onClick={handleReturn} className="listing-button">Return</button>
+            <div className="label-comments"> Comments:</div>
+            <textarea
+                className="add-comment"
+                placeholder="Add your comment"
+                maxLength="250"
+                value={comment}
+                onChange={handleCommentChange}
+            />
+            <div className="comment-section">
+                {comments.length === 0 ? (
+                    <p>Add the first comment...</p>
+                ) : (
+                    comments.map((comment, index) => (
+                        <div key={index} className="comment-item">
+                            <strong>{comment.commenter_id.username}:</strong> {comment.comment}
+                            <br />
+                            <span>{new Date(comment.date_added).toLocaleString()}</span>
+                        </div>
+                    ))
+                )}
+            </div>
+            <div className="listing-btn-container">
+                <button className="comment-button" onClick={handleCommentSubmit}> Submit Comment </button>
+                <button onClick={handleReturn} className="listing-button">Return</button>
+            </div>
         </div>
     );
 };
