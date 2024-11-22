@@ -71,11 +71,9 @@ const Listing_clicked = () => {
 
     const handleBid = (e) => {
         if (role === 'reguser') {
-            navigate('');
-        } else if (role === 'vip') {
-            navigate('');
+            navigate('/place_bid');
         }else if (role === 'superuser') {
-            navigate('');
+            navigate('/place_bid');
         }else if (role === 'visitor') {
             alert('Oops! Only users are allowed to access this feature, apply to be a user via your profile today to place a bid')
     }
@@ -164,4 +162,5 @@ const Listing_clicked = () => {
 };
 
 export default Listing_clicked;
+
 
