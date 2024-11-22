@@ -48,7 +48,7 @@ const Add_Listings = () => {
             const result = await response.json();
             if (response.ok) {
                 alert('Your listing has been added!');
-                if (role === 'user') {
+                if (role === 'reguser') {
                     navigate('/user_profile');
                 } else if (role === 'visitor') {
                     navigate('/withdraw');
