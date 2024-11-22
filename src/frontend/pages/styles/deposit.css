@@ -23,6 +23,7 @@
     border-radius: 10%;
     width: 100%;
     max-width: 700px;
+    width: 900px;
     min-height: 400px;
     box-sizing: border-box;
     box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2); 
@@ -93,6 +94,11 @@
     text-align: center;
 }
 
+.return-profile:hover {
+    background-color: #022c47;
+    color: #ffffff;
+}
+
 .deposit-finish {
     display: inline-block;
     padding: 12px;
@@ -107,6 +113,14 @@
     margin-top: 20px; 
     text-align: center;
 }
+
+.deposit-finish:hover {
+    background-color: #022c47;
+    color: #ffffff;
+}
+
+
+
 
 
 
