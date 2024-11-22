@@ -36,6 +36,8 @@ const U_login = ({ onLogin }) => {
                     navigate('/user_profile');
                 } else if (data.role === 'visitor') {
                     navigate('/visitor_profile');
+                } else if (data.role === 'vip') {
+                    navigate('/vip_profile');
                 }else if (data.role === 'superuser') {
                     navigate('/superusers_profile');
                 }
@@ -94,5 +96,3 @@ const U_login = ({ onLogin }) => {
 };
 
 export default U_login;
-
-
