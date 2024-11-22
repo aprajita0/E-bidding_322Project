@@ -104,6 +104,11 @@
     text-align: center;
 }
 
+.withdraw-nav:hover {
+    background-color: #022c47;
+    color: #ffffff;
+}
+
 .deposit-nav {
     display: inline-block;
     padding: 12px;
@@ -119,5 +124,11 @@
     margin-left: 42px;
     text-align: center;
 }
+
+.deposit-nav:hover {
+    background-color: #022c47;
+    color: #ffffff;
+}
+
 
 
