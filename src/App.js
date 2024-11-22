@@ -10,6 +10,7 @@ import Balance_menu from './frontend/pages/balance_menu';
 import User_profile from './frontend/pages/user_profile';
 import Superusers_profile from './frontend/pages/superusers_profile';
 import Add_Listings from './frontend/pages/add_listings';
+import Place_bid from './frontend/pages/place_bid';
 import Visitor_profile from './frontend/pages/visitor_profile';
 import V_registration from './frontend/pages/visitor_registration';
 import Browse_listings from './frontend/pages/browse_listings';
@@ -55,7 +56,7 @@ function App() {
     const role = localStorage.getItem('role');
     const [menuOpen, setMenuOpen] = useState(false);
 
-    useEffect(() => {
+   /* useEffect(() => {
         const handleUnload = () => {
             localStorage.removeItem('isLoggedIn');
             localStorage.removeItem('token');
@@ -65,7 +66,7 @@ function App() {
         return () => {
             window.removeEventListener('beforeunload', handleUnload);
         };
-    }, []); 
+    }, []); */
 
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
@@ -120,6 +121,7 @@ function App() {
                         <Route path="/Superusers_profile" element={<Superusers_profile />} />
                         <Route path="/Visitor_profile" element={<Visitor_profile />} />
                         <Route path="/browse_listings/:id" element={<Listing_clicked />} />
+                        <Route path="/Place_bid" element={<Place_bid />} />
                         <Route path="/Deposit" element={isLoggedIn ? <Deposit /> : <Navigate to="/U_login" />} />
                         <Route path="/Withdraw" element={isLoggedIn ? <Withdraw /> : <Navigate to="/U_login" />} />
                         <Route path="/Add_Listings" element={isLoggedIn ? <Add_Listings /> : <Navigate to="/U_login" />} />
@@ -139,3 +141,4 @@ function App() {
 }
 
 export default App;
+
