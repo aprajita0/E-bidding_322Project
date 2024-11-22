@@ -12,7 +12,7 @@ const Complaint_form = () => {
     };
 
     const handleReturn = () => {
-        if (role === 'user') {
+        if (role === 'reguser') {
             navigate('/user_profile')
         } else if (role === 'superuser') {
             navigate('/superusers_profile');
@@ -56,4 +56,5 @@ const Complaint_form = () => {
 }
 
 export default Complaint_form;
+
 
