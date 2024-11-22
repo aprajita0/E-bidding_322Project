@@ -14,7 +14,7 @@ const Add_Listings = () => {
     const role = localStorage.getItem('role');
 
     const handleReturn = () => {
-        if (role === 'user') {
+        if (role === 'reguser') {
             navigate('/user_profile');
         } else if (role === 'visitor') {
             navigate('/withdraw');
