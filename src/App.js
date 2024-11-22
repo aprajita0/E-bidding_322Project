@@ -65,8 +65,7 @@ function App() {
         return () => {
             window.removeEventListener('beforeunload', handleUnload);
         };
-    }, []);
-
+    }, []); 
 
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
@@ -95,7 +94,7 @@ function App() {
                         </li>
                         <li>
                             {isLoggedIn ? (
-                                role === 'user' ? (
+                                role === 'reguser' ? (
                                 <Link to="/user_profile">Profile</Link>
                             ) : role === 'visitor' ? (
                                 <Link to="/visitor_profile">Profile</Link>
@@ -140,4 +139,3 @@ function App() {
 }
 
 export default App;
-
