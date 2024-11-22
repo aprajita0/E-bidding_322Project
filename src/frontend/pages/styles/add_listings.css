@@ -94,6 +94,11 @@
     text-align: center;
 }
 
+.return-user-profile:hover {
+    background-color: #022c47;
+    color: #ffffff;
+}
+
 .upload-finish {
     display: inline-block;
     padding: 12px;
@@ -107,6 +112,11 @@
     width: 45%;
     margin-top: 20px; 
     text-align: center;
+}
+
+.upload-finish:hover {
+    background-color: #022c47;
+    color: #ffffff;
 }
 
 
