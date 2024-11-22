@@ -1,0 +1,105 @@
+.create_raffle-container {
+    background-color: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 89vh;
+    padding-top: 30px;
+    margin-bottom: 30px;
+}
+
+.create_raffle-sign {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 36px;
+    font-family: 'DM Sans', sans-serif;
+    color: #033f63;
+    font-weight: bold;
+}
+
+.create_raffle-box {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 10%;
+    width: 100%;
+    max-width: 700px;
+    min-height: 400px;
+    box-sizing: border-box;
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2); 
+}
+
+.create_raffle-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.raffle-container {
+    display: flex;  
+    align-items: center;     
+    justify-content: start; 
+    gap: 20px;
+}
+
+.raffle-field-label {
+    font-size: 17px;
+    padding-top: 25px;
+    color: #033f63;
+    width: 400px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: bold;
+}
+
+.raffle-input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    border-radius: 4px;
+    width: 100%; 
+    box-sizing: border-box; 
+}
+
+.return-vip-profile {
+    display: inline-block;
+    margin-right: 42px;
+    padding: 12px;
+    background-color: #033f63; 
+    color: #ffffff; 
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    width: 45%;
+    margin-top: 20px; 
+    height: 47px;
+    text-align: center;
+}
+
+.return-vip-profile:hover {
+    background-color: #022c47;
+    color: #ffffff;
+}
+
+.upload-raffle {
+    display: inline-block;
+    padding: 12px;
+    background-color: #033f63; 
+    color: #ffffff; 
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    width: 45%;
+    margin-top: 20px; 
+    text-align: center;
+}
+
+.upload-raffle:hover {
+    background-color: #022c47;
+    color: #ffffff;
+}
+
+
+
