@@ -119,6 +119,127 @@ const Vip_profile = () => {
     const handleMessageSelect = (e) => {
         navigate('/');
     };
+import React, { useState, useEffect } from 'react';
+import './styles/vip_profile.css';
+import { useNavigate } from 'react-router-dom';
+import '@fontsource/dm-sans/700.css'; 
+import exchange_image from '../assets/exchange.png';
+import profile_pic from '../assets/profile_pic.png';
+
+const Vip_profile = () => {
+    const navigate = useNavigate();
+    const [error, setError] = useState('');
+    const [accountBalance, setAccountBalance] = useState(0);
+    const [listingSelect, setListingSelect] = useState('');
+    const [bidSelect, setBidSelect] = useState('');
+    const [messageSelect, setMessageSelect] = useState('');
+    const [selectedMessage, setSelectedMessage] = useState('');
+    const [username, setUsername] = useState('');
+    const [userListings, setUserListings] = useState([]);
+
+    const bids = [
+        { id: 1, amount: 100, deadline: '2024-11-15' },
+    ];
+
+    const messages = [
+        { id: 1, content: 'Temporary so i dont get an error' },
+    ];
+
+    const formatMin = (price_from) => {
+        if (price_from && typeof price_from === 'object' && price_from.$numberDecimal) {
+            price_from = price_from.$numberDecimal; 
+        }
+        const number = Number(price_from);
+        return isNaN(number) ? "Not entered" : number.toFixed(2);
+    };
+
+    const formatMax = (price_to) => {
+        if (price_to && typeof price_to === 'object' && price_to.$numberDecimal) {
+            price_to = price_to.$numberDecimal; 
+        }
+        const number = Number(price_to);
+        return isNaN(number) ? "Not entered" : number.toFixed(2);
+    };
+
+    useEffect(() => {
+        const fetchBalance = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const username = localStorage.getItem('username');
+                setUsername(username);
+                const response = await fetch('/api/users/get-balance', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const balance = data.account_balance;
+                    if (balance && typeof balance === 'object' && balance.$numberDecimal) {
+                        setAccountBalance(parseFloat(balance.$numberDecimal));
+                    } else {
+                        setAccountBalance(balance);
+                    }
+                } else {
+                    const result = await response.json();
+                    setError(result.error || 'Cannot show balance');
+                }
+            } catch (err) {
+                console.error('Error fetching balance:', err);
+                setError('Server error');
+            }
+        };
+
+        const fetchUserListings = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/users/get-user-listings', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setUserListings(data);
+                } else {
+                    console.error('Failed to fetch your listings');
+                }
+            } catch (err) {
+                console.error('Error fetching your listings:', err);
+            }
+        };
+
+        fetchBalance();
+        fetchUserListings();
+    }, []);
+
+    const handleBidSelectChange = (e) => {
+        const selectedBidId = parseInt(e.target.value);
+        const selectedBid = bids.find(bid => bid.id === selectedBidId);
+        setBidSelect(selectedBidId);
+    };
+
+    const handleAccept = () => {
+        navigate('/');
+    };
+
+    const handleDeny = () => {
+        navigate('/');
+    };
+
+    const handleRead = () => {
+        navigate('/');
+    };
+
+    const handleMessageSelect = (e) => {
+        navigate('/');
+    };
 
     return (
         <div className="profile-container">
@@ -130,7 +251,7 @@ const Vip_profile = () => {
             <section className="banner">
                 <div className="top-profile">
                     <img src={profile_pic} alt="Profile" className="profile_image" />
-                    <div className="welcome">Congratulations, you are now a VIP!</div>
+                    <div className="welcome">Congratulations {username}, you are now a VIP!</div>
                 </div>
             </section>
             <section className="user-grid">
@@ -217,3 +338,4 @@ const Vip_profile = () => {
 };
 
 export default Vip_profile;
+
