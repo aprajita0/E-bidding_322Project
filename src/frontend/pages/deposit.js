@@ -67,10 +67,12 @@ const Deposit = () => {
 
             if (response.ok) {
                 setDepositAmount('');
-                if (role === 'user') {
+                if (role === 'reguser') {
                     navigate('/user_profile');
                 } else if (role === 'superuser') {
                     navigate('/superusers_profile');
+                } else if (role === 'vip') {
+                    navigate('/vip_profile');
                 }
             } else {
                 const result = await response.json();
@@ -158,3 +160,4 @@ const Deposit = () => {
 }
 
 export default Deposit;
+
