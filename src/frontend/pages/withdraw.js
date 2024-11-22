@@ -72,7 +72,7 @@ const Withdraw = () => {
             if (response.ok) {
                 setWithdrawAmount('');
                 
-                if (role === 'user') {
+                if (role === 'reguser') {
                     navigate('/user_profile');
                 } else if (role === 'superuser') {
                     navigate('/superusers_profile');
