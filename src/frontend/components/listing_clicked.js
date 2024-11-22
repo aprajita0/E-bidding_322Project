@@ -42,7 +42,6 @@ const Listing_clicked = () => {
         } 
     };
 
-    // Fetch comments for the listing
     const fetchComments = async () => {
         try {
             const response = await fetch(`/api/users/get-comments/${id}`);
@@ -71,7 +70,7 @@ const Listing_clicked = () => {
     };
 
     const handleBid = (e) => {
-        if (role === 'user') {
+        if (role === 'reguser') {
             navigate('');
         } else if (role === 'vip') {
             navigate('');
