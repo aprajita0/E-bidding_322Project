@@ -109,5 +109,35 @@ router.post('/approve-reguser', authMiddleware, async (req, res) => {
     }
 });
 
+router.post('/unban-user', authMiddleware, async (req, res) => {
+    try {
+      const superUser = await User.findById(req.user.id);
+      if (!superUser || superUser.role !== 'superuser') {
+        return res.status(403).json({ error: 'Access denied. Only super-users can unsuspend users.' });
+      }
+  
+      // Extract the user ID to unsuspend from the request body
+      const { userId } = req.body;
+      if (!userId) {
+        return res.status(400).json({ error: 'User ID is required.' });
+      }
+  
+      // Find the user to be unsuspended
+      const userToUnsuspend = await User.findById(userId);
+      if (!userToUnsuspend) {
+        return res.status(404).json({ error: 'User not found.' });
+      }
+  
+      userToUnsuspend.account_status = true;
+      await userToUnsuspend.save();
+  
+      res.status(200).json({ message: `User ${userToUnsuspend.username} has been unsuspended successfully.` });
+    } catch (error) {
+      console.error('Error unsuspending user:', error);
+      res.status(500).json({ error: 'Server error. Please try again later.' });
+    }
+  });
+
+
 
 module.exports = router;
