@@ -3,9 +3,9 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const User = require('../models/User'); 
-const RegularUser = require('../models/RegUser');
 const Visitor = require('../models/Visitor'); 
 const SuperUser = require('../models/SuperUser'); 
+const RegularUser = require('../models/RegUser');
 const Listing = require('../models/Listings');
 const Bid = require('../models/Bid'); 
 const Notification = require('../models/Notification');
@@ -57,8 +57,7 @@ router.post('/register', async (req, res) => {
             address_line_1,
             address_line_2,
             role
-        });
-
+        });        
         const savedUser = await user.save();
 
         if (role === 'superuser') {
@@ -100,6 +99,11 @@ router.post('/login', async (req, res) => {
         }
 
         // Generate JWT token
+        if (user.account_status === false) {
+            return res.status(403).json({ message: 'Account is suspended' });
+        }
+
+        // Generate JWT token
         const token = jwt.sign(
             { id: user._id.toString(), role: user.role },
             JWT_SECRET,
@@ -107,10 +111,12 @@ router.post('/login', async (req, res) => {
         );
 
         // Respond with success
+   
         res.json({
             message: 'Login successful',
             token,
             username: user.username,
+            role: user.role,
             role: user.role,
         });
     } catch (err) {
@@ -350,8 +356,6 @@ router.post('/bid-listing', authMiddleware, async (req, res) => {
     }
 });
 
-
-
 router.post('/read-notify', authMiddleware, async (req, res) => {
     try {
         const { notification_id } = req.body; // Extract notification ID from the request body
@@ -532,6 +536,7 @@ router.post('/apply-reguser', authMiddleware, async (req, res) => {
         });
     }
 });
+
 //add-comment
 router.post('/add-comment', authMiddleware, async (req, res) => {
     try {
