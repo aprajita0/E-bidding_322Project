@@ -494,6 +494,7 @@ router.get('/get-listing-rating', authMiddleware, async (req, res) => {
       }
 });
 
+
 router.post('/apply-reguser', authMiddleware, async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
@@ -531,6 +532,109 @@ router.post('/apply-reguser', authMiddleware, async (req, res) => {
         });
     }
 });
+//add-comment
+router.post('/add-comment', authMiddleware, async (req, res) => {
+    try {
+        const { listing_id, comment } = req.body;
 
+        // Validate required fields
+        if (!listing_id || !comment) {
+            return res.status(400).json({ error: 'Listing ID and comment are required.' });
+        }
+
+        // Validate comment length
+        if (comment.length > 500) {
+            return res.status(400).json({ error: 'Comment exceeds maximum length of 500 characters.' });
+        }
+
+        // Check if listing exists
+        const listing = await Listing.findById(listing_id);
+        if (!listing) {
+            return res.status(404).json({ error: 'Listing not found.' });
+        }
+
+        // Create and save the comment
+        const newComment = new Comment({
+            listing_id,
+            commenter_id: req.user.id, // From auth middleware
+            comment,
+            date_added: new Date()
+        });
+
+        await newComment.save();
+
+        res.status(201).json({ 
+            message: 'Comment added successfully', 
+            comment: newComment 
+        });
+
+    } catch (error) {
+        console.error('Error adding comment:', error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
+
+// Get comments for a listing
+router.get('/get-comments/:listing_id', async (req, res) => {
+    try {
+        const { listing_id } = req.params;
+
+        const comments = await Comment.find({ listing_id })
+            .populate('commenter_id', 'username') // Only get username from User
+            .sort({ date_added: -1 }); // Most recent first
+
+        res.status(200).json(comments);
+    } catch (error) {
+        console.error('Error getting comments:', error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
+
+// buy-listing
+router.post('/buy-listing', authMiddleware, async (req, res) => {
+    const { listing_id } = req.body;
+
+    try {
+        // Find the listing by ID
+        const listing = await Listing.findById(listing_id);
+        if (!listing) {
+            return res.status(404).json({ error: 'Listing not found.' });
+        }
+
+        // Find the user who is making the purchase
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        // Check if the user has enough balance
+        const listingPrice = parseFloat(listing.price_from.toString()); // Assuming price_from is the price for the listing
+        if (parseFloat(user.account_balance.toString()) < listingPrice) {
+            return res.status(400).json({ error: 'Insufficient balance.' });
+        }
+
+        // Deduct the amount from the user's account
+        user.account_balance = mongoose.Types.Decimal128.fromString(
+            (parseFloat(user.account_balance.toString()) - listingPrice).toString()
+        );
+
+        // Mark the listing as purchased or sold
+        listing.status = 'sold'; // Assuming you add a 'status' field to the listing model
+
+        // Save the user and listing updates
+        await user.save();
+        await listing.save();
+
+
+        res.status(200).json({ 
+            message: 'Listing purchased successfully', 
+            newBalance: user.account_balance, 
+            listing 
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
 
 module.exports = router;

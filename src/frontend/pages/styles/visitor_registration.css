@@ -89,6 +89,11 @@
     margin-left: 0px;
 }
 
+.register_handle:hover {
+    background-color: #022c47;
+    color: #ffffff;
+}
+
 .return-login {
     padding: 12px;
     background-color: #033f63; 
@@ -104,6 +109,9 @@
     margin-left: 20px;
 }
 
-
+.return-login:hover {
+    background-color: #022c47;
+    color: #ffffff;
+}
 
 

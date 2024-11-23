@@ -67,7 +67,7 @@ const Deposit = () => {
 
             if (response.ok) {
                 setDepositAmount('');
-                if (role === 'user') {
+                if (role === 'reguser') {
                     navigate('/user_profile');
                 } else if (role === 'superuser') {
                     navigate('/superusers_profile');
@@ -158,3 +158,4 @@ const Deposit = () => {
 }
 
 export default Deposit;
+

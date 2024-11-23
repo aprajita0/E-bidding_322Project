@@ -70,6 +70,11 @@
     text-align: center;
 }
 
+.sign-in:hover {
+    background-color: #022c47;
+    color: #ffffff;
+}
+
 .register-page {
     display: inline-block;
     padding: 12px;
@@ -83,6 +88,11 @@
     width: 45%;
     margin-top: 20px; 
     text-align: center;
+}
+
+.register-page:hover {
+    background-color: #022c47;
+    color: #ffffff;
 }
 
 

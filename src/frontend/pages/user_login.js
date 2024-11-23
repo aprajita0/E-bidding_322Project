@@ -32,7 +32,7 @@ const U_login = ({ onLogin }) => {
                 localStorage.setItem('role', data.role);
                 localStorage.setItem('token', data.token); 
                 onLogin();
-                if (data.role === 'user') {
+                if (data.role === 'reguser') {
                     navigate('/user_profile');
                 } else if (data.role === 'visitor') {
                     navigate('/visitor_profile');
@@ -94,4 +94,3 @@ const U_login = ({ onLogin }) => {
 };
 
 export default U_login;
-

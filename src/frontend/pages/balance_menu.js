@@ -18,7 +18,7 @@ const Balance_menu = () => {
     };
     
     const handleReturn = () => {
-        if (role === 'user') {
+        if (role === 'reguser') {
             navigate('/user_profile')
         } else if (role === 'superuser') {
             navigate('/superusers_profile');
