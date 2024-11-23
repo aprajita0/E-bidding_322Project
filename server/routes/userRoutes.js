@@ -59,7 +59,20 @@ router.post('/register', async (req, res) => {
             role
         });
 
-        await user.save();
+        const savedUser = await user.save();
+
+        if (role === 'superuser') {
+            const superUser = new SuperUser({ user_id: savedUser._id });
+            await superUser.save();
+        } else if (role === 'reguser') {
+            const regularUser = new RegularUser({ user_id: savedUser._id });
+            await regularUser.save();
+        } else {
+            const visitor = new Visitor({ user_id: savedUser._id });
+            await visitor.save();
+        }
+
+        
         res.status(201).json({ message: 'User registered successfully' });
     } catch (err) {
         res.status(500).json({ error: 'Error registering user', details: err.message });
@@ -187,55 +200,6 @@ router.get('/get-listing', async (req, res) => {
         const listings = await Listing.find({});
         res.status(200).json(listings);
     } catch (error) {   
-        console.error(error);
-        res.status(500).json({ error: 'Internal server error.' });
-    }
-});
-
-router.post('/add-listing', authMiddleware, async (req, res) => {
-    const { name, description, type, price_from, price_to} = req.body;
-
-    try {
-        // Validate required fields
-        if (!name || !description || !type || !price_from || !price_to) {
-            return res.status(400).json({ error: 'All fields are required.' });
-        }
-
-        // Validate amount is a positive number
-        if (isNaN(price_from) || price_from <= 0) {
-            return res.status(400).json({ error: 'Invalid price_from specified.' });
-        }
-
-        if (isNaN(price_to) || price_to <= 0) {
-            return res.status(400).json({ error: 'Invalid price_to specified.' });
-        }
-
-        // Create and save a new listing
-        const listing = new Listing({
-            user_id: req.user.id, //
-            name,
-            description,
-            type,
-            price_from: mongoose.Types.Decimal128.fromString(price_from.toString()),
-            price_to: mongoose.Types.Decimal128.fromString(price_to.toString()),
-            date_listed: new Date(), 
-        });
-
-        await listing.save();
-
-        res.status(201).json({ message: 'Listing added successfully', listing });
-    } catch (error) {
-        console.error('Error adding listing:', error);
-        res.status(500).json({ error: 'Internal server error.' });
-    }
-});
-
-router.get('/get-user-listings', authMiddleware, async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id);
-        const listings = await Listing.find({ user_id: user.id });
-        res.status(200).json(listings);
-    } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal server error.' });
     }
@@ -386,111 +350,7 @@ router.post('/bid-listing', authMiddleware, async (req, res) => {
     }
 });
 
-router.post('/suspend-reguser', async (req, res) => {
-    try {
-        const { user_id } = req.body;
 
-        if (!user_id) {
-            return res.status(400).json({ error: 'User ID is required.' });
-        }
-
-        // Check if the user exists and is a regular user
-        const user = await User.findById(user_id);
-        if (!user || user.role !== 'reguser') {
-            return res.status(404).json({ error: 'User not found or not a regular user.' });
-        }
-
-        // Fetch the user's ratings
-        const ratings = await Rating.find({ rater_id: user_id });
-        if (ratings.length < 3) {
-            return res.status(400).json({ error: 'User does not have enough ratings to evaluate suspension.' });
-        }
-
-        // Calculate the average rating
-        const averageRating = ratings.reduce((sum, rating) => sum + rating.rating, 0) / ratings.length;
-
-        if (averageRating < 2) {
-            // Suspend the user
-            user.account_status = false; // Suspended
-            user.suspension_count += 1;
-
-            // Check if the user is permanently banned
-            if (user.suspension_count >= 3) {
-                user.role = 'banned'; // Forcibly remove the user
-            }
-
-            await user.save();
-
-            res.status(200).json({ message: 'User suspended successfully.', user });
-        } else {
-            res.status(400).json({ error: 'User does not meet the suspension criteria.' });
-        }
-    } catch (error) {
-        console.error('Error suspending user:', error);
-        res.status(500).json({ error: 'Internal server error.' });
-    }
-});
-
-router.post('/approve-reguser', authMiddleware, async (req, res) => {
-    try {
-        const { visitor_id } = req.body; // Extract visitor_id from the request body
-
-        // Ensure the requester is a super-user
-        const superUser = await User.findById(req.user.id);
-        if (!superUser || superUser.role !== 'superuser') {
-            return res.status(403).json({ error: 'Access denied. Only super-users can approve users.' });
-        }
-
-        // Check if the visitor exists and their application is pending
-        const visitor = await Visitor.findOne({ user_id: visitor_id });
-        if (!visitor || visitor.application_status !== 'Pending') {
-            return res.status(404).json({ error: 'Visitor application not found or not in a pending state.' });
-        }
-
-        // Ensure CAPTCHA was passed
-        if (!visitor.CAPTCHA_question) {
-            return res.status(400).json({ error: 'Visitor did not complete the CAPTCHA verification.' });
-        }
-
-        // Approve the visitor
-        const user = await User.findById(visitor_id);
-        if (!user) {
-            return res.status(404).json({ error: 'User not found for the visitor.' });
-        }
-
-        // Update the user's role to regular user
-        user.role = 'reguser';
-        await user.save();
-
-        // Create a RegularUser entry
-        const regularUser = new RegularUser({ user_id: user._id });
-        await regularUser.save();
-
-        // Update the visitor's application status
-        visitor.application_status = 'Approved';
-        await visitor.save();
-
-        // Increment the super-user's approved_users count
-        const superUserStats = await SuperUser.findOne({ user_id: req.user.id });
-        if (superUserStats) {
-            superUserStats.approved_users += 1;
-            await superUserStats.save();
-        }
-
-        res.status(200).json({
-            message: 'Visitor successfully approved as a regular user.',
-            user: {
-                id: user._id,
-                username: user.username,
-                email: user.email,
-                role: user.role,
-            },
-        });
-    } catch (error) {
-        console.error('Error approving visitor:', error.message);
-        res.status(500).json({ error: 'Internal server error.', details: error.message });
-    }
-});
 
 router.post('/read-notify', authMiddleware, async (req, res) => {
     try {
@@ -634,38 +494,43 @@ router.get('/get-listing-rating', authMiddleware, async (req, res) => {
       }
 });
 
-
-router.post('/unban-user', authMiddleware, async (req, res) => {
+router.post('/apply-reguser', authMiddleware, async (req, res) => {
     try {
-      const superUser = await User.findById(req.user.id);
-      if (!superUser || superUser.role !== 'superuser') {
-        return res.status(403).json({ error: 'Access denied. Only super-users can unsuspend users.' });
-      }
-  
-      // Extract the user ID to unsuspend from the request body
-      const { userId } = req.body;
-      if (!userId) {
-        return res.status(400).json({ error: 'User ID is required.' });
-      }
-  
-      // Find the user to be unsuspended
-      const userToUnsuspend = await User.findById(userId);
-      if (!userToUnsuspend) {
-        return res.status(404).json({ error: 'User not found.' });
-      }
-  
-      userToUnsuspend.account_status = true;
-      await userToUnsuspend.save();
-  
-      res.status(200).json({ message: `User ${userToUnsuspend.username} has been unsuspended successfully.` });
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        if (user.role !== 'visitor') {
+            return res.status(400).json({
+                message: "Only visitors can apply for a regular user account."
+            });
+        }
+
+        // Query Visitor table using the user's ID (use req.user.id here)
+        const visitor = await Visitor.findOne({ user_id: req.user.id });
+        if (!visitor) {
+            return res.status(404).json({
+                message: "Visitor record not found. Please contact support."
+            });
+        }
+
+        // Step 3: Update the application status
+        visitor.application_status = 'Pending';
+        await visitor.save();
+
+        res.status(200).json({
+            message: "Application for regular user submitted successfully. Status: Pending.",
+            visitor
+        });
     } catch (error) {
-      console.error('Error unsuspending user:', error);
-      res.status(500).json({ error: 'Server error. Please try again later.' });
+        console.error("Error processing application:", error);
+        res.status(500).json({
+            message: "Failed to process application for regular user.",
+            error: error.message
+        });
     }
-  });
-
-  
-
+});
 
 
 module.exports = router;

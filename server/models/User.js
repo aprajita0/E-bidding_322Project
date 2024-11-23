@@ -10,7 +10,7 @@ const userSchema = new Schema({
     email: { type: String, required: true, maxlength: 100 },
     address_line_1: { type: String, maxlength: 100 },
     address_line_2: { type: String, maxlength: 100 },
-    role: { type: String, enum: ['reguser', 'superuser', 'visitor'], default: 'visitor' },
+    role: { type: String, enum: ['reguser', 'superuser', 'visitor', 'banned'], default: 'visitor' },
     account_balance: { type: mongoose.Types.Decimal128, default: 0.00 },
     suspension_count: { type: Number, default: 0 },
     account_status: { type: Boolean, default: true }
