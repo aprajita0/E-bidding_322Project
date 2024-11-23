@@ -3,9 +3,14 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const User = require('../models/User'); 
+const RegularUser = require('../models/RegUser');
+const Visitor = require('../models/Visitor'); 
+const SuperUser = require('../models/SuperUser'); 
 const Listing = require('../models/Listings');
+const Bid = require('../models/Bid'); 
 const Notification = require('../models/Notification');
 const Raffle = require('../models/Raffle');
+const Rating = require('../models/Ratings');
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 const Complaint = require('../models/Complaints');
@@ -54,7 +59,20 @@ router.post('/register', async (req, res) => {
             role
         });
 
-        await user.save();
+        const savedUser = await user.save();
+
+        if (role === 'superuser') {
+            const superUser = new SuperUser({ user_id: savedUser._id });
+            await superUser.save();
+        } else if (role === 'reguser') {
+            const regularUser = new RegularUser({ user_id: savedUser._id });
+            await regularUser.save();
+        } else {
+            const visitor = new Visitor({ user_id: savedUser._id });
+            await visitor.save();
+        }
+
+        
         res.status(201).json({ message: 'User registered successfully' });
     } catch (err) {
         res.status(500).json({ error: 'Error registering user', details: err.message });
@@ -71,27 +89,33 @@ router.post('/login', async (req, res) => {
         if (!user) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
-
         
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        
+        if (user.account_status === false) {
+            return res.status(403).json({ message: 'Account is suspended' });
+        }
+
+        // Generate JWT token
         const token = jwt.sign(
-            { id: user._id.toString(), username: user.username}, // Convert `_id` to string
+            { id: user._id.toString(), role: user.role },
             JWT_SECRET,
             { expiresIn: '1h' }
         );
 
+        // Respond with success
         res.json({
             message: 'Login successful',
             token,
             username: user.username,
-            role: user.role
+            role: user.role,
         });
     } catch (err) {
+        // Handle server errors
+        console.error('Login error:', err);
         res.status(500).json({ error: 'Error logging in', details: err.message });
     }
 });
@@ -181,56 +205,6 @@ router.get('/get-listing', async (req, res) => {
     }
 });
 
-router.post('/add-listing', authMiddleware, async (req, res) => {
-    const { name, description, type, price_from, price_to} = req.body;
-
-    try {
-        // Validate required fields
-        if (!name || !description || !type || !price_from || !price_to) {
-            return res.status(400).json({ error: 'All fields are required.' });
-        }
-
-        // Validate amount is a positive number
-        if (isNaN(price_from) || price_from <= 0) {
-            return res.status(400).json({ error: 'Invalid price_from specified.' });
-        }
-
-        if (isNaN(price_to) || price_to <= 0) {
-            return res.status(400).json({ error: 'Invalid price_to specified.' });
-        }
-
-        // Create and save a new listing
-        const listing = new Listing({
-            user_id: req.user.id, //
-            name,
-            description,
-            type,
-            price_from: mongoose.Types.Decimal128.fromString(price_from.toString()),
-            price_to: mongoose.Types.Decimal128.fromString(price_to.toString()),
-            date_listed: new Date(), 
-        });
-
-        await listing.save();
-
-        res.status(201).json({ message: 'Listing added successfully', listing });
-    } catch (error) {
-        console.error('Error adding listing:', error);
-        res.status(500).json({ error: 'Internal server error.' });
-    }
-});
-
-router.get('/get-user-listings', authMiddleware, async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id);
-        const listings = await Listing.find({ user_id: user.id });
-        res.status(200).json(listings);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal server error.' });
-    }
-});
-
-
 //New route to get a specific listing by ID
 router.get('/get-listing/:id', async (req, res) => {
     try {
@@ -305,8 +279,259 @@ router.get('/get-raffles', authMiddleware, async (req, res) => {
     }
 });
 
+//bid-listing
+router.post('/bid-listing', authMiddleware, async (req, res) => {
+    const { listing_id, amount, bid_expiration } = req.body;
+
+    try {
+        console.log('POST /api/users/bid-listing reached');
+
+        // Validate the required fields
+        if (!listing_id || !amount || !bid_expiration) {
+            console.error('Validation failed: Missing required fields.');
+            return res.status(400).json({
+                error: 'Validation failed: Listing ID, amount, and bid expiration are required.',
+            });
+        }
+
+        // Validate the listing
+        const listing = await Listing.findById(listing_id);
+        if (!listing) {
+            console.error(`Listing not found for ID: ${listing_id}`);
+            return res.status(404).json({ error: 'Listing not found.' });
+        }
+
+        // Validate the amount is greater than the listing price
+        if (parseFloat(amount) <= parseFloat(listing.price_from)) {
+            console.error(`Bid amount (${amount}) must be greater than the listing price (${listing.price_from}).`);
+            return res.status(400).json({
+                error: `Bid amount must be greater than the listing price (${listing.price_from}).`,
+            });
+        }
+
+        // Parse and validate the expiration date
+        const expirationDate = new Date(bid_expiration);
+        if (isNaN(expirationDate.getTime())) {
+            console.error('Validation failed: Invalid expiration date format.');
+            return res.status(400).json({ error: 'Invalid bid expiration date format.' });
+        }
+
+        // Validate the user's account balance
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            console.error(`User not found for ID: ${req.user.id}`);
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        const userBalance = parseFloat(user.account_balance.toString());
+        if (userBalance < parseFloat(amount)) {
+            console.error(`Insufficient balance. User balance: ${userBalance}, Bid amount: ${amount}`);
+            return res.status(400).json({
+                error: 'Insufficient balance to place this bid.',
+            });
+        }
+
+        // Create the bid
+        const bid = new Bid({
+            listing_id,
+            bidder_id: req.user.id,
+            amount: mongoose.Types.Decimal128.fromString(amount.toString()),
+            bid_expiration: expirationDate,
+        });
+
+        // Save the bid
+        await bid.save();
+
+        console.log(`Bid created successfully: ${JSON.stringify(bid)}`);
+        res.status(201).json({ message: 'Bid created successfully', bid });
+    } catch (error) {
+        console.error(`Error creating bid: ${error.message}`);
+        res.status(500).json({ error: 'Internal server error.', details: error.message });
+    }
+});
 
 
+
+router.post('/read-notify', authMiddleware, async (req, res) => {
+    try {
+        const { notification_id } = req.body; // Extract notification ID from the request body
+
+        // Validate request body
+        if (!notification_id) {
+            return res.status(400).json({ error: 'Notification ID is required.' });
+        }
+
+        // Find the notification
+        const notification = await Notification.findById(notification_id);
+        if (!notification) {
+            return res.status(404).json({ error: 'Notification not found.' });
+        }
+
+        // Check if the current user is the recipient of the notification
+        if (notification.to_id.toString() !== req.user.id) {
+            return res.status(403).json({ error: 'Access denied. You are not the recipient of this notification.' });
+        }
+
+        // Mark the notification as read
+        notification.read_status = true;
+        await notification.save();
+
+        res.status(200).json({
+            message: 'Notification marked as read successfully.',
+            notification,
+        });
+    } catch (error) {
+        console.error('Error marking notification as read:', error.message);
+        res.status(500).json({ error: 'Internal server error.', details: error.message });
+    }
+});
+
+router.get('/get-bids', authMiddleware, async (req, res) => {
+    try {
+        const { listing_id } = req.body; // Now extract listing_id from the body
+
+        // Validate that listing_id is provided in the body
+        if (!listing_id) {
+            return res.status(400).json({ error: 'Listing ID is required in the request body.' });
+        }
+
+        // Find the listing to ensure it exists
+        const listing = await Listing.findById(listing_id);
+        if (!listing) {
+            return res.status(404).json({ error: 'Listing not found.' });
+        }
+
+        // Check if the current user is the owner of the listing
+        if (listing.user_id.toString() !== req.user.id) {
+            return res.status(403).json({ error: 'Access denied. You are not the owner of this listing.' });
+        }
+
+        // Fetch all bids for the specified listing
+        const bids = await Bid.find({ listing_id }).select('amount bid_expiration -_id'); // Exclude unnecessary fields
+
+        // Return the bids
+        res.status(200).json({
+            message: 'Bids retrieved successfully.',
+            bids,
+        });
+    } catch (error) {
+        console.error('Error fetching bids:', error.message);
+        res.status(500).json({ error: 'Internal server error.', details: error.message });
+    }
+});
+
+router.post('/rate-transactions', authMiddleware, async (req, res) => {
+    try {
+        const { transaction_id, rating } = req.body;
+        
+        if (!transaction_id || !rating) {
+            return res.status(400).json({ error: 'Transaction ID and rating are required.' });
+        }
+
+
+        const transaction = await Transaction.findById(transaction_id);
+        if (!transaction) {
+            return res.status(404).json({ error: 'Transaction not found.' });
+        }
+
+        
+        if (transaction.buyer_id.toString() !== req.user.id) {
+            return res.status(403).json({ error: 'Access denied. You are not a participant in this transaction.' });
+        }
+
+        
+        const parsedRating = parseFloat(rating);
+        if (isNaN(parsedRating) || parsedRating < 1 || parsedRating > 5) {
+            return res.status(400).json({ error: 'Rating must be a number between 1 and 5.' });
+        }
+
+        // Check if the user has already rated this transaction
+        const existingRating = await Rating.findOne({ rater_id: req.user.id, transaction_id });
+        if (existingRating) {
+            return res.status(400).json({ error: 'You have already rated this transaction.' });
+        }
+
+        // Create and save the new rating
+        const newRating = new Rating({
+            rater_id: req.user.id,
+            transaction_id,
+            rating: parsedRating,
+        });
+
+        await newRating.save();
+
+        res.status(201).json({ message: 'Rating submitted successfully.', rating: newRating });
+    } catch (error) {
+        console.error('Error rating transaction:', error.message);
+        res.status(500).json({ error: 'Internal server error.', details: error.message });
+    }
+});
+
+
+router.get('/get-listing-rating', authMiddleware, async (req, res) => {
+    try {
+        const { listingId } = req.body;
+    
+        const transactions = await Transaction.find({ listing_id: listingId });
+    
+        if (transactions.length === 0) {
+          return res.status(404).json({ message: 'No transactions found for this listing.' });
+        }
+    
+        // Extract transaction IDs
+        const transactionIds = transactions.map((transaction) => transaction._id);
+    
+        // Find ratings associated with these transactions
+        const ratings = await Rating.find({ transaction_id: { $in: transactionIds } })
+        if (ratings.length === 0) {
+          return res.status(404).json({ message: 'No ratings found for this listing.' });
+        }
+    
+        res.status(200).json(ratings);
+      } catch (error) {
+        console.error('Error fetching ratings:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+      }
+});
+
+
+router.post('/apply-reguser', authMiddleware, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        if (user.role !== 'visitor') {
+            return res.status(400).json({
+                message: "Only visitors can apply for a regular user account."
+            });
+        }
+
+        // Query Visitor table using the user's ID (use req.user.id here)
+        const visitor = await Visitor.findOne({ user_id: req.user.id });
+        if (!visitor) {
+            return res.status(404).json({
+                message: "Visitor record not found. Please contact support."
+            });
+        }
+
+        // Step 3: Update the application status
+        visitor.application_status = 'Pending';
+        await visitor.save();
+
+        res.status(200).json({
+            message: "Application for regular user submitted successfully. Status: Pending.",
+            visitor
+        });
+    } catch (error) {
+        console.error("Error processing application:", error);
+        res.status(500).json({
+            message: "Failed to process application for regular user.",
+            error: error.message
+        });
+    }
+});
 //add-comment
 router.post('/add-comment', authMiddleware, async (req, res) => {
     try {
@@ -412,5 +637,5 @@ router.post('/buy-listing', authMiddleware, async (req, res) => {
     }
 });
 
-  
-  module.exports = router;
+module.exports = router;
+
