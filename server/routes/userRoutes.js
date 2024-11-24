@@ -595,7 +595,7 @@ router.get('/get-comments/:listing_id', async (req, res) => {
     }
 });
 
-// buy-listing
+/* buy-listing
 router.post('/buy-listing', authMiddleware, async (req, res) => {
     const { listing_id } = req.body;
 
@@ -640,6 +640,181 @@ router.post('/buy-listing', authMiddleware, async (req, res) => {
         console.error(error);
         res.status(500).json({ error: 'Internal server error.' });
     }
+}); */
+//accept-bid
+router.post('/accept-bid', authMiddleware, async (req, res) => {
+    const { bid_id, listing_id } = req.body;
+  
+    try {
+      // Find the bid
+      const bid = await Bid.findById(bid_id);
+      if (!bid) {
+        return res.status(404).json({ error: 'Bid not found.' });
+      }
+  
+      // Find the listing
+      const listing = await Listing.findById(listing_id);
+      if (!listing) {
+        return res.status(404).json({ error: 'Listing not found.' });
+      }
+  
+      // Check if the listing is still available
+      if (listing.status !== 'available') {
+        return res.status(400).json({ error: 'Listing is no longer available.' });
+      }
+  
+      // Find the buyer and seller
+      const buyer = await User.findById(bid.bidder_id);
+      const seller = await User.findById(listing.user_id);
+      if (!buyer || !seller) {
+        return res.status(404).json({ error: 'User(s) not found.' });
+      }
+  
+      // Check if the buyer has enough balance to cover the bid amount
+      const bidAmount = parseFloat(bid.amount.toString());
+      if (parseFloat(buyer.account_balance.toString()) < bidAmount) {
+        return res.status(400).json({ error: 'Buyer has insufficient balance.' });
+      }
+  
+      // Deduct the amount from the buyer's account balance
+      buyer.account_balance = mongoose.Types.Decimal128.fromString(
+        (parseFloat(buyer.account_balance.toString()) - bidAmount).toString()
+      );
+  
+      // Add the amount to the seller's account balance
+      seller.account_balance = mongoose.Types.Decimal128.fromString(
+        (parseFloat(seller.account_balance.toString()) + bidAmount).toString()
+      );
+  
+      // Mark the listing as sold
+      listing.status = 'sold';
+  
+      // Create a transaction for the purchase
+      const transaction = new Transaction({
+        buyer_id: buyer._id,
+        seller_id: seller._id,
+        listing_id: listing._id,
+        amount: bid.amount,
+        transaction_date: new Date(),
+      });
+  
+      // Save the updates
+      await buyer.save();
+      await seller.save();
+      await listing.save();
+      await transaction.save();
+  
+      // Remove the bid from the database
+      await Bid.findByIdAndDelete(bid._id);
+  
+      res.status(200).json({
+        message: 'Bid accepted and transaction completed successfully.',
+        newBalanceBuyer: buyer.account_balance,
+        newBalanceSeller: seller.account_balance,
+        transaction,
+        listing,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal server error.' });
+    }
+  });
+  //get-complaint
+router.get('/get-complaint', authMiddleware, async (req, res) => {
+    try {
+        const complaints = await Complaint.find({ complainer_id: req.user.id })
+            .populate('subject_id');  // Populating with the Transaction data
+        res.status(200).json(complaints);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
 });
+//unsuspend-account
+router.post('/unsuspend-account', authMiddleware, async (req, res) => {
+    const { user_id } = req.body;
+
+    try {
+        const user = await User.findById(user_id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        // Unsuspend the account without fine
+        user.account_status = true;
+        user.suspension_count = 0;  // Reset suspension count
+        await user.save();
+
+        res.status(200).json({ message: 'Account unsuspended successfully.', user });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
+//get-suspended-account
+router.get('/get-suspended-account', authMiddleware, async (req, res) => {
+    try {
+        const suspendedUsers = await User.find({ account_status: false });
+        
+        const suspendedUsersInfo = suspendedUsers.map(user => ({
+            user_id: user._id,
+            username: user.username,
+            suspension_count: user.suspension_count
+        }));
+        
+        res.status(200).json(suspendedUsersInfo);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
+
+
+// Check VIP status API
+router.post('/check-vip', async (req, res) => {
+    try {
+      const { user_id } = req.body;
+  
+      // Find the user and their RegularUser entry
+      const user = await User.findById(user_id);
+      const regularUser = await RegularUser.findOne({ user_id });
+  
+      if (!user || !regularUser) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+  
+      // Find the most recent bid for the user
+      const recentBid = await Bid.findOne({ bidder_id: user_id }).sort({ date_bid: -1 });
+  
+      // If no bids found, treat as no bid placed
+      if (!recentBid) {
+        return res.status(400).json({ message: 'No bid placed by this user' });
+      }
+  
+      // Compare user's balance to the most recent bid amount
+      const bidAmount = recentBid.amount;
+  
+      // Check if the user has enough balance to match the bid amount
+      if (user.account_balance >= bidAmount) {
+        // If VIP condition is met and not already VIP, update the VIP status
+        if (!regularUser.vip) {
+          regularUser.vip = true;
+          await regularUser.save(); // Save the RegularUser document
+        }
+        return res.status(200).json({ message: 'User is VIP' });
+      } else {
+        // If balance is below bid amount, set vip to false
+        if (regularUser.vip) {
+          regularUser.vip = false;
+          await regularUser.save(); // Save the RegularUser document
+        }
+        return res.status(200).json({ message: 'User is not VIP' });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Server error' });
+    }
+  });
+  
 
 module.exports = router;
