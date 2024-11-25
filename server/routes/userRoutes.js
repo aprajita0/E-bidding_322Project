@@ -522,6 +522,7 @@ router.post('/apply-reguser', authMiddleware, async (req, res) => {
 
         // Step 3: Update the application status
         visitor.application_status = 'Pending';
+        visitor.CAPTCHA_question = true; 
         await visitor.save();
 
         res.status(200).json({
