@@ -15,6 +15,7 @@ const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 const Complaint = require('../models/Complaints');
 const Comment = require('../models/Comments');
+const Transaction = require('../models/Transaction');
 
 // Middleware to verify token
 const authMiddleware = (req, res, next) => {
@@ -602,31 +603,37 @@ router.post('/rate-transactions', authMiddleware, async (req, res) => {
 });
 
 
-router.get('/get-listing-rating', authMiddleware, async (req, res) => {
+router.post('/get-listing-rating', authMiddleware, async (req, res) => {
     try {
-        const { listingId } = req.body;
+        const { listingId } = req.body; // Continue using req.body for POST
+    
+        if (!listingId) {
+            return res.status(400).json({ message: 'listingId is required.' });
+        }
     
         const transactions = await Transaction.find({ listing_id: listingId });
     
         if (transactions.length === 0) {
-          return res.status(404).json({ message: 'No transactions found for this listing.' });
+            return res.status(404).json({ message: 'No transactions found for this listing.' });
         }
     
         // Extract transaction IDs
         const transactionIds = transactions.map((transaction) => transaction._id);
     
         // Find ratings associated with these transactions
-        const ratings = await Rating.find({ transaction_id: { $in: transactionIds } })
+        const ratings = await Rating.find({ transaction_id: { $in: transactionIds } });
         if (ratings.length === 0) {
-          return res.status(404).json({ message: 'No ratings found for this listing.' });
+            return res.status(404).json({ message: 'No ratings found for this listing.' });
         }
     
         res.status(200).json(ratings);
-      } catch (error) {
+    } catch (error) {
         console.error('Error fetching ratings:', error);
         res.status(500).json({ message: 'Server error', error: error.message });
-      }
+    }
 });
+
+
 
 
 router.post('/apply-reguser', authMiddleware, async (req, res) => {
