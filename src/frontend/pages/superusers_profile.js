@@ -15,6 +15,10 @@ const Superusers_profile = () => {
     const [selectedMessage, setSelectedMessage] = useState(''); 
     const [username, setUsername] = useState('');
     const [userListings, setUserListings] = useState([]);
+    const [visitorSelect, setVisitorSelect] = useState(''); 
+    const [applications, setApplications] = useState([]);
+    const [suspendedUserSelect, setSuspendedUserSelect] = useState('');
+    const [suspendedUsers, setSuspendedUsers] = useState([]);
 
     const handleAccept = () => {
         navigate('/');
@@ -28,18 +32,81 @@ const Superusers_profile = () => {
         navigate('/');
     };
 
-    const handleAcceptApp = () => {
-        navigate('/');
+    const handleAcceptApp = async () => {
+        if (!visitorSelect) {
+            alert('Please select an application');
+            return;
+        }
+    
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/users/approve-reguser', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ visitor_id: visitorSelect }),
+            });
+    
+            const data = await response.json();
+            if (response.ok) {
+                alert('Application approved!');
+                setApplications((prev) => prev.filter((user) => user.user_id !== visitorSelect));
+                setVisitorSelect('');
+                setError('');
+            } else {
+                console.error('Approval failed:', data.error || 'Unknown error');
+                setError(data.error || 'Failed to approve application.');
+            }
+        } catch (err) {
+            console.error('Error during API call:', err);
+            setError('Server error');
+        }
+    };
+    const handleVisitorSelect = (e) => {
+        setVisitorSelect(e.target.value);
     };
 
     const handleDenyApp = () => {
         navigate('/');
     };
 
-    const handleUnsuspend = () => {
-        navigate('/');
-    };
+    const handleUnsuspend = async (e) => {
+        e.preventDefault();
 
+    if (!suspendedUserSelect) {
+        setError('Please select a user to unsuspend.');
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('token'); 
+        const response = await fetch('/api/users/unsuspend-account', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`, 
+            },
+            body: JSON.stringify({
+                user_id: suspendedUserSelect, 
+            }),
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            alert(result.message || 'User unsuspended!');
+            setSuspendedUsers((prev) =>prev.filter((user) => user.user_id !== suspendedUserSelect)); 
+            setSuspendedUserSelect(''); 
+        } else {
+            const result = await response.json();
+            setError(result.error || 'Error unsuspending user.');
+        }
+    } catch (err) {
+        console.error('Error unsuspending account:', err);
+        setError('Server error. Please try again later.');
+    }
+    };
 
     const bids = [
         { id: 1, amount: 100, deadline: '2024-11-15' },
@@ -116,9 +183,64 @@ const Superusers_profile = () => {
                 }
             } catch (err) {
                 console.error('Error fetching your listings:', err);
+                setError('Server error');
             }
         };
 
+        const fetchApplications = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/users/get-visitor-applications', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+    
+                const data = await response.json();
+                console.log('Applications fetched:', data);
+    
+                if (response.ok) {
+                    setApplications(data);
+                } else {
+                    console.error('Failed to fetch applications:', data.error || 'N/A');
+                    setError(data.error || 'Failed to fetch applications');
+                }
+            } catch (err) {
+                console.error('Error fetching visitor applications', err);
+                setError('Server error');
+            }
+        };
+
+        const fetchSuspensions = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/users/get-suspended-account', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+    
+                const data = await response.json();
+                console.log('Suspended accounts fetched:', data);
+    
+                if (response.ok) {
+                    setSuspendedUsers(data); 
+                } else {
+                    console.error('Failed to fetch suspended users', data.error || 'N/A');
+                    setError(data.error || 'Failed to fetch suspended users');
+                }
+            } catch (err) {
+                console.error('Error fetching suspended users', err);
+                setError('Server error');
+            }
+        };
+
+        fetchSuspensions();
+        fetchApplications();
         fetchBalance();
         fetchUserListings();
     }, []); 
@@ -185,20 +307,17 @@ const Superusers_profile = () => {
                 <div className="my-listings">Suspended Accounts:</div>
                 <div className="my-listings-container">
                     <div className="my-listings_label">Suspensions:</div>
-                    <select className="show-listings" id="listing_select" value={listingSelect} onChange={(e) => setListingSelect(e.target.value)} required>
-                        <option value="">Select suspended accounts</option>
-                        <option value="selling">Appy1</option>
-                        <option value="renting">App2</option>
-                        <option value="buying">App3</option>
-                    </select>
-                </div>
-                <div className="my-listings-container">
-                    <div className="my-listings_label">Account Details:</div>
-                    <select className="show-listings" id="listing_select" value={listingSelect} onChange={(e) => setListingSelect(e.target.value)} required>
-                        <option value="">Account Details</option>
-                        <option value="selling">Appy1</option>
-                        <option value="renting">App2</option>
-                        <option value="buying">App3</option>
+                    <select
+                    className="show-listings"
+                    id="suspended_user_select"
+                    value={suspendedUserSelect}
+                    onChange={(e) => setSuspendedUserSelect(e.target.value)}required>
+                        <option value="">Select a Suspended Account</option>
+                        {suspendedUsers.map((user) => (
+                            <option key={user.user_id} value={user.user_id}>
+                                {user.username}, Previous Suspensions: {user.suspension_count || 0}
+                                </option>
+                            ))}
                     </select>
                 </div>
                 <div>
@@ -248,22 +367,19 @@ const Superusers_profile = () => {
               <div className="functionality-box">
                 <div className="my-listings">Approve/Deny User Applications</div>
                 <div className="my-listings-container">
-                    <div className="my-listings_label">Pending:</div>
-                    <select className="show-listings" id="listing_select" value={listingSelect} onChange={(e) => setListingSelect(e.target.value)} required>
-                        <option value="">Select an Application</option>
-                        <option value="selling">Appy1</option>
-                        <option value="renting">App2</option>
-                        <option value="buying">App3</option>
-                    </select>
-                </div>
-                <div className="my-listings-container">
-                    <div className="my-listings_label">Account Details:</div>
-                    <select className="show-listings" id="listing_select" value={listingSelect} onChange={(e) => setListingSelect(e.target.value)} required>
-                        <option value="">Select an Application</option>
-                        <option value="selling">Appy1</option>
-                        <option value="renting">App2</option>
-                        <option value="buying">App3</option>
-                    </select>
+                <div className="my-listings_label">Pending:</div>
+                <select
+                className="show-listings"
+                id="visitor_select"
+                value={visitorSelect}
+                onChange={handleVisitorSelect}>
+                    <option value="">Select an Application</option>
+                    {applications.map((app) => (
+                        <option key={app.id} value={app.user_id?._id || app.id}> 
+                        {app.user_id?.username || 'N/A'}, {app.user_id?.email || 'N/A'}
+                        </option>
+                    ))}
+                </select>
                 </div>
                 <div>
                     <button className="accept-bid" type="button" onClick={handleAcceptApp}>Accept</button>
@@ -283,4 +399,5 @@ const Superusers_profile = () => {
 };
 
 export default Superusers_profile;
+
 
