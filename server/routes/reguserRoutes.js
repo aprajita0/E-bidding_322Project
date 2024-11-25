@@ -127,4 +127,59 @@ router.post('/suspend-reguser', async (req, res) => {
     }
 });
 
+router.post('/pay-fine', authMiddleware, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);  // Get the logged-in user
+        if (!user) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        // Check if the user is suspended
+        if (user.account_status === true) {
+            return res.status(400).json({ error: 'User is not suspended.' });
+        }
+
+        // Ensure the user has at least $50 to pay the fine
+        const fineAmount = 50.00;
+        const userBalance = parseFloat(user.account_balance.toString());
+
+        if (userBalance < fineAmount) {
+            return res.status(400).json({ error: 'Insufficient balance to pay the fine.' });
+        }
+
+        // Deduct $50 from the user's balance
+        user.account_balance = mongoose.Types.Decimal128.fromString(
+            (userBalance - fineAmount).toString()
+        );
+
+        // Reactivate the user and update their account status
+        user.account_status = true;  // Set the account status to active
+        user.suspension_count = 0;  // Reset suspension count
+
+        // Save the updated user data
+        await user.save();
+
+        // Optionally, update the RegularUser model if needed
+        const regularUser = await RegularUser.findOne({ user_id: user._id });
+        if (regularUser) {
+            regularUser.suspended = false;  // Mark the user as unsuspended in RegularUser model
+            await regularUser.save();
+        }
+
+        res.status(200).json({
+            message: 'Fine paid successfully. User is now unsuspended.',
+            user: {
+                id: user._id,
+                username: user.username,
+                account_balance: user.account_balance,
+                account_status: user.account_status,
+            },
+        });
+    } catch (error) {
+        console.error('Error paying fine:', error.message);
+        res.status(500).json({ error: 'Internal server error.', details: error.message });
+    }
+});
+
+
 module.exports = router;
