@@ -36,8 +36,6 @@ const authMiddleware = (req, res, next) => {
 
 // Registration endpoint
 router.post('/register', async (req, res) => {
-    const { first_name, last_name, username, password, email, address_line_1, address_line_2, role } = req.body;
-
     try {
 
         const existingUser = await User.findOne({ $or: [{ username }, { email }] });
@@ -61,6 +59,18 @@ router.post('/register', async (req, res) => {
         });
 
         await user.save();
+        const savedUser = await user.save();
+        if (role === 'superuser') {
+            const superUser = new SuperUser({ user_id: savedUser._id });
+            await superUser.save();
+        } else if (role === 'reguser') {
+            const regularUser = new RegularUser({ user_id: savedUser._id });
+            await regularUser.save();
+        } else {
+            const visitor = new Visitor({ user_id: savedUser._id });
+            await visitor.save();
+        }
+        
         res.status(201).json({ message: 'User registered successfully' });
     } catch (err) {
         res.status(500).json({ error: 'Error registering user', details: err.message });
