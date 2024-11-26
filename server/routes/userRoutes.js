@@ -72,7 +72,11 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Email and password are required' });
+        }
+
+        const user = await User.findOne({ email }); 
         if (!user) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
@@ -82,19 +86,18 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        
+        // Check if the account is suspended
         if (user.account_status === false) {
             return res.status(403).json({ message: 'Account is suspended' });
         }
-        // Generate JWT token
+
         const token = jwt.sign(
-            { id: user._id.toString(), username: user.username}, // Convert `_id` to string
-            { id: user._id.toString(), role: user.role },
+            { id: user._id.toString(), username: user.username, role: user.role }, 
             JWT_SECRET,
-            { expiresIn: '1h' }
+            { expiresIn: '1h' } 
         );
 
-        // Respond with success
+        
         res.json({
             message: 'Login successful',
             token,
