@@ -100,7 +100,6 @@ router.post('/login', async (req, res) => {
             token,
             username: user.username,
             role: user.role
-            role: user.role,
         });
     } catch (err) {
         // Handle server errors
