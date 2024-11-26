@@ -36,6 +36,7 @@ const authMiddleware = (req, res, next) => {
 
 // Registration endpoint
 router.post('/register', async (req, res) => {
+    const { first_name, last_name, username, password, email, address_line_1, address_line_2, role } = req.body;
     try {
 
         const existingUser = await User.findOne({ $or: [{ username }, { email }] });
