@@ -73,31 +73,38 @@ router.post('/login', async (req, res) => {
 
     try {
         
-        const user = await User.findOne({ email });
         if (!user) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
         
+        if (user.account_status === false) {
+            return res.status(403).json({ message: 'Account is suspended' });
+        }
+        // Generate JWT token
         const token = jwt.sign(
             { id: user._id.toString(), username: user.username}, // Convert `_id` to string
+            { id: user._id.toString(), role: user.role },
             JWT_SECRET,
             { expiresIn: '1h' }
         );
 
+        // Respond with success
         res.json({
             message: 'Login successful',
             token,
             username: user.username,
             role: user.role
+            role: user.role,
         });
     } catch (err) {
+        // Handle server errors
+        console.error('Login error:', err);
         res.status(500).json({ error: 'Error logging in', details: err.message });
     }
 });
