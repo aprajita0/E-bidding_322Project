@@ -11,6 +11,7 @@ const Bid = require('../models/Bid');
 const Notification = require('../models/Notification');
 const Raffle = require('../models/Raffle');
 const Rating = require('../models/Ratings');
+const Transaction = require('../models/Transaction');
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 const Complaint = require('../models/Complaints');
@@ -166,6 +167,17 @@ router.post('/pay-fine', authMiddleware, async (req, res) => {
             await regularUser.save();
         }
 
+        // Create a transaction record for the fine payment
+        const transaction = new Transaction({
+            buyer_id: user._id,  // User who paid the fine (same as buyer)
+            amount: mongoose.Types.Decimal128.fromString(fineAmount.toString()),  // Fine amount
+            transaction_date: new Date(),  // Date of the transaction
+        });
+
+        // Save the transaction record
+        await transaction.save();
+
+        // Respond with success
         res.status(200).json({
             message: 'Fine paid successfully. User is now unsuspended.',
             user: {
@@ -174,12 +186,18 @@ router.post('/pay-fine', authMiddleware, async (req, res) => {
                 account_balance: user.account_balance,
                 account_status: user.account_status,
             },
+            transaction: {
+                transaction_id: transaction._id,
+                amount: transaction.amount,
+                transaction_date: transaction.transaction_date,
+            }
         });
     } catch (error) {
         console.error('Error paying fine:', error.message);
         res.status(500).json({ error: 'Internal server error.', details: error.message });
     }
 });
+
 
 
 module.exports = router;
