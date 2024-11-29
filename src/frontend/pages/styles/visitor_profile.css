@@ -1,5 +1,3 @@
-/*profile pic and banner*/
-
 * {
     box-sizing: border-box;
 }
@@ -33,134 +31,131 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* ability to browse listings and comment from profile */
+.user-grid {
+    margin-top: 15px;
+    margin-left: 60px;
+    margin-right: 60px;
+    margin-bottom: 40px;
+}
 
-/* container for all the listings */
-.profile-listings-container {
+.user_profile-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    width: 90%;
+    max-height: 600px;
+    overflow-y: auto;
+    overflow-x: auto;
+    padding: 10px;
+}
+
+.functionality-box {
+    background-color: #b2d4eb;
+    text-align: center;
+    min-height: 220px;
+    height: 180px;
+    width: 100%;
+    max-width: 770px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    overflow: auto;
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
+}
+
+.functionality-box:hover {
+    transform: translate(0, -20px);
+}
+
+.my-listings {
+    font-size: 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: bold;
+    color: #033f63;
+    max-width: 700px;
+    padding: 25px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    align-items: center;
+    justify-content: center;
+}
+
+.my-listings-container {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    padding: 20px;
-    background-color: #f9f9f9; 
-    border-radius: 8px; 
-    width: 100%; 
-    max-width: 800px; 
-    margin: 0 auto; 
-}
-
-/* individual listing styling */
-.listing {
-    background-color: #ffffff; 
-    border: 1px solid #ddd; 
-    border-radius: 8px; 
-    padding: 20px; 
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
-}
-
-/* title of each listing */
-.listing h3 {
-    font-size: 1.5rem; 
-    color: #333; 
-    margin-bottom: 10px; 
-}
-
-/* description text of each listing */
-.listing p {
-    font-size: 1rem;
-    color: #555; 
-    margin-bottom: 15px; 
-}
-
-/* textarea for adding comments */
-textarea {
-    width: 100%; 
-    height: 100px; 
-    padding: 10px; 
-    font-size: 1rem; 
-    border-radius: 8px; 
-    border: 1px solid #ddd; 
-    resize: none; 
-    margin-bottom: 10px; 
-}
-
-/* button for submitting the comment */
-button {
-    padding: 10px 20px; 
-    background-color: #4CAF50; 
-    color: white; 
-    border: none; 
-    border-radius: 5px; 
-    cursor: pointer; 
-    font-size: 1rem; 
-    transition: background-color 0.3s ease; 
-}
-
-
-button:hover {
-    background-color: #45a049; /* Darker green when the button is hovered */
-}
-
-
-.application-container {
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    padding: 20px;
+    align-items: center;
     width: 100%;
-    max-width: 500px;
-    margin: 20px auto;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
 }
 
-/* start appl. button*/
-.application-container button {
-    background-color: #4CAF50;
-    color: white;
-    font-size: 16px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-bottom: 20px;
-}
-
-.application-container button:hover {
-    background-color: #45a049;
-}
-
-/*answer*/
-.application-container input[type="number"] {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-}
-
-/*arithmetic question */
-.application-container label {
+.my-listings_label {
     font-size: 18px;
-    margin-top: 10px;
-    display: block;
+    color: #033f63;
+    margin: 10px 0;
+    font-family: 'DM Sans', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
 }
 
-.application-container p {
+.apply-button {
+    width: 220px;
+    height: 40px;
+    background-color: #033f63;
+    color: #ffffff;
+    border-radius: 30px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    margin: 20px 0;
+}
+
+.apply-button:hover {
+    background-color: #022c47;
+    color: #ffffff;
+}
+
+.input-number {
+    padding: 10px;
+    border: 1px solid #ccc;
     font-size: 14px;
-    color: #333;
+    width: 80%;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.error {
+    color: red;
+    font-size: 14px;
     margin-top: 10px;
-    font-weight: bold;
-    text-align: center;
+    font-family: 'DM Sans', sans-serif;
 }
 
-@media (max-width: 600px) {
-    .application-container {
-        padding: 15px;
+@media (max-width: 768px) {
+    .user_profile-grid {
+        grid-template-columns: 1fr; 
     }
 
-    .application-container button {
-        width: 100%;
+    .welcome {
+        font-size: 30px; 
+    }
+
+    .my-listings {
+        font-size: 30px; 
+    }
+
+    .profile_image{
+        width: 80px; 
+        height: 80px;
+    }
+
+    .apply-button {
+        width: 100px; 
+        height: 40px;
+        font-size: 14px;
     }
 }
-
-
