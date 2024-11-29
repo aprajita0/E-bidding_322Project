@@ -151,7 +151,6 @@ router.post('/add-balance', authMiddleware, async (req, res) => {
     }
 });
 
-
 router.get('/get-balance', authMiddleware, async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
@@ -367,22 +366,7 @@ router.post('/bid-listing', authMiddleware, async (req, res) => {
             return res.status(400).json({ error: 'Invalid bid expiration date format.' });
         }
 
-        // Validate the user's account balance
-        const user = await User.findById(req.user.id);
-        if (!user) {
-            console.error(`User not found for ID: ${req.user.id}`);
-            return res.status(404).json({ error: 'User not found.' });
-        }
-
-        const userBalance = parseFloat(user.account_balance.toString());
-        if (userBalance < parseFloat(amount)) {
-            console.error(`Insufficient balance. User balance: ${userBalance}, Bid amount: ${amount}`);
-            return res.status(400).json({
-                error: 'Insufficient balance to place this bid.',
-            });
-        }
-
-        // Create the bid
+        // Create the bid (without deducting balance)
         const bid = new Bid({
             listing_id,
             bidder_id: req.user.id,
@@ -622,7 +606,6 @@ router.post('/rate-transactions', authMiddleware, async (req, res) => {
     }
 });
 
-
 router.post('/get-listing-rating', authMiddleware, async (req, res) => {
     try {
         const { listingId } = req.body; // Continue using req.body for POST
@@ -652,9 +635,6 @@ router.post('/get-listing-rating', authMiddleware, async (req, res) => {
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
-
-
-
 
 router.post('/apply-reguser', authMiddleware, async (req, res) => {
     try {
@@ -941,6 +921,42 @@ router.get('/get-transactions', authMiddleware, async (req, res) => {
     } catch (error) {
         console.error('Error fetching transactions:', error);
         res.status(500).json({ error: 'Server error.' });
+    }
+});
+
+router.post('/deny-user', authMiddleware, async (req, res) => {
+    const { user_id } = req.body;
+
+    try {
+        if (!user_id) {
+            return res.status(400).json({ error: 'User ID is required.' });
+        }
+
+        // Find the visitor by user_id
+        const visitor = await Visitor.findOne({ user_id });
+        if (!visitor) {
+            return res.status(404).json({ error: 'Visitor not found.' });
+        }
+
+        // Check if the visitor's application is in the "Pending" state
+        if (visitor.application_status !== 'Pending') {
+            return res.status(400).json({ error: 'The application is not pending, cannot deny.' });
+        }
+
+        // Deny the application by changing the application status to "Rejected"
+        visitor.application_status = 'Rejected';
+        await visitor.save();
+
+        res.status(200).json({
+            message: 'Visitor application denied successfully.',
+            visitor: {
+                user_id: visitor.user_id,
+                application_status: visitor.application_status
+            }
+        });
+    } catch (error) {
+        console.error('Error denying user:', error.message);
+        res.status(500).json({ error: 'Internal server error.', details: error.message });
     }
 });
 
