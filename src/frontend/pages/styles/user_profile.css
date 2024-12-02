@@ -257,14 +257,12 @@
     background-color: white;
     border: 1px solid #ccc;
     display: block;
-    justify-content: center;
-    align-self: center;
     font-size: 14px;
     border-radius: 4px;
-    width: 93%;
+    max-width: 87%; 
+    width: fit-content;
     box-sizing: border-box;
     margin-left: auto;
-    margin-right: auto;
     margin-bottom: 10px;
 }
 
@@ -354,5 +352,6 @@
         height: 80px;
     }
 }
+
 
 

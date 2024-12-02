@@ -293,7 +293,7 @@ router.post('/add-notification', authMiddleware, async (req, res) => {
     }
 });
 
-//bid-listing
+
 router.post('/bid-listing', authMiddleware, async (req, res) => {
     const { listing_id, amount, bid_expiration } = req.body;
 
@@ -920,6 +920,26 @@ router.post('/deny-user', authMiddleware, async (req, res) => {
         });
     } catch (error) {
         console.error('Error denying user:', error.message);
+        res.status(500).json({ error: 'Internal server error.', details: error.message });
+    }
+});
+
+router.get('/get-notif', authMiddleware, async (req, res) => {
+    try {
+        // Find notifications for the logged-in user where read_status is false
+        const notifications = await Notification.find({
+            to_id: req.user.id,    // Match the user ID
+            read_status: false      // Only get unread notifications
+        }).select('subject message notification_type read_status'); // Select only necessary fields
+
+        if (notifications.length === 0) {
+            return res.status(404).json({ message: 'No unread notifications found.' });
+        }
+
+        // Return the notifications
+        res.status(200).json({ notifications });
+    } catch (error) {
+        console.error('Error fetching notifications:', error.message);
         res.status(500).json({ error: 'Internal server error.', details: error.message });
     }
 });
