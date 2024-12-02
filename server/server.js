@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const userRoutes = require('./routes/userRoutes');
 const superuserRoutes = require('./routes/superuserRoutes');
 const reguserRoutes = require('./routes/reguserRoutes');
+const raffleRoutes = require('./routes/raffleRoutes');
 
 const app = express();
 app.use(express.json());
@@ -13,12 +14,13 @@ app.use(express.json());
 app.use('/api/users', userRoutes);
 app.use('/api/users', superuserRoutes);
 app.use('/api/users', reguserRoutes);
+app.use('/api/users', raffleRoutes);
 
 app.get('/', (req, res) => {
     res.send('Hello World');
 });
 
-app.listen(4000, () => {
+app.listen(5001, () => {
     console.log('Server is running on port 4000');
 });
 

@@ -293,42 +293,6 @@ router.post('/add-notification', authMiddleware, async (req, res) => {
     }
 });
 
-router.post('/add-raffle', authMiddleware, async (req, res) => {
-    try {
-        const { raffle_name, prize, start_date, end_date } = req.body;
-        const user = await User.findById(req.user.id);
-
-        if (!raffle_name || !prize || !start_date || !end_date) {
-            return res.status(400).json({ error: 'All fields are required.' });
-        }
-
-        const raffle = new Raffle({
-            raffle_name,
-            prize,
-            start_date,
-            end_date,
-        });
-
-        await raffle.save();
-
-        res.status(201).json({ message: 'Raffle added successfully', raffle });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal server error.' });
-    }
-});
-
-router.get('/get-raffles', authMiddleware, async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id);
-        const raffles = await Raffle.find({});
-        res.status(200).json(raffles);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal server error.' });
-    }
-});
-
 //bid-listing
 router.post('/bid-listing', authMiddleware, async (req, res) => {
     const { listing_id, amount, bid_expiration } = req.body;
@@ -608,7 +572,7 @@ router.post('/rate-transactions', authMiddleware, async (req, res) => {
 
 router.post('/get-listing-rating', authMiddleware, async (req, res) => {
     try {
-        const { listingId } = req.body; // Continue using req.body for POST
+        const { listingId } = req.body; 
     
         if (!listingId) {
             return res.status(400).json({ message: 'listingId is required.' });
@@ -623,7 +587,7 @@ router.post('/get-listing-rating', authMiddleware, async (req, res) => {
         // Extract transaction IDs
         const transactionIds = transactions.map((transaction) => transaction._id);
     
-        // Find ratings associated with these transactions
+        
         const ratings = await Rating.find({ transaction_id: { $in: transactionIds } });
         if (ratings.length === 0) {
             return res.status(404).json({ message: 'No ratings found for this listing.' });
@@ -649,7 +613,7 @@ router.post('/apply-reguser', authMiddleware, async (req, res) => {
             });
         }
 
-        // Query Visitor table using the user's ID (use req.user.id here)
+        
         const visitor = await Visitor.findOne({ user_id: req.user.id });
         if (!visitor) {
             return res.status(404).json({
@@ -657,7 +621,7 @@ router.post('/apply-reguser', authMiddleware, async (req, res) => {
             });
         }
 
-        // Step 3: Update the application status
+        
         visitor.application_status = 'Pending';
         visitor.CAPTCHA_question = true; 
         await visitor.save();
