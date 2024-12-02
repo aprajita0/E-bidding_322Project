@@ -70,8 +70,36 @@ const Superusers_profile = () => {
         setVisitorSelect(e.target.value);
     };
 
-    const handleDenyApp = () => {
-        navigate('/');
+    const handleDenyApp = async () => {
+        if (!visitorSelect) {
+            alert('Please select an application');
+            return;
+        }
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/users/deny-user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ user_id: visitorSelect }),
+            });
+    
+            const data = await response.json();
+            if (response.ok) {
+                alert('Application denied');
+                setApplications((prev) => prev.filter((user) => user.user_id !== visitorSelect));
+                setVisitorSelect('');
+                setError('');
+            } else {
+                console.error('Denial failed:', data.error || 'Unknown error');
+                setError(data.error || 'Failed to deny application.');
+            }
+        } catch (err) {
+            console.error('Error during API call:', err);
+            setError('Server error');
+        }
     };
 
     const handleUnsuspend = async (e) => {
@@ -404,16 +432,12 @@ const Superusers_profile = () => {
                 <div className="my-listings">Approve/Deny User Applications</div>
                 <div className="my-listings-container">
                 <div className="my-listings_label">Pending:</div>
-                <select
-                className="show-listings"
-                id="visitor_select"
-                value={visitorSelect}
-                onChange={handleVisitorSelect}>
+                <select className="show-listings"id="visitor_select" value={visitorSelect} onChange={handleVisitorSelect}>
                     <option value="">Select an Application</option>
                     {applications.map((app) => (
-                        <option key={app.id} value={app.user_id?._id || app.id}> 
+                        <option key={app.id} value={app.user_id?._id}> 
                         {app.user_id?.username || 'N/A'}, {app.user_id?.email || 'N/A'}
-                        </option>
+                    </option>
                     ))}
                 </select>
                 </div>
@@ -435,5 +459,3 @@ const Superusers_profile = () => {
 };
 
 export default Superusers_profile;
-
-
