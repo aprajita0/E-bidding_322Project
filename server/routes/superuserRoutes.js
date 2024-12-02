@@ -138,26 +138,5 @@ router.post('/unban-user', authMiddleware, async (req, res) => {
     }
   });
 
-router.get('/get-notif', authMiddleware, async (req, res) => {
-    try {
-        // Fetch unread notifications for the logged-in user
-        const notifications = await Notification.find({
-            to_id: req.user.id,   // Match the logged-in user's ID
-            read_status: false     // Only fetch unread notifications
-        }).select('notification_type read_status');  // Select only available fields
-
-        // If no unread notifications are found
-        if (notifications.length === 0) {
-            return res.status(404).json({ message: 'No unread notifications found.' });
-        }
-
-        // Return the notifications
-        res.status(200).json({ notifications });
-    } catch (error) {
-        console.error('Error fetching notifications:', error.message);
-        res.status(500).json({ error: 'Internal server error.', details: error.message });
-    }
-});
-
 
 module.exports = router;
