@@ -182,7 +182,7 @@
     border: 1px solid #ccc;
     font-size: 14px;
     margin-right: 20px;
-    max-width: 70%;
+    max-width: 90%;
     width: 100%;
     border-radius: 4px;
     box-sizing: border-box;
@@ -235,7 +235,7 @@
     border: 1px solid #ccc;
     font-size: 14px;
     margin-right: 20px;
-    max-width: 70%;
+    max-width: 90%;
     width: 100%;
     border-radius: 4px;
     box-sizing: border-box;
@@ -346,4 +346,5 @@
         height: 80px;
     }
 }
+
 

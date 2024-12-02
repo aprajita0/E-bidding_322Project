@@ -11,8 +11,10 @@ const Superusers_profile = () => {
     const [accountBalance, setAccountBalance] = useState(0);
     const [listingSelect, setListingSelect] = useState(''); 
     const [bidSelect, setBidSelect] = useState('');
-    const [messageSelect, setMessageSelect] = useState(''); 
-    const [selectedMessage, setSelectedMessage] = useState(''); 
+    const [messages, setMessages] = useState([]);
+    const [messageSelect, setMessageSelect] = useState('');
+    const [messageInfo, setMessageInfo] = useState('');
+    const [selectedMessage, setSelectedMessage] = useState('');
     const [username, setUsername] = useState('');
     const [userListings, setUserListings] = useState([]);
     const [visitorSelect, setVisitorSelect] = useState(''); 
@@ -68,8 +70,36 @@ const Superusers_profile = () => {
         setVisitorSelect(e.target.value);
     };
 
-    const handleDenyApp = () => {
-        navigate('/');
+    const handleDenyApp = async () => {
+        if (!visitorSelect) {
+            alert('Please select an application');
+            return;
+        }
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/users/deny-user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ user_id: visitorSelect }),
+            });
+    
+            const data = await response.json();
+            if (response.ok) {
+                alert('Application denied');
+                setApplications((prev) => prev.filter((user) => user.user_id !== visitorSelect));
+                setVisitorSelect('');
+                setError('');
+            } else {
+                console.error('Denial failed:', data.error || 'Unknown error');
+                setError(data.error || 'Failed to deny application.');
+            }
+        } catch (err) {
+            console.error('Error during API call:', err);
+            setError('Server error');
+        }
     };
 
     const handleUnsuspend = async (e) => {
@@ -110,10 +140,6 @@ const Superusers_profile = () => {
 
     const bids = [
         { id: 1, amount: 100, deadline: '2024-11-15' },
-    ];
-
-    const messages = [
-        { id: 1, content: 'Temporary until i get the api' },
     ];
 
     const formatMin = (price_from) => {
@@ -239,6 +265,39 @@ const Superusers_profile = () => {
             }
         };
 
+        const fetchMessages = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    setError('User not authenticated.');
+                    return;
+                }
+        
+                const response = await fetch('/api/users/get-notif', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+        
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.notifications && data.notifications.length > 0) {
+                        setMessages(data.notifications);
+                    } else {
+                        setError('No notifications found.');
+                    }
+                } else {
+                    setError(result.error || 'Cannot show messages');
+                }
+            } catch (err) {
+                console.error('Error fetching notifications:', err);
+                setError('Server error');
+            }
+        };
+        
+        fetchMessages();
         fetchSuspensions();
         fetchApplications();
         fetchBalance();
@@ -348,18 +407,23 @@ const Superusers_profile = () => {
                 <div className="my-listings">My Inbox</div>
                 <div className="my-listings-container">
                     <div className="my-listings_label">New Messages:</div>
-                    <select className="show-messages" id="message_select" value={messageSelect} onChange={handleMessageSelect} required>
+                    <select className="show-messages"id="message_select" value={messageSelect || ''} onChange={handleMessageSelect}required>
                         <option value="">Open a Message</option>
                         {messages.map((msg) => (
                             <option key={msg.id} value={msg.id}>
-                                {msg.content}
+                                {msg.notification_type || 'No new messages'}
                             </option>
                         ))}
                     </select>
                 </div>
                 {selectedMessage && (
-                    <div className="message-info"> {selectedMessage}</div>
-                )}
+                            <div className="show-messages">{selectedMessage}</div>
+                        )}
+                        {messageInfo ? (
+                            <div className="message-info">{messageInfo}</div>
+                        ) : (
+                        <div className="message-info">No message details sent</div>
+                        )}
                 <div>
                     <button className="read" type="button" onClick={handleRead}>Read</button>
                 </div>
@@ -368,16 +432,12 @@ const Superusers_profile = () => {
                 <div className="my-listings">Approve/Deny User Applications</div>
                 <div className="my-listings-container">
                 <div className="my-listings_label">Pending:</div>
-                <select
-                className="show-listings"
-                id="visitor_select"
-                value={visitorSelect}
-                onChange={handleVisitorSelect}>
+                <select className="show-listings"id="visitor_select" value={visitorSelect} onChange={handleVisitorSelect}>
                     <option value="">Select an Application</option>
                     {applications.map((app) => (
-                        <option key={app.id} value={app.user_id?._id || app.id}> 
+                        <option key={app.id} value={app.user_id?._id}> 
                         {app.user_id?.username || 'N/A'}, {app.user_id?.email || 'N/A'}
-                        </option>
+                    </option>
                     ))}
                 </select>
                 </div>
@@ -399,5 +459,3 @@ const Superusers_profile = () => {
 };
 
 export default Superusers_profile;
-
-
