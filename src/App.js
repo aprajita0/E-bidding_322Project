@@ -102,7 +102,7 @@ function App() {
                             ) : role === 'visitor' ? (
                                 <Link to="/visitor_profile">Profile</Link>
                             ) : role === 'superuser' ? (
-                                <Link to="/superuser_profile">Profile</Link>
+                                <Link to="/superusers_profile">Profile</Link>
                             ) : null
                         ) : (                            
                                 <Link to="/U_login">Login/Registration</Link>

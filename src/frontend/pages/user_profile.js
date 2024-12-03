@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import '@fontsource/dm-sans/700.css'; 
 import exchange_image from '../assets/exchange.png';
 import profile_pic from '../assets/profile_pic.png';
+import message_pic from '../assets/message.png';
 
 const User_profile = () => {
     const navigate = useNavigate();
@@ -11,10 +12,6 @@ const User_profile = () => {
     const [accountBalance, setAccountBalance] = useState(0);
     const [listingSelect, setListingSelect] = useState('');
     const [bidSelect, setBidSelect] = useState('');
-    const [messages, setMessages] = useState([]);
-    const [messageSelect, setMessageSelect] = useState('');
-    const [messageInfo, setMessageInfo] = useState('');
-    const [selectedMessage, setSelectedMessage] = useState('');
     const [username, setUsername] = useState('');
     const [userListings, setUserListings] = useState([]);
 
@@ -92,40 +89,6 @@ const User_profile = () => {
             }
         };
 
-        const fetchMessages = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    setError('User not authenticated.');
-                    return;
-                }
-        
-                const response = await fetch('/api/users/get-notif', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
-        
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.notifications && data.notifications.length > 0) {
-                        setMessages(data.notifications);
-                    } else {
-                        setError('No notifications found.');
-                    }
-                } else {
-                    setError(result.error || 'Cannot show messages');
-                }
-            } catch (err) {
-                console.error('Error fetching notifications:', err);
-                setError('Server error');
-            }
-        };
-        
-
-        fetchMessages();
         fetchBalance();
         fetchUserListings();
     }, []);
@@ -146,14 +109,6 @@ const User_profile = () => {
 
     const handleRead = () => {
         navigate('/');
-    };
-
-    const handleMessageSelect = (e) => {
-        const selectedId = e.target.value;
-        setMessageSelect(selectedId);
-        const message = messages.find((msg) => msg.id === selectedId);
-        setSelectedMessage(message ? message.notification_type : '');
-        setMessageInfo(message ? message.notification : '');
     };
 
     return (
@@ -204,33 +159,6 @@ const User_profile = () => {
                         <img src={exchange_image} alt="my-listings-image" className="my-listings-image" />
                     </div>
                     <div className="functionality-box">
-                        <div className="my-listings">My Inbox</div>
-                        <div className="my-listings-container">
-                            <div className="my-listings_label">New Messages:</div>
-                            <select className="show-messages" id="message_select" value={messageSelect || ''} onChange={handleMessageSelect}required>
-                                <option value="">Open a Message</option>
-                                {messages.map((msg) => (
-                                    <option key={msg.id} value={msg.id}>
-                                        {msg.notification_type || 'No new messages'}
-                                        </option>
-                                ))}
-                            </select>
-                        </div>
-                        {selectedMessage && (
-                            <div className="show-messages">{selectedMessage}</div>
-                        )}
-                        {messageInfo ? (
-                            <div className="message-info">{messageInfo}</div>
-                        ) : (
-                        <div className="message-info">
-                            No message details available
-                        </div>
-                        )}
-                        <div>
-                            <button className="read" type="button" onClick={handleRead}>Read</button>
-                        </div>
-                    </div>
-                    <div className="functionality-box">
                         <div className="my-listings">Dissatisfied with an Item You Bidded On?</div>
                         <div className="my-listings-container">
                             <div className="file-label">
@@ -242,6 +170,9 @@ const User_profile = () => {
                         </div>
                         <button className="access-file" onClick={() => navigate('/Complaint')}>File a Complaint</button>
                     </div>
+                    <div className="functionality-box">
+                        <img src={message_pic} alt="my-listings-image" className="my-listings-image" />
+                    </div>
                 </div>
                 <div className="add-container">
                     <button className="add-button" onClick={() => navigate('/add_listings')}>+</button>
@@ -252,5 +183,6 @@ const User_profile = () => {
 };
 
 export default User_profile;
+
 
 

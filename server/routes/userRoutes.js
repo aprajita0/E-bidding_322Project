@@ -295,7 +295,6 @@ router.post('/add-notification', authMiddleware, async (req, res) => {
     }
 });
 
-
 router.post('/bid-listing', authMiddleware, async (req, res) => {
     const { listing_id, amount, bid_expiration } = req.body;
 
@@ -928,11 +927,11 @@ router.post('/deny-user', authMiddleware, async (req, res) => {
 
 router.get('/get-notif', authMiddleware, async (req, res) => {
     try {
-        // Find notifications for the logged-in user where read_status is false
+        // Fetch unread notifications for the logged-in user
         const notifications = await Notification.find({
             to_id: req.user.id,    // Match the user ID
             read_status: false      // Only get unread notifications
-        }).select('subject message notification_type read_status'); // Select only necessary fields
+        }).select('notification_type notification');  // Select notification_type and notification fields
 
         if (notifications.length === 0) {
             return res.status(404).json({ message: 'No unread notifications found.' });
