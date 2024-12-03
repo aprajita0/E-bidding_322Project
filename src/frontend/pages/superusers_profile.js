@@ -10,6 +10,7 @@ const Superusers_profile = () => {
     const [accountBalance, setAccountBalance] = useState(0);
     const [listingSelect, setListingSelect] = useState(''); 
     const [bidSelect, setBidSelect] = useState('');
+    const [bids, setBids] = useState([]);
     const [username, setUsername] = useState('');
     const [userListings, setUserListings] = useState([]);
     const [visitorSelect, setVisitorSelect] = useState(''); 
@@ -22,10 +23,6 @@ const Superusers_profile = () => {
     };
 
     const handleDeny = () => {
-        navigate('/');
-    };
-
-    const handleRead = () => {
         navigate('/');
     };
 
@@ -132,10 +129,6 @@ const Superusers_profile = () => {
         setError('Server error. Please try again later.');
     }
     };
-
-    const bids = [
-        { id: 1, amount: 100, deadline: '2024-11-15' },
-    ];
 
     const formatMin = (price_from) => {
         if (price_from && typeof price_from === 'object' && price_from.$numberDecimal) {
@@ -298,6 +291,38 @@ const Superusers_profile = () => {
         fetchBalance();
         fetchUserListings();
     }, []); 
+    
+    useEffect(() => {
+        const fetchBids = async () => {
+            try {
+                if (!listingSelect) {
+                    console.error('Listing ID needed');
+                    return;
+                }
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/users/get-bids', {
+                    method: 'POST', 
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ listing_id: listingSelect }), 
+                });
+    
+                if (response.ok) {
+                    const data = await response.json();
+                    setBids(data.bids);
+                } else {
+                    console.error('Failed to fetch bids');
+                }
+            } catch (err) {
+                console.error('Error fetching bids:', err);
+                setError('Error fetching bids.');
+            }
+        };
+    
+        fetchBids();
+    }, [listingSelect]); 
 
     const handleBidSelectChange = (e) => {
         const selectedBidId = parseInt(e.target.value);
@@ -324,7 +349,7 @@ const Superusers_profile = () => {
                 <div className="my-listings">My Current Listings</div>
                 <div className="my-listings-container">
                     <div className="my-listings_label">Select a Listing:</div>
-                    <select className="show-listings" id="listing_select" value={listingSelect} onChange={(e) => setListingSelect(e.target.value)} required>
+                    <select className="show-listings"id="listing_select" value={listingSelect} onChange={(e) => setListingSelect(e.target.value)} required>
                         <option value="">Select a Listing</option>
                         {userListings.map((listing) => (
                             <option key={listing._id} value={listing._id}>
@@ -333,16 +358,15 @@ const Superusers_profile = () => {
                         ))}
                     </select>
                 </div>
-                <div className="my-listings-container">
-                    <div className="my-listings_label">Select a Bid:</div>
-                    <select className="show-listings" id="bid_select" value={bidSelect} onChange={handleBidSelectChange} required>
-                        <option value="">Select a Bid</option>
-                        {bids.map((bid) => (
-                            <option key={bid.id} value={bid.id}>
-                                Amount Offered: ${bid.amount}, Deadline: {bid.deadline}
-                            </option>
-                        ))}
-                    </select>
+                <div className="my-listings-container"><div className="my-listings_label">Select a Bid:</div>
+                <select className="show-listings" id="bid_select" value={bidSelect} onChange={handleBidSelectChange}required>
+                     <option value="">Select a Bid</option>
+                     {bids.map((bid, index) => (
+                        <option key={index} value={index}>
+                            Amount Offered: ${bid.amount && typeof bid.amount === 'object' && bid.amount.$numberDecimal? parseFloat(bid.amount.$numberDecimal).toFixed(2): bid.amount}, Deadline: {bid.bid_expiration || "No deadline"}
+                        </option>
+                    ))}
+                </select>
                 </div>
                 <div>
                     <button className="accept-bid" type="button" onClick={handleAccept}>Accept</button>
@@ -418,4 +442,5 @@ const Superusers_profile = () => {
 };
 
 export default Superusers_profile;
+
 
