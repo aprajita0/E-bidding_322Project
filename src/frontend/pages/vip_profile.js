@@ -11,18 +11,9 @@ const Vip_profile = () => {
     const [accountBalance, setAccountBalance] = useState(0);
     const [listingSelect, setListingSelect] = useState('');
     const [bidSelect, setBidSelect] = useState('');
-    const [messageSelect, setMessageSelect] = useState('');
-    const [selectedMessage, setSelectedMessage] = useState('');
+    const [bids, setBids] = useState([]);
     const [username, setUsername] = useState('');
     const [userListings, setUserListings] = useState([]);
-
-    const bids = [
-        { id: 1, amount: 100, deadline: '2024-11-15' },
-    ];
-
-    const messages = [
-        { id: 1, content: 'Temporary so i dont get an error' },
-    ];
 
     const formatMin = (price_from) => {
         if (price_from && typeof price_from === 'object' && price_from.$numberDecimal) {
@@ -98,6 +89,38 @@ const Vip_profile = () => {
         fetchUserListings();
     }, []);
 
+    useEffect(() => {
+        const fetchBids = async () => {
+            try {
+                if (!listingSelect) {
+                    console.error('Listing ID needed');
+                    return;
+                }
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/users/get-bids', {
+                    method: 'POST', 
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ listing_id: listingSelect }), 
+                });
+    
+                if (response.ok) {
+                    const data = await response.json();
+                    setBids(data.bids);
+                } else {
+                    console.error('Failed to fetch bids');
+                }
+            } catch (err) {
+                console.error('Error fetching bids:', err);
+                setError('Error fetching bids.');
+            }
+        };
+    
+        fetchBids();
+    }, [listingSelect]); 
+
     const handleBidSelectChange = (e) => {
         const selectedBidId = parseInt(e.target.value);
         const selectedBid = bids.find(bid => bid.id === selectedBidId);
@@ -139,7 +162,7 @@ const Vip_profile = () => {
                         <div className="my-listings">My Current Listings</div>
                         <div className="my-listings-container">
                             <div className="my-listings_label">Select a Listing:</div>
-                            <select className="show-listings" id="listing_select" value={listingSelect} onChange={(e) => setListingSelect(e.target.value)} required>
+                            <select className="show-listings"id="listing_select" value={listingSelect} onChange={(e) => setListingSelect(e.target.value)} required>
                                 <option value="">Select a Listing</option>
                                 {userListings.map((listing) => (
                                     <option key={listing._id} value={listing._id}>
@@ -148,16 +171,15 @@ const Vip_profile = () => {
                                 ))}
                             </select>
                         </div>
-                        <div className="my-listings-container">
-                            <div className="my-listings_label">Select a Bid:</div>
-                            <select className="show-listings" id="bid_select" value={bidSelect} onChange={handleBidSelectChange} required>
-                                <option value="">Select a Bid</option>
-                                {bids.map((bid) => (
-                                    <option key={bid.id} value={bid.id}>
-                                        Amount Offered: ${bid.amount}, Deadline: {bid.deadline}
-                                    </option>
-                                ))}
-                            </select>
+                        <div className="my-listings-container"><div className="my-listings_label">Select a Bid:</div>
+                        <select className="show-listings" id="bid_select" value={bidSelect} onChange={handleBidSelectChange}required>
+                            <option value="">Select a Bid</option>
+                            {bids.map((bid, index) => (
+                                <option key={index} value={index}>
+                                    Amount Offered: ${bid.amount && typeof bid.amount === 'object' && bid.amount.$numberDecimal? parseFloat(bid.amount.$numberDecimal).toFixed(2): bid.amount}, Deadline: {bid.bid_expiration || "No deadline"}
+                                </option>
+                            ))}
+                        </select>
                         </div>
                         <div>
                             <button className="accept-bid" type="button" onClick={handleAccept}>Accept</button>
@@ -176,26 +198,6 @@ const Vip_profile = () => {
                         <button className="access-file" onClick={() => navigate('/Create_raffle')}>Create a Raffle</button>
                     </div>
                     <div className="functionality-box">
-                        <div className="my-listings">My Inbox</div>
-                        <div className="my-listings-container">
-                            <div className="my-listings_label">New Messages:</div>
-                            <select className="show-messages" id="message_select" value={messageSelect} onChange={handleMessageSelect} required>
-                                <option value="">Open a Message</option>
-                                {messages.map((msg) => (
-                                    <option key={msg.id} value={msg.id}>
-                                        {msg.content}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        {selectedMessage && (
-                            <div className="message-info">{selectedMessage}</div>
-                        )}
-                        <div>
-                            <button className="read" type="button" onClick={handleRead}>Read</button>
-                        </div>
-                    </div>
-                    <div className="functionality-box">
                         <div className="my-listings">Dissatisfied with an Item You Bidded On?</div>
                         <div className="my-listings-container">
                             <div className="file-label">
@@ -207,6 +209,9 @@ const Vip_profile = () => {
                         </div>
                         <button className="access-file" onClick={() => navigate('/Complaint')}>File a Complaint</button>
                     </div>
+                    <div className="functionality-box">
+                        <img src={exchange_image} alt="my-listings-image" className="my-listings-image" />
+                </div>
                 </div>
                 <div className="add-container">
                     <button className="add-button" onClick={() => navigate('/add_listings')}>+</button>
@@ -217,4 +222,5 @@ const Vip_profile = () => {
 };
 
 export default Vip_profile;
+
 

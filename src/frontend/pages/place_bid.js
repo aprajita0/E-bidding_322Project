@@ -136,8 +136,13 @@ const Place_bid = () => {
                     {error && <p className="error">{error}</p>}
                     <form onSubmit={handleBidSubmit}>
                         <div className="form-group">
+<<<<<<< HEAD
                             <label className="bal-label" htmlFor="balance">Current Account Balance:</label>
                             <div className="acc-balance">${accountBalance}</div>
+=======
+                            <label className="balance-label" htmlFor="balance">Current Account Balance:</label>
+                            <div className="account-balance">${accountBalance}</div>
+>>>>>>> 98d38beb226dd8589d1a29c84f55ebdf8224ce36
                         </div>
                         <div className="form-group">
                             <label htmlFor="bidAmount">Bid Amount:</label>
@@ -168,6 +173,10 @@ const Place_bid = () => {
                         <p><strong>Title:</strong>{listing.name}</p>
                         <p><strong>Description:</strong> {listing.description}</p>
                         <p><strong>Price Range: ${formatMin(listing.price_from)} - ${formatMax(listing.price_to)}</strong></p>
+<<<<<<< HEAD
+=======
+                        {/* Add other listing details as needed */}
+>>>>>>> 98d38beb226dd8589d1a29c84f55ebdf8224ce36
                     </div>
                 )}
             </div>

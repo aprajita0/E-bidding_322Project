@@ -3,7 +3,6 @@ import './styles/superusers_profile.css';
 import { useNavigate } from 'react-router-dom';
 import '@fontsource/dm-sans/700.css'; 
 import profile_pic from '../assets/profile_pic.png';
-import exchange_image from '../assets/exchange.png';
 
 const Superusers_profile = () => {
     const navigate = useNavigate();
@@ -11,8 +10,7 @@ const Superusers_profile = () => {
     const [accountBalance, setAccountBalance] = useState(0);
     const [listingSelect, setListingSelect] = useState(''); 
     const [bidSelect, setBidSelect] = useState('');
-    const [messageSelect, setMessageSelect] = useState(''); 
-    const [selectedMessage, setSelectedMessage] = useState(''); 
+    const [bids, setBids] = useState([]);
     const [username, setUsername] = useState('');
     const [userListings, setUserListings] = useState([]);
     const [visitorSelect, setVisitorSelect] = useState(''); 
@@ -25,10 +23,6 @@ const Superusers_profile = () => {
     };
 
     const handleDeny = () => {
-        navigate('/');
-    };
-
-    const handleRead = () => {
         navigate('/');
     };
 
@@ -68,8 +62,36 @@ const Superusers_profile = () => {
         setVisitorSelect(e.target.value);
     };
 
-    const handleDenyApp = () => {
-        navigate('/');
+    const handleDenyApp = async () => {
+        if (!visitorSelect) {
+            alert('Please select an application');
+            return;
+        }
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/users/deny-user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ user_id: visitorSelect }),
+            });
+    
+            const data = await response.json();
+            if (response.ok) {
+                alert('Application denied');
+                setApplications((prev) => prev.filter((user) => user.user_id !== visitorSelect));
+                setVisitorSelect('');
+                setError('');
+            } else {
+                console.error('Denial failed:', data.error || 'Unknown error');
+                setError(data.error || 'Failed to deny application.');
+            }
+        } catch (err) {
+            console.error('Error during API call:', err);
+            setError('Server error');
+        }
     };
 
     const handleUnsuspend = async (e) => {
@@ -107,14 +129,6 @@ const Superusers_profile = () => {
         setError('Server error. Please try again later.');
     }
     };
-
-    const bids = [
-        { id: 1, amount: 100, deadline: '2024-11-15' },
-    ];
-
-    const messages = [
-        { id: 1, content: 'Temporary until i get the api' },
-    ];
 
     const formatMin = (price_from) => {
         if (price_from && typeof price_from === 'object' && price_from.$numberDecimal) {
@@ -239,24 +253,81 @@ const Superusers_profile = () => {
             }
         };
 
+        const fetchMessages = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    setError('User not authenticated.');
+                    return;
+                }
+        
+                const response = await fetch('/api/users/get-notif', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+        
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.notifications && data.notifications.length > 0) {
+                        setMessages(data.notifications);
+                    } else {
+                        setError('No notifications found.');
+                    }
+                } else {
+                    setError(result.error || 'Cannot show messages');
+                }
+            } catch (err) {
+                console.error('Error fetching notifications:', err);
+                setError('Server error');
+            }
+        };
+        
+        fetchMessages();
         fetchSuspensions();
         fetchApplications();
         fetchBalance();
         fetchUserListings();
     }, []); 
+    
+    useEffect(() => {
+        const fetchBids = async () => {
+            try {
+                if (!listingSelect) {
+                    console.error('Listing ID needed');
+                    return;
+                }
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/users/get-bids', {
+                    method: 'POST', 
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ listing_id: listingSelect }), 
+                });
+    
+                if (response.ok) {
+                    const data = await response.json();
+                    setBids(data.bids);
+                } else {
+                    console.error('Failed to fetch bids');
+                }
+            } catch (err) {
+                console.error('Error fetching bids:', err);
+                setError('Error fetching bids.');
+            }
+        };
+    
+        fetchBids();
+    }, [listingSelect]); 
 
     const handleBidSelectChange = (e) => {
         const selectedBidId = parseInt(e.target.value);
         const selectedBid = bids.find(bid => bid.id === selectedBidId);
         setBidSelect(selectedBidId);
-    };
-
-    const handleMessageSelect = (e) => {
-        const selectedMessageId = parseInt(e.target.value);
-        setMessageSelect(selectedMessageId);
-
-        const selectedMsg = messages.find(msg => msg.id === selectedMessageId);
-        setSelectedMessage(selectedMsg ? selectedMsg.content : ''); 
     };
 
   return (
@@ -278,7 +349,7 @@ const Superusers_profile = () => {
                 <div className="my-listings">My Current Listings</div>
                 <div className="my-listings-container">
                     <div className="my-listings_label">Select a Listing:</div>
-                    <select className="show-listings" id="listing_select" value={listingSelect} onChange={(e) => setListingSelect(e.target.value)} required>
+                    <select className="show-listings"id="listing_select" value={listingSelect} onChange={(e) => setListingSelect(e.target.value)} required>
                         <option value="">Select a Listing</option>
                         {userListings.map((listing) => (
                             <option key={listing._id} value={listing._id}>
@@ -287,16 +358,15 @@ const Superusers_profile = () => {
                         ))}
                     </select>
                 </div>
-                <div className="my-listings-container">
-                    <div className="my-listings_label">Select a Bid:</div>
-                    <select className="show-listings" id="bid_select" value={bidSelect} onChange={handleBidSelectChange} required>
-                        <option value="">Select a Bid</option>
-                        {bids.map((bid) => (
-                            <option key={bid.id} value={bid.id}>
-                                Amount Offered: ${bid.amount}, Deadline: {bid.deadline}
-                            </option>
-                        ))}
-                    </select>
+                <div className="my-listings-container"><div className="my-listings_label">Select a Bid:</div>
+                <select className="show-listings" id="bid_select" value={bidSelect} onChange={handleBidSelectChange}required>
+                     <option value="">Select a Bid</option>
+                     {bids.map((bid, index) => (
+                        <option key={index} value={index}>
+                            Amount Offered: ${bid.amount && typeof bid.amount === 'object' && bid.amount.$numberDecimal? parseFloat(bid.amount.$numberDecimal).toFixed(2): bid.amount}, Deadline: {bid.bid_expiration || "No deadline"}
+                        </option>
+                    ))}
+                </select>
                 </div>
                 <div>
                     <button className="accept-bid" type="button" onClick={handleAccept}>Accept</button>
@@ -345,39 +415,15 @@ const Superusers_profile = () => {
                 </div>
             </div>
               <div className="functionality-box">
-                <div className="my-listings">My Inbox</div>
-                <div className="my-listings-container">
-                    <div className="my-listings_label">New Messages:</div>
-                    <select className="show-messages" id="message_select" value={messageSelect} onChange={handleMessageSelect} required>
-                        <option value="">Open a Message</option>
-                        {messages.map((msg) => (
-                            <option key={msg.id} value={msg.id}>
-                                {msg.content}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                {selectedMessage && (
-                    <div className="message-info"> {selectedMessage}</div>
-                )}
-                <div>
-                    <button className="read" type="button" onClick={handleRead}>Read</button>
-                </div>
-              </div>
-              <div className="functionality-box">
                 <div className="my-listings">Approve/Deny User Applications</div>
                 <div className="my-listings-container">
                 <div className="my-listings_label">Pending:</div>
-                <select
-                className="show-listings"
-                id="visitor_select"
-                value={visitorSelect}
-                onChange={handleVisitorSelect}>
+                <select className="show-listings"id="visitor_select" value={visitorSelect} onChange={handleVisitorSelect}>
                     <option value="">Select an Application</option>
                     {applications.map((app) => (
-                        <option key={app.id} value={app.user_id?._id || app.id}> 
+                        <option key={app.id} value={app.user_id?._id}> 
                         {app.user_id?.username || 'N/A'}, {app.user_id?.email || 'N/A'}
-                        </option>
+                    </option>
                     ))}
                 </select>
                 </div>
@@ -385,9 +431,6 @@ const Superusers_profile = () => {
                     <button className="accept-bid" type="button" onClick={handleAcceptApp}>Accept</button>
                     <button className="deny-bid" type="button" onClick={handleDenyApp}>Deny</button>
                 </div>
-            </div>
-            <div className="functionality-box">
-                <img src={exchange_image} alt="my-listings-image" className="my-listings-image" />
             </div>
             </div>
             <div className="add-container">
