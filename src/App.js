@@ -102,7 +102,7 @@ function App() {
                             ) : role === 'visitor' ? (
                                 <Link to="/visitor_profile">Profile</Link>
                             ) : role === 'superuser' ? (
-                                <Link to="/superuser_profile">Profile</Link>
+                                <Link to="/superusers_profile">Profile</Link>
                             ) : null
                         ) : (                            
                                 <Link to="/U_login">Login/Registration</Link>
@@ -124,7 +124,7 @@ function App() {
                         <Route path="/visitor_profile" element={<VisitorProfile />} />
                         <Route path="/Vip_profile" element={<Vip_profile />} />
                         <Route path="/browse_listings/:id" element={<Listing_clicked />} />
-                        <Route path="/Place_bid" element={<Place_bid />} />
+                        <Route path="/place_bid/:id" element={<Place_bid />} />
                         <Route path="/Create_raffle" element={<Create_raffle />} />
                         <Route path="/Deposit" element={isLoggedIn ? <Deposit /> : <Navigate to="/U_login" />} />
                         <Route path="/Withdraw" element={isLoggedIn ? <Withdraw /> : <Navigate to="/U_login" />} />
@@ -145,4 +145,5 @@ function App() {
 }
 
 export default App;
+
 

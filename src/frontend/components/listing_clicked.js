@@ -71,15 +71,15 @@ const Listing_clicked = () => {
 
     const handleBid = (e) => {
         if (role === 'reguser') {
-            navigate('/place_bid');
+            navigate(`/place_bid/${id}`);
         }else if (role === 'superuser') {
-            navigate('/place_bid');
+            navigate(`/place_bid/${id}`);
         }else if (role === 'visitor') {
             alert('Oops! Only users are allowed to access this feature, apply to be a user via your profile today to place a bid')
     }
-    
-        
+       
     };
+    
 
     const handleCommentSubmit = async () => {
         const token = localStorage.getItem('token'); 
