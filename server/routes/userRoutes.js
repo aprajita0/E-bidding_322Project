@@ -272,16 +272,18 @@ router.get('/get-listing/:id', async (req, res) => {
 
 router.post('/add-notification', authMiddleware, async (req, res) => {
     try {
-        const { to_id, notification_type } = req.body;
+        const { to_id, notification_type, subject, message } = req.body;
         const user = await User.findById(req.user.id);
 
-        if (!to_id || !notification_type) {
+        if (!to_id || !notification_type || !subject || !message) {
             return res.status(400).json({ error: 'All fields are required.' });
         }
 
         const notification = new Notification({
             to_id,
             notification_type,
+            subject,
+            message,
         });
 
         await notification.save();
@@ -538,7 +540,7 @@ router.post('/rate-transactions', authMiddleware, async (req, res) => {
         }
 
         
-        if (transaction.buyer_id.toString() !== req.user.id) {
+        if (transaction.buyer_id.toString() !== req.user.id || transaction.seller_id.toString() !== req.user.id) {
             return res.status(403).json({ error: 'Access denied. You are not a participant in this transaction.' });
         }
 
