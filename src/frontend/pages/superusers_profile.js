@@ -3,7 +3,6 @@ import './styles/superusers_profile.css';
 import { useNavigate } from 'react-router-dom';
 import '@fontsource/dm-sans/700.css'; 
 import profile_pic from '../assets/profile_pic.png';
-import exchange_image from '../assets/exchange.png';
 
 const Superusers_profile = () => {
     const navigate = useNavigate();
@@ -11,10 +10,6 @@ const Superusers_profile = () => {
     const [accountBalance, setAccountBalance] = useState(0);
     const [listingSelect, setListingSelect] = useState(''); 
     const [bidSelect, setBidSelect] = useState('');
-    const [messages, setMessages] = useState([]);
-    const [messageSelect, setMessageSelect] = useState('');
-    const [messageInfo, setMessageInfo] = useState('');
-    const [selectedMessage, setSelectedMessage] = useState('');
     const [username, setUsername] = useState('');
     const [userListings, setUserListings] = useState([]);
     const [visitorSelect, setVisitorSelect] = useState(''); 
@@ -310,14 +305,6 @@ const Superusers_profile = () => {
         setBidSelect(selectedBidId);
     };
 
-    const handleMessageSelect = (e) => {
-        const selectedMessageId = parseInt(e.target.value);
-        setMessageSelect(selectedMessageId);
-
-        const selectedMsg = messages.find(msg => msg.id === selectedMessageId);
-        setSelectedMessage(selectedMsg ? selectedMsg.content : ''); 
-    };
-
   return (
     <div className="profile-container">
         <div className="balance-container">
@@ -404,31 +391,6 @@ const Superusers_profile = () => {
                 </div>
             </div>
               <div className="functionality-box">
-                <div className="my-listings">My Inbox</div>
-                <div className="my-listings-container">
-                    <div className="my-listings_label">New Messages:</div>
-                    <select className="show-messages"id="message_select" value={messageSelect || ''} onChange={handleMessageSelect}required>
-                        <option value="">Open a Message</option>
-                        {messages.map((msg) => (
-                            <option key={msg.id} value={msg.id}>
-                                {msg.notification_type || 'No new messages'}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                {selectedMessage && (
-                            <div className="show-messages">{selectedMessage}</div>
-                        )}
-                        {messageInfo ? (
-                            <div className="message-info">{messageInfo}</div>
-                        ) : (
-                        <div className="message-info">No message details sent</div>
-                        )}
-                <div>
-                    <button className="read" type="button" onClick={handleRead}>Read</button>
-                </div>
-              </div>
-              <div className="functionality-box">
                 <div className="my-listings">Approve/Deny User Applications</div>
                 <div className="my-listings-container">
                 <div className="my-listings_label">Pending:</div>
@@ -446,9 +408,6 @@ const Superusers_profile = () => {
                     <button className="deny-bid" type="button" onClick={handleDenyApp}>Deny</button>
                 </div>
             </div>
-            <div className="functionality-box">
-                <img src={exchange_image} alt="my-listings-image" className="my-listings-image" />
-            </div>
             </div>
             <div className="add-container">
                 <button className="add-button" onClick={() => navigate('/add_listings')}>+</button>
@@ -459,3 +418,4 @@ const Superusers_profile = () => {
 };
 
 export default Superusers_profile;
+
