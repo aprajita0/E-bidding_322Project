@@ -317,7 +317,7 @@ router.post('/bid-listing', authMiddleware, async (req, res) => {
         }
 
         // Validate the amount is greater than the listing price
-        if (parseFloat(amount) <= parseFloat(listing.price_from)) {
+        if (parseFloat(amount) < parseFloat(listing.price_from)) {
             console.error(`Bid amount (${amount}) must be greater than the listing price (${listing.price_from}).`);
             return res.status(400).json({
                 error: `Bid amount must be greater than the listing price (${listing.price_from}).`,
