@@ -490,7 +490,7 @@ router.post('/read-notify', authMiddleware, async (req, res) => {
     }
 });
 
-router.get('/get-bids', authMiddleware, async (req, res) => {
+router.post('/get-bids', authMiddleware, async (req, res) => {
     try {
         const { listing_id } = req.body; // Now extract listing_id from the body
 
