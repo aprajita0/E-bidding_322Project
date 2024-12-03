@@ -175,4 +175,46 @@ router.post('/win-raffle', authMiddleware, async (req, res) => {
     }
 });
 
+router.get('/get-raffle-entries', authMiddleware, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        const entries = await RaffleEntries.find({ user_id: user._id });
+        if (entries.won_prize === true) {
+            return res.status(200).json({ message: 'You have won a prize.' });
+        }
+
+        res.status(200).json(entries);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
+
+router.post('/read-status-raffle', authMiddleware, async (req, res) => {
+    try {
+        const { raffle_id } = req.body;
+        const user = await User.findById(req.user.id);
+
+        if (!raffle_id) {
+            return res.status(400).json({ error: 'Raffle ID is required.' });
+        }
+
+        const entry = await RaffleEntries.findOne({ raffle_id, user_id: user._id });
+        
+        if (entry.read_status === false) {
+            entry.read_status = true;
+            await entry.save();
+        }
+        res.status(200).json({ message: 'Read status updated successfully.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
+
+
 module.exports = router;
