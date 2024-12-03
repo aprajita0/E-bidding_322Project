@@ -87,7 +87,7 @@ const VisitorProfile = () => {
                 <div className="user_profile-grid">
                     <div className="functionality-box">
                         <div className="my-listings">Apply to be a User</div>
-                        <div className="my-listings-container">
+                        <div className="applying-container">
                             <div className="my-listings_label">Solve to Apply: {question}</div>
                             <input
                                 type="number"
@@ -105,7 +105,7 @@ const VisitorProfile = () => {
                 </div>
                 <div className="functionality-box">
                     <div className="my-listings">Want to become a user?</div>
-                    <div className="my-listings-container">
+                    <div className="applying-container">
                         <div className="file-label">
                             Submit your application today to access full features and capabilities as a registered user!
                         </div>
