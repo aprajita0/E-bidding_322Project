@@ -272,16 +272,18 @@ router.get('/get-listing/:id', async (req, res) => {
 
 router.post('/add-notification', authMiddleware, async (req, res) => {
     try {
-        const { to_id, notification_type } = req.body;
+        const { to_id, notification_type, subject, message } = req.body;
         const user = await User.findById(req.user.id);
 
-        if (!to_id || !notification_type) {
+        if (!to_id || !notification_type || !subject || !message) {
             return res.status(400).json({ error: 'All fields are required.' });
         }
 
         const notification = new Notification({
             to_id,
             notification_type,
+            subject,
+            message,
         });
 
         await notification.save();
@@ -292,7 +294,6 @@ router.post('/add-notification', authMiddleware, async (req, res) => {
         res.status(500).json({ error: 'Internal server error.' });
     }
 });
-
 
 router.post('/bid-listing', authMiddleware, async (req, res) => {
     const { listing_id, amount, bid_expiration } = req.body;
