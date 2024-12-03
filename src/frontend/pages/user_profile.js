@@ -12,10 +12,6 @@ const User_profile = () => {
     const [accountBalance, setAccountBalance] = useState(0);
     const [listingSelect, setListingSelect] = useState('');
     const [bidSelect, setBidSelect] = useState('');
-    const [messages, setMessages] = useState([]);
-    const [messageSelect, setMessageSelect] = useState('');
-    const [messageInfo, setMessageInfo] = useState('');
-    const [selectedMessage, setSelectedMessage] = useState('');
     const [username, setUsername] = useState('');
     const [userListings, setUserListings] = useState([]);
 
@@ -187,5 +183,6 @@ const User_profile = () => {
 };
 
 export default User_profile;
+
 
 
