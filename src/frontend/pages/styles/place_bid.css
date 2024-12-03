@@ -47,7 +47,7 @@ form {
     margin-bottom: 20px;
 } */
 
-.bal-label {
+.bal-label{
     font-size: 16px;
     color: #033f63;
     font-family: 'DM Sans', sans-serif;
@@ -56,7 +56,7 @@ form {
     margin-right: 10px;
 }
 
-.acc-balance, input {
+.acc-balance{
     flex: 2;
     padding: 10px;
     font-size: 1em;
@@ -67,7 +67,7 @@ form {
     transition: border-color 0.3s ease;
 }
 
-input:focus, .acc-balance:focus {
+.acc-balance:focus {
     border-color: #007bff;
 }
 
@@ -93,7 +93,5 @@ button:hover {
     font-size: 1em;
     margin-bottom: 15px;
 }
-
-
 
 
