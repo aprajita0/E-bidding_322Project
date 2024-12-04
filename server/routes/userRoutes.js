@@ -936,5 +936,61 @@ router.get('/get-notif', authMiddleware, async (req, res) => {
     }
 });
 
+router.get('/check-acccount-status', authMiddleware, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        if (user.role === 'banned') {
+            return res.status(200).json({ message: 'Account is banned.' });
+        }
+
+        if (user.account_status === false) {
+            return res.status(200).json({ message: 'Account is suspended.' });
+        }
+
+        if (user.account_status === true) {
+            return res.status(200).json({ message: 'Account is active.' });
+        }
+
+        res.status(200).json({ user});
+
+    } catch (error) {
+        console.error('Error fetching account status:', error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
+
+
+router.post('/deny-bid', authMiddleware, async (req, res) => {
+    const { bid_id } = req.body;
+
+    try {
+        // Find the bid
+        const bid = await Bid.findById(bid_id);
+        if (!bid) {
+            return res.status(404).json({ error: 'Bid not found.' });
+        }
+
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        if (bid.owner_id.toString() !== user.id) {
+            return res.status(403).json({ error: 'Access denied.'});
+        }
+
+        await Bid.findByIdAndDelete(bid_id);
+
+        res.status(200).json({ message: 'Bid denied successfully.' });
+    } catch (error) {
+        console.error('Error denying bid:', error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
+         
 
 module.exports = router;
