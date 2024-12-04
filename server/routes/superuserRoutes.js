@@ -127,6 +127,8 @@ router.post('/unban-user', authMiddleware, async (req, res) => {
       if (!userToUnsuspend) {
         return res.status(404).json({ error: 'User not found.' });
       }
+      userToUnsuspend.role = 'reguser';
+      userToUnsuspend.suspension_count = 0;
   
       userToUnsuspend.account_status = true;
       await userToUnsuspend.save();

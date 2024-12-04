@@ -796,7 +796,6 @@ router.post('/unsuspend-account', authMiddleware, async (req, res) => {
         }
         // Unsuspend the account without fine
         user.account_status = true;
-        user.suspension_count = 0;  // Reset suspension count
         await user.save();
         res.status(200).json({ message: 'Account unsuspended successfully.', user });
     } catch (error) {
@@ -822,39 +821,31 @@ router.get('/get-suspended-account', authMiddleware, async (req, res) => {
     }
 });
 // Check VIP status API
-router.post('/check-vip', async (req, res) => {
+router.get('/check-vip', authMiddleware, async (req, res) => {
     try {
-      const { user_id } = req.body;
+        
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        
+        const regularUser = await RegularUser.findOne({ user_id: req.user.id });
+        if (!regularUser) {
+            return res.status(404).json({ error: 'RegularUser record not found.' });
+        }
+
   
-      // Find the user and their RegularUser entry
-      const user = await User.findById(user_id);
-      const regularUser = await RegularUser.findOne({ user_id });
+      const amount = 5000;
   
-      if (!user || !regularUser) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-  
-      // Find the most recent bid for the user
-      const recentBid = await Bid.findOne({ bidder_id: user_id }).sort({ date_bid: -1 });
-  
-      // If no bids found, treat as no bid placed
-      if (!recentBid) {
-        return res.status(400).json({ message: 'No bid placed by this user' });
-      }
-  
-      // Compare user's balance to the most recent bid amount
-      const bidAmount = recentBid.amount;
-  
-      // Check if the user has enough balance to match the bid amount
-      if (user.account_balance >= bidAmount) {
-        // If VIP condition is met and not already VIP, update the VIP status
+      if (user.account_balance >= amount) {
         if (!regularUser.vip) {
           regularUser.vip = true;
-          await regularUser.save(); // Save the RegularUser document
+          await regularUser.save(); 
         }
         return res.status(200).json({ message: 'User is VIP' });
       } else {
-        // If balance is below bid amount, set vip to false
+        
         if (regularUser.vip) {
           regularUser.vip = false;
           await regularUser.save(); // Save the RegularUser document
