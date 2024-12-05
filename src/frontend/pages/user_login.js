@@ -27,16 +27,16 @@ const U_login = ({ onLogin }) => {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('Login successful:', data);
                 localStorage.setItem('username', data.username);
                 localStorage.setItem('role', data.role);
+                localStorage.setItem('user_id', data.user_id); 
                 localStorage.setItem('token', data.token); 
-                onLogin();
+                onLogin(data.token, data.role);
                 if (data.role === 'reguser') {
                     navigate('/user_profile');
                 } else if (data.role === 'visitor') {
                     navigate('/visitor_profile');
-                }else if (data.role === 'superuser') {
+                } else if (data.role === 'superuser') {
                     navigate('/superusers_profile');
                 }
             } else {
@@ -48,7 +48,6 @@ const U_login = ({ onLogin }) => {
             setError('Server error');
         }
     };
-
 
     return (
         <div className="login-container">
@@ -94,3 +93,5 @@ const U_login = ({ onLogin }) => {
 };
 
 export default U_login;
+
+
