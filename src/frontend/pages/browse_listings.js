@@ -16,12 +16,11 @@ const Browse_listings = () => {
                 const data = await response.json();
                 if (response.ok) {
                     console.log('Fetched listings:', data);
-                    setListings(data);
-                } else {
-                    throw new Error(data.error || 'Failed to fetch listings');
+                    const activeListings = data.filter(listing => listing.status !== 'sold');
+                    setListings(activeListings);
                 }
-            } catch (error) {
-                setError(error.message);
+            } catch (err) {
+                setError('Error fetching listings:', err);
             }
         };
 

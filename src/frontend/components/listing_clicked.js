@@ -70,16 +70,14 @@ const Listing_clicked = () => {
     };
 
     const handleBid = (e) => {
-        if (role === 'reguser') {
-            navigate(`/place_bid/${id}`);
-        }else if (role === 'superuser') {
-            navigate(`/place_bid/${id}`);
-        }else if (role === 'visitor') {
-            alert('Oops! Only users are allowed to access this feature, apply to be a user via your profile today to place a bid')
-    }
-       
-    };
-    
+        if (role === 'visitor') {
+            alert('Oops! Only users are allowed to access this feature. Apply to be a user via your profile today to place a bid.');
+            return;
+        }
+        // users, superusers and VIPs can bid
+        navigate(`/place_bid/${id}`);
+        };
+        
 
     const handleCommentSubmit = async () => {
         const token = localStorage.getItem('token'); 

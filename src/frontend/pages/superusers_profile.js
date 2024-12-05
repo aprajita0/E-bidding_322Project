@@ -18,14 +18,6 @@ const Superusers_profile = () => {
     const [suspendedUserSelect, setSuspendedUserSelect] = useState('');
     const [suspendedUsers, setSuspendedUsers] = useState([]);
 
-    const handleAccept = () => {
-        navigate('/');
-    };
-
-    const handleDeny = () => {
-        navigate('/');
-    };
-
     const handleAcceptApp = async () => {
         if (!visitorSelect) {
             alert('Please select an application');
@@ -325,9 +317,112 @@ const Superusers_profile = () => {
     }, [listingSelect]); 
 
     const handleBidSelectChange = (e) => {
-        const selectedBidId = parseInt(e.target.value);
-        const selectedBid = bids.find(bid => bid.id === selectedBidId);
-        setBidSelect(selectedBidId);
+        const selectedBidId = e.target.value;
+        console.log('Selected Bid ID:', selectedBidId);
+
+        const selectedBid = bids.find(bid => bid._id === selectedBidId);
+        if (selectedBid) {
+            setBidSelect(selectedBidId);
+        } else {
+            console.error('Selected bid not found in the bids list');
+        }
+    };
+    
+    //accepting bids
+    const handleAccept = async () => {
+        if (!bidSelect || !listingSelect) {
+            alert('Please select both a bid and a listing first.');
+            return;
+        }
+    
+        const selectedBid = bids.find(bid => bid._id === bidSelect); // Match the selected bid
+        if (!selectedBid) {
+            alert('Invalid bid selected.');
+            return;
+        }
+    
+        console.log('Selected Bid ID:', bidSelect);
+        console.log('Selected Listing ID:', listingSelect);
+    
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/users/accept-bid', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    bid_id: bidSelect, //mongoDB _id of the bid
+                    listing_id: listingSelect, 
+                }),
+            });
+    
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Bid accepted successfully:', data);
+                alert('Bid accepted successfully!');
+                // Update the UI
+                const updatedListings = userListings.filter(listing => listing._id !== listingSelect);
+                setUserListings(updatedListings);
+                setBidSelect('');
+                setListingSelect('');
+                setBids([]);
+            } else {
+                const error = await response.json();
+                console.error('Error accepting bid:', error.error);
+                alert(error.error || 'Error accepting bid.');
+            }
+        } catch (err) {
+            console.error('Error accepting bid:', err.message);
+            alert('Server error while accepting bid.');
+        }
+    };
+
+    //denying bids
+    const handleDeny = async () => {
+        if (!bidSelect) {
+            alert('Please select a bid to deny.');
+            return;
+        }
+
+        const selectedBid = bids.find(bid => bid._id === bidSelect); // match the selected bid
+        if (!selectedBid) {
+            alert('The bid you selected is no longer valid.');
+            setBidSelect('');
+            return;
+        }
+    
+        console.log('Selected Bid ID to deny:', bidSelect);
+    
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/users/deny-bid', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ bid_id: bidSelect }), // send the selected bid's _id
+            });
+    
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Bid denied successfully:', data);
+                alert('Bid denied successfully!');
+                // Remove the denied bid from the state
+                const updatedBids = bids.filter(bid => bid._id !== bidSelect);
+                setBids(updatedBids);
+                setBidSelect(''); // Reset bid selection
+            } else {
+                const error = await response.json();
+                console.error('Error denying bid:', error.error);
+                alert(error.error || 'Error denying bid.');
+            }
+        } catch (err) {
+            console.error('Error denying bid:', err.message);
+            alert('Server error while denying bid.');
+        }
     };
 
   return (
@@ -361,9 +456,9 @@ const Superusers_profile = () => {
                 <div className="my-listings-container"><div className="my-listings_label">Select a Bid:</div>
                 <select className="show-listings" id="bid_select" value={bidSelect} onChange={handleBidSelectChange}required>
                      <option value="">Select a Bid</option>
-                     {bids.map((bid, index) => (
-                        <option key={index} value={index}>
-                            Amount Offered: ${bid.amount && typeof bid.amount === 'object' && bid.amount.$numberDecimal? parseFloat(bid.amount.$numberDecimal).toFixed(2): bid.amount}, Deadline: {bid.bid_expiration || "No deadline"}
+                     {bids.map((bid) => (
+                        <option key={bid._id} value={bid._id}>
+                            Amount Offered: ${bid.amount.$numberDecimal || bid.amount}, Deadline: {bid.bid_expiration || 'No deadline'}
                         </option>
                     ))}
                 </select>

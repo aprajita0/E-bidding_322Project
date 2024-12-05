@@ -978,11 +978,7 @@ router.post('/deny-bid', authMiddleware, async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: 'User not found.' });
         }
-
-        if (bid.owner_id.toString() !== user.id) {
-            return res.status(403).json({ error: 'Access denied.'});
-        }
-
+        
         await Bid.findByIdAndDelete(bid_id);
 
         res.status(200).json({ message: 'Bid denied successfully.' });
