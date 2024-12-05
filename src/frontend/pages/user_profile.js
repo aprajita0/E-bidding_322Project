@@ -91,15 +91,15 @@ const User_profile = () => {
     }, []);
     
     useEffect(() => {
-        const fetchBids = async () => {
+        const fetchBids = async (listingId) => {
             try {
-                if (!listingSelect) {
+                if (!listingId) {
                     console.error('Listing ID needed');
                     return;
                 }
                 const token = localStorage.getItem('token');
-                const response = await fetch('/api/users/get-bids', {
-                    method: 'POST', 
+                const response = await fetch(`/api/users/get-bids?listing_id=${listingId}`, {
+                    method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`,
@@ -111,10 +111,11 @@ const User_profile = () => {
                     const data = await response.json();
                     setBids(data.bids);
                 } else {
-                    console.error('Failed to fetch bids');
+                    const errorData = await response.json();
+                    console.error('Failed to fetch bids:', errorData.error);
                 }
             } catch (err) {
-                console.error('Error fetching bids:', err);
+                console.error('Error fetching bids:', err.message);
                 setError('Error fetching bids.');
             }
         };
@@ -128,8 +129,34 @@ const User_profile = () => {
         setBidSelect(selectedBidId);
     };
 
-    const handleAccept = () => {
-        navigate('/');
+    const handleAccept = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/users/accept-bid', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json', 
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ bid_id: bidSelect, listing_id: listingSelect }),
+            });
+
+            if (response.ok) {
+                //successful acceptance
+                const updatedListings = userListings.filter(listing => listing.id !== listingSelect);
+                setUserListings(updatedListings);
+                setBidSelect('');
+                setListingSelect('');
+                setBids([]);
+                alert('Bid accepted successfully!');
+            } else {
+                const result = await response.json();
+                setError(result.error || 'Error accepting bid');
+            }
+        } catch (err) {
+            console.error('Error accepting bid:', err);
+            setError('Server error');
+        }
     };
 
     const handleDeny = () => {
