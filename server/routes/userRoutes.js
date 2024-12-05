@@ -963,6 +963,22 @@ router.get('/check-acccount-status', authMiddleware, async (req, res) => {
     }
 });
 
+router.post('/', authMiddleware, async (req, res) => {
+    const { subject_id, description } = req.body;
+    try {
+        const complaint = new Complaint({
+            complainer_id: req.user.id,  // Assuming the logged-in user's ID is in the token
+            subject_id,
+            description,
+        });
+        await complaint.save();
+        res.status(201).json({ message: 'Complaint created successfully', complaint });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error creating complaint', details: err.message });
+    }
+});
+
 
 router.post('/deny-bid', authMiddleware, async (req, res) => {
     const { bid_id } = req.body;
