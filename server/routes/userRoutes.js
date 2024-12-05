@@ -511,7 +511,7 @@ router.post('/get-bids', authMiddleware, async (req, res) => {
         }
 
         // Fetch all bids for the specified listing
-        const bids = await Bid.find({ listing_id }).select('amount bid_expiration -_id'); // Exclude unnecessary fields
+        const bids = await Bid.find({ listing_id })
 
         // Return the bids
         res.status(200).json({
@@ -968,7 +968,7 @@ router.post('/deny-bid', authMiddleware, async (req, res) => {
     const { bid_id } = req.body;
 
     try {
-        // Find the bid
+
         const bid = await Bid.findById(bid_id);
         if (!bid) {
             return res.status(404).json({ error: 'Bid not found.' });
