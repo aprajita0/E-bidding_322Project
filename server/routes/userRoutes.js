@@ -979,6 +979,16 @@ router.post('/', authMiddleware, async (req, res) => {
     }
 });
 
+router.get('/', authMiddleware, async (req, res) => {
+    try {
+        const complaints = await Complaint.find({ complainer_id: req.user.id }).populate('subject_id', 'name'); // Optionally populate subject_id with listing or transaction info
+        res.status(200).json({ complaints });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error retrieving complaints', details: err.message });
+    }
+});
+
 
 router.post('/deny-bid', authMiddleware, async (req, res) => {
     const { bid_id } = req.body;
