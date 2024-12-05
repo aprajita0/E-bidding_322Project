@@ -869,8 +869,8 @@ router.get('/get-transactions', authMiddleware, async (req, res) => {
         }
 
         const transactions = await Transaction.find({ buyer_id: buyerId })
-            .populate('seller_id', 'name email') 
-            .populate('listing_id', 'title price'); 
+            .populate('seller_id', 'first_name last_name email') 
+            .populate('listing_id', 'name price_from price_to'); 
 
         
         res.status(200).json(transactions);
