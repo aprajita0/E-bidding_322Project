@@ -989,6 +989,39 @@ router.get('/', authMiddleware, async (req, res) => {
     }
 });
 
+router.post('/resolve-complaint', authMiddleware, async (req, res) => {
+    const { complaint_id } = req.body;
+    try {
+        const complaint = await Complaint.findById(complaint_id);
+        if (!complaint) {
+            return res.status(404).json({ error: 'Complaint not found.' });
+        }
+        complaint.complaint_status = 'Resolved';
+        await complaint.save();
+        res.status(200).json({ message: 'Complaint resolved successfully', complaint });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error resolving complaint', details: err.message });
+    }
+});
+
+router.post('/dismiss-complaint', authMiddleware, async (req, res) => {
+    const { complaint_id } = req.body;
+    try {
+        const complaint = await Complaint.findById(complaint_id);
+        if (!complaint) {
+            return res.status(404).json({ error: 'Complaint not found.' });
+        }
+
+        complaint.complaint_status = 'Dismissed';
+        await complaint.save();
+
+        res.status(200).json({ message: 'Complaint dismissed successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error dismissing complaint', details: err.message });
+    }
+});
 
 router.post('/deny-bid', authMiddleware, async (req, res) => {
     const { bid_id } = req.body;
