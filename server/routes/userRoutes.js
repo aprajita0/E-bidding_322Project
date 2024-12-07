@@ -775,17 +775,44 @@ router.post('/accept-bid', authMiddleware, async (req, res) => {
       res.status(500).json({ error: 'Internal server error.' });
     }
   });
-  //get-complaint
-router.get('/get-complaint', authMiddleware, async (req, res) => {
+  
+  router.get('/get-complaint', authMiddleware, async (req, res) => {
     try {
-        const complaints = await Complaint.find({ complainer_id: req.user.id })
-            .populate('subject_id');  // Populating with the Transaction data
+        // Extract query parameters for filtering
+        const { complainer_id, subject_id, complaint_status } = req.query;
+
+        // Build filter object based on the available query parameters
+        const filter = {};
+
+        // Only include fields in the filter if they are provided in the query
+        if (complainer_id) {
+            filter.complainer_id = complainer_id; // Complainer ID is a string, so no need for conversion
+        }
+
+        if (subject_id) {
+            try {
+                filter.subject_id = mongoose.Types.ObjectId(subject_id); // Convert subject_id to ObjectId
+            } catch (error) {
+                return res.status(400).json({ error: 'Invalid Subject ID format.' });
+            }
+        }
+
+        if (complaint_status) {
+            filter.complaint_status = complaint_status; // Complaint status is a string, no need for conversion
+        }
+
+        // Query the complaints collection with the built filter
+        const complaints = await Complaint.find(filter).populate('subject_id');
+
+        // Return the filtered complaints
         res.status(200).json(complaints);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal server error.' });
     }
 });
+
+  
 //unsuspend-account
 router.post('/unsuspend-account', authMiddleware, async (req, res) => {
     const { user_id } = req.body;
