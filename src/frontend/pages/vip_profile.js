@@ -135,12 +135,8 @@ const Vip_profile = () => {
         navigate('/');
     };
 
-    const handleRead = () => {
-        navigate('/');
-    };
-
-    const handleMessageSelect = (e) => {
-        navigate('/');
+    const handleRequestDeletion = async (e) => {
+        e.preventDefault();
     };
 
     return (
@@ -210,8 +206,18 @@ const Vip_profile = () => {
                         <button className="access-file" onClick={() => navigate('/Complaint')}>File a Complaint</button>
                     </div>
                     <div className="functionality-box">
-                        <img src={exchange_image} alt="my-listings-image" className="my-listings-image" />
-                </div>
+                        <div className="my-listings">Want to Delete Your Account?</div>
+                        <div className="my-listings-container">
+                            <div className="file-label">
+                                We’re sorry to see you go! Please note that account deletion is permanent and cannot be 
+                                undone. If you have any questions or need assistance, feel free to reach out before 
+                                proceeding.
+                            </div>
+                        </div>
+                        <div>
+                            <button className="access-file" type="button" onClick={handleRequestDeletion}> Request Deletion</button>
+                        </div>
+                    </div>
                 </div>
                 <div className="add-container">
                     <button className="add-button" onClick={() => navigate('/add_listings')}>+</button>
@@ -222,5 +228,3 @@ const Vip_profile = () => {
 };
 
 export default Vip_profile;
-
-
