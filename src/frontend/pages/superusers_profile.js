@@ -3,6 +3,7 @@ import './styles/superusers_profile.css';
 import { useNavigate } from 'react-router-dom';
 import '@fontsource/dm-sans/700.css'; 
 import profile_pic from '../assets/profile_pic.png';
+import message_pic from '../assets/message.png';
 
 const Superusers_profile = () => {
     const navigate = useNavigate();
@@ -17,6 +18,11 @@ const Superusers_profile = () => {
     const [applications, setApplications] = useState([]);
     const [suspendedUserSelect, setSuspendedUserSelect] = useState('');
     const [suspendedUsers, setSuspendedUsers] = useState([]);
+    const [complaints, setComplaints] = useState([]); 
+    const [selectedComplaint, setSelectedComplaint] = useState(''); 
+    const [formattedComplaints, setFormattedComplaints] = useState({});
+    const [complaintDetails, setComplaintDetails] = useState('');
+    const [deletionUserSelect, setDeletionUserSelect] = useState('');
 
     const handleAcceptApp = async () => {
         if (!visitorSelect) {
@@ -88,21 +94,22 @@ const Superusers_profile = () => {
 
     const handleUnsuspend = async (e) => {
         e.preventDefault();
+        
+        if (!suspendedUserSelect) {
+            setError('Please select a user to unsuspend.');
+            return;
+        }
 
-    if (!suspendedUserSelect) {
-        setError('Please select a user to unsuspend.');
-        return;
-    }
-
-    try {
-        const token = localStorage.getItem('token'); 
-        const response = await fetch('/api/users/unsuspend-account', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`, 
-            },
-            body: JSON.stringify({
+        try {
+            const token = localStorage.getItem('token'); 
+            const response = await fetch('/api/users/unsuspend-account', {
+                
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`, 
+                },
+                body: JSON.stringify({
                 user_id: suspendedUserSelect, 
             }),
         });
@@ -137,6 +144,21 @@ const Superusers_profile = () => {
         const number = Number(price_to);
         return isNaN(number) ? "Not entered" : number.toFixed(2);
     };
+
+    const fetchListingName = async (listingId) => {
+        try {
+            const response = await fetch(`api/users/get-listing/${listingId}`);
+            if (response.ok) {
+                const data = await response.json();
+                return data.name || 'N/A';
+            } else {
+                console.error(`Failed to fetch listing name `);
+            }
+        } catch (err) {
+            console.error(`Error fetching listing name:`, err);
+        }
+    };
+
 
     useEffect(() => {
         const fetchBalance = async () => {
@@ -245,39 +267,34 @@ const Superusers_profile = () => {
             }
         };
 
-        const fetchMessages = async () => {
+        const fetchComplaints = async () => {
             try {
                 const token = localStorage.getItem('token');
-                if (!token) {
-                    setError('User not authenticated.');
-                    return;
-                }
-        
-                const response = await fetch('/api/users/get-notif', {
+                const response = await fetch('/api/users/get-complaint?complaint_status=Pending', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`,
+                        Authorization: `Bearer ${token}`,
                     },
                 });
-        
+    
                 if (response.ok) {
                     const data = await response.json();
-                    if (data.notifications && data.notifications.length > 0) {
-                        setMessages(data.notifications);
-                    } else {
-                        setError('No notifications found.');
+                    setComplaints(data);
+
+                    const formatted = {};
+                    for (const complaint of data) {
+                        formatted[complaint._id] = await formatComplaint(complaint);
                     }
+                    setFormattedComplaints(formatted);
                 } else {
-                    setError(result.error || 'Cannot show messages');
+                    console.error('Failed to fetch complaints');
                 }
             } catch (err) {
-                console.error('Error fetching notifications:', err);
-                setError('Server error');
+                console.error('Error fetching complaints:', err);
             }
         };
-        
-        fetchMessages();
+        fetchComplaints();
         fetchSuspensions();
         fetchApplications();
         fetchBalance();
@@ -425,6 +442,73 @@ const Superusers_profile = () => {
         }
     };
 
+    const formatComplaint = async (complaint) => {
+        const subject = complaint.subject_id;
+        if (!subject || !subject.listing_id){
+            return 'N/A'
+        };
+        
+        const listingId = subject.listing_id;
+        const name = await fetchListingName(listingId);
+        const date = new Date(subject.transaction_date).toLocaleDateString();
+        return `${name}, Transaction Date: ${date}`;
+    };
+    
+    const handleComplaintSelect = (e) => {
+        const selectedId = e.target.value;
+        setSelectedComplaint(selectedId);
+
+        const selected = complaints.find((complaint) => complaint._id === selectedId);
+        if (selected) {
+            setComplaintDetails(
+                `Description: ${selected.description || 'No description given'}\n`
+            );
+        } else {
+            setComplaintDetails('No details available');
+        }
+    };
+
+    const handleResolve = async (e) => {
+        e.preventDefault();
+        if (!selectedComplaint) {
+            setError('Please select a complaint');
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token'); 
+            const response = await fetch('/api/users/resolve-complaint', {
+                
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`, 
+                },
+                body: JSON.stringify({
+                    complaint_id: selectedComplaint, 
+                }),
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                alert(result.message || 'Complaint resolved!');
+                setComplaints((prev) => prev.filter((complaint) => complaint._id !== selectedComplaint)); 
+                setSelectedComplaint('');
+                setComplaintDetails('');
+            } else {
+                const result = await response.json();
+                setError(result.error || 'Error resolving');
+            }
+        } catch (err) {
+            console.error('Error resolving:', err);
+            setError('Server error. Please try again later.');
+        }
+    };
+
+    const handleDelete = async (e) => {
+        e.preventDefault();
+    };
+
   return (
     <div className="profile-container">
         <div className="balance-container">
@@ -457,7 +541,7 @@ const Superusers_profile = () => {
                 <select className="show-listings" id="bid_select" value={bidSelect} onChange={handleBidSelectChange}required>
                      <option value="">Select a Bid</option>
                      {bids.map((bid) => (
-                        <option key={bid._id} value={bid._id}>
+                        <option key={bid._id} value={bid._id}> 
                             Amount Offered: ${bid.amount.$numberDecimal || bid.amount}, Deadline: {bid.bid_expiration || 'No deadline'}
                         </option>
                     ))}
@@ -490,52 +574,66 @@ const Superusers_profile = () => {
                 </div>
                 </div>
                 <div className="functionality-box">
-                <div className="my-listings">Review Complaints</div>
-                <div className="my-listings-container">
+                    <div className="my-listings">Review Complaints</div>
+                    <div className="my-listings-container">
+                        <div className="my-listings_label">Pending Complaints:</div>
+                        <select className="show-listings" id="complaint_select" value={selectedComplaint} onChange={handleComplaintSelect}>
+                            <option value="">Select a Complaint</option>
+                            {complaints.map((complaint) => (
+                                <option key={complaint._id} value={complaint._id}>
+                                     {formattedComplaints[complaint._id] || 'N/A'}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="my-listings-container">
+                        <div className="my-listings_label">Complaint Details:</div>
+                        <textarea id="complaint_details" value={complaintDetails} style={{ width: '310px', height: '100px' }} readOnly/>
+                    </div>
+                    <div>
+                        <button className="read" type="button" onClick={handleResolve} >Resolve</button>
+                    </div>
+                </div>
+                <div className="functionality-box">
+                    <div className="my-listings">Approve/Deny User Applications</div>
+                    <div className="my-listings-container">
                     <div className="my-listings_label">Pending:</div>
-                    <select className="show-listings" id="listing_select"  required>
-                        <option value="">Select a Complaint</option>
-                        <option value="selling">Comp1</option>
+                    <select className="show-listings"id="visitor_select" value={visitorSelect} onChange={handleVisitorSelect}>
+                        <option value="">Select an Application</option>
+                        {applications.map((app) => (
+                            <option key={app.id} value={app.user_id?._id}> 
+                            {app.user_id?.username || 'N/A'}, {app.user_id?.email || 'N/A'}
+                            </option>
+                        ))}
                     </select>
-                </div>
-                <div className="my-listings-container">
-                    <div className="my-listings_label">Complaint Details:</div>
-                    <select className="show-listings" id="listing_select" required>
-                        <option value="">Complaint Details</option>
-                        <option value="selling">Appy1</option>
-                    </select>
-                </div>
-                <div>
-                    <button className="read" type="button" >Resolve</button>
-                </div>
-            </div>
-              <div className="functionality-box">
-                <div className="my-listings">Approve/Deny User Applications</div>
-                <div className="my-listings-container">
-                <div className="my-listings_label">Pending:</div>
-                <select className="show-listings"id="visitor_select" value={visitorSelect} onChange={handleVisitorSelect}>
-                    <option value="">Select an Application</option>
-                    {applications.map((app) => (
-                        <option key={app.id} value={app.user_id?._id}> 
-                        {app.user_id?.username || 'N/A'}, {app.user_id?.email || 'N/A'}
-                    </option>
-                    ))}
-                </select>
                 </div>
                 <div>
                     <button className="accept-bid" type="button" onClick={handleAcceptApp}>Accept</button>
                     <button className="deny-bid" type="button" onClick={handleDenyApp}>Deny</button>
                 </div>
             </div>
+            <div className="functionality-box">
+                <div className="my-listings">Account Deletion Requests:</div>
+                <div className="my-listings-container">
+                    <div className="my-listings_label">Pending:</div>
+                    <select className="show-listings" id="deletion_request_select" value={deletionUserSelect} onChange={(e) => setDeletionSelect(e.target.value)}required>
+                        <option value="">Select an Account</option>
+                    </select>
+                    </div>
+                <div>
+                    <button className="read" type="button" onClick={handleDelete}> Approve Deletion</button>
+                </div>
             </div>
-            <div className="add-container">
-                <button className="add-button" onClick={() => navigate('/add_listings')}>+</button>
+            <div className="functionality-box">
+                <img src={message_pic} alt="my-listings-image" className="my-listings-image" />
             </div>
-          </section>
+        </div>
+        <div className="add-container">
+            <button className="add-button" onClick={() => navigate('/add_listings')}>+</button>
+        </div>
+        </section>
     </div>
-  );
+    );
 };
-
+        
 export default Superusers_profile;
-
-
