@@ -15,6 +15,7 @@ const User_profile = () => {
     const [bids, setBids] = useState([]);
     const [username, setUsername] = useState('');
     const [userListings, setUserListings] = useState([]);
+    const [deletionUserSelect, setDeletionUserSelect] = useState('');
 
     const formatMin = (price_from) => {
         if (price_from && typeof price_from === 'object' && price_from.$numberDecimal) {
@@ -238,8 +239,8 @@ const User_profile = () => {
         }
     };
     
-    const handleRead = () => {
-        navigate('/');
+    const handleRequestDeletion = async (e) => {
+        e.preventDefault();
     };
 
     return (
@@ -286,7 +287,17 @@ const User_profile = () => {
                         </div>
                     </div>
                     <div className="functionality-box">
-                        <img src={exchange_image} alt="my-listings-image" className="my-listings-image" />
+                        <div className="my-listings">Want to Delete Your Account?</div>
+                        <div className="my-listings-container">
+                            <div className="file-label">
+                                We’re sorry to see you go! Please note that account deletion is permanent and cannot be 
+                                undone. If you have any questions or need assistance, feel free to reach out before 
+                                proceeding.
+                            </div>
+                        </div>
+                        <div>
+                            <button className="access-file" type="button" onClick={handleRequestDeletion}> Request Deletion</button>
+                        </div>
                     </div>
                     <div className="functionality-box">
                         <div className="my-listings">Dissatisfied with an Item You Bidded On?</div>
@@ -313,7 +324,4 @@ const User_profile = () => {
 };
 
 export default User_profile;
-
-
-
 
