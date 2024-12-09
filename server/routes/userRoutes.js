@@ -814,22 +814,36 @@ router.post('/accept-bid', authMiddleware, async (req, res) => {
 
   
 //unsuspend-account
+
+
 router.post('/unsuspend-account', authMiddleware, async (req, res) => {
     const { user_id } = req.body;
+
     try {
+        // Step 1: Find the user by ID
         const user = await User.findById(user_id);
         if (!user) {
             return res.status(404).json({ error: 'User not found.' });
         }
-        // Unsuspend the account without fine
+
+        // Step 2: Unsuspend the account
         user.account_status = true;
         await user.save();
-        res.status(200).json({ message: 'Account unsuspended successfully.', user });
+
+        // Step 3: Remove all ratings where the user is involved (either as rater or related to their transactions)
+        await Rating.deleteMany({ rater_id: user_id });
+
+        res.status(200).json({
+            message: 'Account unsuspended successfully, and ratings have been reset.',
+            user,
+        });
     } catch (error) {
-        console.error(error);
+        console.error('Error unsuspending account:', error);
         res.status(500).json({ error: 'Internal server error.' });
     }
 });
+
+
 //get-suspended-account
 router.get('/get-suspended-account', authMiddleware, async (req, res) => {
     try {
