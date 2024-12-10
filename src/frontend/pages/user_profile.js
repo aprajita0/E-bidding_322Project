@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './styles/user_profile.css';
 import { useNavigate } from 'react-router-dom';
+import BuyerRatings from '../components/buyer_ratings.js';
+import RatingModal from '../components/rating_modal.js';
 import '@fontsource/dm-sans/700.css'; 
 import exchange_image from '../assets/exchange.png';
 import profile_pic from '../assets/profile_pic.png';
@@ -15,6 +17,9 @@ const User_profile = () => {
     const [bids, setBids] = useState([]);
     const [username, setUsername] = useState('');
     const [userListings, setUserListings] = useState([]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [transactionId, setTransactionId] = useState(null);
+
 
     const formatMin = (price_from) => {
         if (price_from && typeof price_from === 'object' && price_from.$numberDecimal) {
@@ -175,7 +180,10 @@ const User_profile = () => {
                 const data = await response.json();
                 console.log('Bid accepted successfully:', data);
                 alert('Bid accepted successfully!');
-                // Update the UI
+                const transactionId = data.transaction._id;
+                setTransactionId(transactionId);
+                setIsModalOpen(true);
+
                 const updatedListings = userListings.filter(listing => listing._id !== listingSelect);
                 setUserListings(updatedListings);
                 setBidSelect('');
@@ -317,7 +325,19 @@ const User_profile = () => {
                 <div className="add-container">
                     <button className="add-button" onClick={() => navigate('/add_listings')}>+</button>
                 </div>
+                    <div className="functionality-box">
+                            <p>Below are your transactions that need a rating:</p>
+                            <BuyerRatings />
+                    </div>
             </section>
+            <RatingModal
+            open={isModalOpen}
+            handleClose={() => setIsModalOpen(false)}
+            transactionId={transactionId}
+            onSuccess={() => {
+                setIsModalOpen(false);
+            }}
+            />
         </div>
     );
 };

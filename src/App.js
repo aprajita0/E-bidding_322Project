@@ -13,6 +13,7 @@ import Superusers_profile from './frontend/pages/superusers_profile';
 import Create_raffle from './frontend/pages/create_raffle';
 import Add_Listings from './frontend/pages/add_listings';
 import Place_bid from './frontend/pages/place_bid';
+import SuspensionPage from './frontend/pages/suspension_info';
 import VisitorProfile from './frontend/pages/visitor_profile';
 import V_registration from './frontend/pages/visitor_registration';
 import Browse_listings from './frontend/pages/browse_listings';
@@ -124,6 +125,7 @@ function App() {
                         <Route path="/visitor_profile" element={<VisitorProfile />} />
                         <Route path="/Vip_profile" element={<Vip_profile />} />
                         <Route path="/browse_listings/:id" element={<Listing_clicked />} />
+                        <Route path="/suspension_info" element={<SuspensionPage />} />
                         <Route path="/place_bid/:id" element={<Place_bid />} />
                         <Route path="/Create_raffle" element={<Create_raffle />} />
                         <Route path="/Deposit" element={isLoggedIn ? <Deposit /> : <Navigate to="/U_login" />} />

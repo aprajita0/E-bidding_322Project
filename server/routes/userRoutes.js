@@ -97,10 +97,10 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        // Check if the account is suspended
+        /*Check if the account is suspended
         if (user.account_status === false) {
             return res.status(403).json({ message: 'Account is suspended' });
-        }
+        } */
 
         const token = jwt.sign(
             { id: user._id.toString(), username: user.username, role: user.role }, 
@@ -108,12 +108,12 @@ router.post('/login', async (req, res) => {
             { expiresIn: '1h' } 
         );
 
-        
         res.json({
             message: 'Login successful',
             token,
             username: user.username,
-            role: user.role
+            role: user.role,
+            userId: user._id
         });
     } catch (err) {
         // Handle server errors
@@ -364,16 +364,48 @@ router.post('/suspend-reguser', async (req, res) => {
             return res.status(404).json({ error: 'User not found or not a regular user.' });
         }
 
-        // Fetch the user's ratings
-        const ratings = await Rating.find({ rater_id: user_id });
+        if (user.account_status === false) {
+            console.log('User is already suspended.');
+            return res.status(200).json({
+                message: 'User is already suspended.',
+                user,
+            });
+        }
+        
+        // Fetch transactions involving the user
+        const userTransactions = await Transaction.find({
+            $or: [{ buyer_id: user_id }, { seller_id: user_id }],
+        }).select('_id');
+
+        console.log('Fetched Transactions:', userTransactions); 
+
+        if (userTransactions.length === 0) {
+            console.log('No transactions found for this user. Skipping suspension check.');
+            return res.status(200).json({ message: 'User has no transactions. Suspension check not required.' });
+        }
+
+        // Fetch ratings for these transactions
+        const ratings = await Rating.find({
+            transaction_id: { $in: userTransactions.map((t) => t._id) },
+        });        
+
+        console.log('Fetched Ratings for User:', ratings);
+
+        if (!ratings || ratings.length === 0) {
+            console.log('No ratings found for this user.');
+            return res.status(200).json({ message: 'No ratings found for this user.' });
+        }
+
         if (ratings.length < 3) {
-            return res.status(400).json({ error: 'User does not have enough ratings to evaluate suspension.' });
+            console.log('User has less than 3 ratings. Skipping suspension check.');
+            return res.status(200).json({ message: 'User does not have enough ratings to evaluate suspension.' });
         }
 
         // Calculate the average rating
         const averageRating = ratings.reduce((sum, rating) => sum + rating.rating, 0) / ratings.length;
+        console.log('Average Rating:', averageRating);
 
-        if (averageRating < 2) {
+        if (averageRating < 2 || averageRating > 4) {
             // Suspend the user
             user.account_status = false; // Suspended
             user.suspension_count += 1;
@@ -382,18 +414,26 @@ router.post('/suspend-reguser', async (req, res) => {
             if (user.suspension_count >= 3) {
                 user.role = 'banned'; // Forcibly remove the user
             }
-
             await user.save();
+        
+            const reason =
+                averageRating < 2
+                    ? 'too mean (average rating below 2)'
+                    : 'too generous (average rating above 4)';
 
-            res.status(200).json({ message: 'User suspended successfully.', user });
+            res.status(200).json({ 
+                message: `User suspended successfully for being ${reason}.`,
+                user,
+            });
         } else {
-            res.status(400).json({ error: 'User does not meet the suspension criteria.' });
+            res.status(200).json({ error: 'User does not meet the suspension criteria.' });
         }
     } catch (error) {
         console.error('Error suspending user:', error);
         res.status(500).json({ error: 'Internal server error.' });
     }
 });
+
 
 router.post('/approve-reguser', authMiddleware, async (req, res) => {
     try {
@@ -539,7 +579,7 @@ router.post('/rate-transactions', authMiddleware, async (req, res) => {
         }
 
         
-        if (transaction.buyer_id.toString() !== req.user.id || transaction.seller_id.toString() !== req.user.id) {
+        if (transaction.buyer_id.toString() !== req.user.id && transaction.seller_id.toString() !== req.user.id) {
             return res.status(403).json({ error: 'Access denied. You are not a participant in this transaction.' });
         }
 
@@ -977,7 +1017,7 @@ router.get('/get-notif', authMiddleware, async (req, res) => {
     }
 });
 
-router.get('/check-acccount-status', authMiddleware, async (req, res) => {
+router.get('/check-account-status', authMiddleware, async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
         if (!user) {
@@ -1078,7 +1118,7 @@ router.post('/deny-bid', authMiddleware, async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: 'User not found.' });
         }
-        
+
         await Bid.findByIdAndDelete(bid_id);
 
         res.status(200).json({ message: 'Bid denied successfully.' });
