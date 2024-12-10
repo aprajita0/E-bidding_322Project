@@ -1088,5 +1088,130 @@ router.post('/deny-bid', authMiddleware, async (req, res) => {
     }
 });
          
+// User applies to quit their account
+router.post('/user-request-quit', authMiddleware, async (req, res) => {
+    const { reason, delete_account } = req.body;
+
+    // Check if the reason is provided
+    if (!reason) {
+        return res.status(400).json({ error: 'Reason for quitting is required.' });
+    }
+
+    // Check if the user has specified whether to delete the account or deactivate it
+    if (delete_account === undefined) {
+        return res.status(400).json({ error: 'Please specify if you want to delete your account (true/false).' });
+    }
+
+    try {
+        // Find the user
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        // Create a quit request for the superuser to review
+        user.quit_request = {
+            reason: reason,
+            delete_account: delete_account,
+            status: 'pending'  // Pending approval
+        };
+
+        await user.save();
+
+        // Notify the user that the request is received
+        const notification = new Notification({
+            to_id: user._id,
+            notification_type: 'Account Quit Request Pending',
+            notification: `Your request to quit the account is pending review by a Superuser.`
+        });
+
+        await notification.save();
+
+        res.status(200).json({
+            message: 'Your quit request has been submitted for review.'
+        });
+    } catch (error) {
+        console.error('Error processing quit request:', error);
+        res.status(500).json({ error: 'Internal server error.', details: error.message });
+    }
+});
+
+// Superuser approves/denies quit request
+router.post('/approve-quit-request', authMiddleware, async (req, res) => {
+    const { user_id, approve, delete_account } = req.body;
+
+    // Ensure the user is a superuser
+    const superUser = await User.findById(req.user.id);
+    if (!superUser || superUser.role !== 'superuser') {
+        return res.status(403).json({ error: 'Only superusers can approve quit requests.' });
+    }
+
+    try {
+        // Find the user who made the quit request
+        const user = await User.findById(user_id);
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        // Check if the user has a pending quit request
+        if (!user.quit_request || user.quit_request.status !== 'pending') {
+            return res.status(400).json({ error: 'No pending quit request found for this user.' });
+        }
+
+        // If the request is approved, either deactivate or delete the user account
+        if (approve) {
+            if (delete_account) {
+                // Permanently delete the user account
+                await User.findByIdAndDelete(user_id);
+
+                // Notify the user of account deletion
+                const notification = new Notification({
+                    to_id: user._id,
+                    notification_type: 'Account Deleted',
+                    notification: 'Your account has been permanently deleted as per your request.'
+                });
+                await notification.save();
+
+                res.status(200).json({ message: 'User account has been deleted permanently.' });
+            } else {
+                // Deactivate the user account (set account_status to false)
+                user.account_status = false;   // Deactivate account
+                user.quit_request.status = 'approved';  // Mark the quit request as approved
+                await user.save();
+
+                // Notify the user of account deactivation
+                const notification = new Notification({
+                    to_id: user._id,
+                    notification_type: 'Account Deactivated',
+                    notification: 'Your account has been deactivated. You can reactivate it by logging in again.'
+                });
+                await notification.save();
+
+                res.status(200).json({ message: 'User account has been deactivated successfully.' });
+            }
+        } else {
+            // If the request is denied
+            user.quit_request.status = 'denied';
+            await user.save();
+
+            // Notify the user of denial
+            const notification = new Notification({
+                to_id: user._id,
+                notification_type: 'Quit Request Denied',
+                notification: 'Your request to quit the account has been denied.'
+            });
+            await notification.save();
+
+            res.status(200).json({ message: 'User quit request has been denied.' });
+        }
+    } catch (error) {
+        console.error('Error processing quit request approval:', error);
+        res.status(500).json({ error: 'Internal server error.', details: error.message });
+    }
+});
+
+
 
 module.exports = router;
