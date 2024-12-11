@@ -14,6 +14,7 @@ const Vip_profile = () => {
     const [bids, setBids] = useState([]);
     const [username, setUsername] = useState('');
     const [userListings, setUserListings] = useState([]);
+    const [transactionId, setTransactionId] = useState(null);
 
     const formatMin = (price_from) => {
         if (price_from && typeof price_from === 'object' && price_from.$numberDecimal) {

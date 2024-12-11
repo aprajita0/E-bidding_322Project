@@ -770,18 +770,26 @@ router.post('/accept-bid', authMiddleware, async (req, res) => {
   
       // Check if the buyer has enough balance to cover the bid amount
       const bidAmount = parseFloat(bid.amount.toString());
-      if (parseFloat(buyer.account_balance.toString()) < bidAmount) {
+
+      const buyerVIPStatus = await RegularUser.findOne({ vip: true, user_id: buyer._id });
+      let finalBidAmount = bidAmount;
+      if (buyerVIPStatus) {
+        finalBidAmount *= 0.9;
+      }
+
+
+      if (parseFloat(buyer.account_balance.toString()) < finalBidAmount) {
         return res.status(400).json({ error: 'Buyer has insufficient balance.' });
       }
   
       // Deduct the amount from the buyer's account balance
       buyer.account_balance = mongoose.Types.Decimal128.fromString(
-        (parseFloat(buyer.account_balance.toString()) - bidAmount).toString()
+        (parseFloat(buyer.account_balance.toString()) - finalBidAmount).toFixed(2)
       );
   
       // Add the amount to the seller's account balance
       seller.account_balance = mongoose.Types.Decimal128.fromString(
-        (parseFloat(seller.account_balance.toString()) + bidAmount).toString()
+        (parseFloat(seller.account_balance.toString()) + finalBidAmount).toFixed(2)
       );
   
       // Determine if the listing is selling or renting
@@ -1286,6 +1294,50 @@ router.post('/approve-quit-request', authMiddleware, async (req, res) => {
     } catch (error) {
         console.error('Error processing quit request approval:', error);
         res.status(500).json({ error: 'Internal server error.', details: error.message });
+    }
+});
+
+router.get('/:id/pending-ratings', authMiddleware, async (req, res) => {
+    try {
+        const userId = req.params.id;
+
+        // Ensure the user exists
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        // Fetch transactions where the user is the buyer and hasn't rated the seller yet
+        const pendingRatingsAsBuyer = await Transaction.find({
+            buyer_id: userId,
+            buyer_rating_given: false,
+        })
+            .populate('seller_id', 'username')
+            .populate('listing_id', 'name');
+
+        // Fetch transactions where the user is the seller and hasn't rated the buyer yet
+        const pendingRatingsAsSeller = await Transaction.find({
+            seller_id: userId,
+            seller_rating_given: false,
+        })
+            .populate('buyer_id', 'username')
+            .populate('listing_id', 'name');
+
+        res.status(200).json({
+            pendingRatingsAsBuyer: pendingRatingsAsBuyer.map((t) => ({
+                transaction_id: t._id,
+                listing_name: t.listing_id.name,
+                other_party: t.seller_id.username,
+            })),
+            pendingRatingsAsSeller: pendingRatingsAsSeller.map((t) => ({
+                transaction_id: t._id,
+                listing_name: t.listing_id.name,
+                other_party: t.buyer_id.username,
+            })),
+        });
+    } catch (error) {
+        console.error('Error fetching pending ratings:', error);
+        res.status(500).json({ error: 'Internal server error.' });
     }
 });
 

@@ -11,34 +11,41 @@ const style = {
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: 400,
+  width: '90%',
+  maxWidth: 400,
   bgcolor: 'background.paper',
+  borderRadius: '10px',
   border: '2px solid #000',
   boxShadow: 24,
   p: 4,
+  outline: 'none',
 };
 
 const RatingModal = ({ open, handleClose, transactionId, onSuccess }) => {
   const [rating, setRating] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     console.log('RatingModal received transactionId:', transactionId);
 }, [transactionId]);
 
   const handleSubmit = async () => {
-    
-     if (!transactionId) {
+    if (isSubmitting) return; //prevents multiple clicks
+    setIsSubmitting(true); //disables button
+
+    try {
+      if (!transactionId) {
         console.error('Cannot submit rating: transactionId is null or undefined');
         alert('An error occurred. Please try again.');
         return;
-    }
+      }
 
-    if (rating === 0) {
-      alert('Please select a rating!');
-      return;
-    }
+      if (rating === 0) {
+        alert('Please select a rating!');
+        return;
+      }
 
-    try {
       const response = await fetch('/api/users/rate-transactions', {
         method: 'POST',
         headers: {
@@ -49,16 +56,19 @@ const RatingModal = ({ open, handleClose, transactionId, onSuccess }) => {
       });
 
       if (response.ok) {
-        alert('Thank you for submitting your rating!');
-        setRating(0); // Reset rating
-        handleClose(); // Close the modal
-        onSuccess(); // Notify parent about success (optional)
+        setSuccessMessage('Thank you for your rating!');
+        setTimeout(() => setSuccessMessage(''), 3000);
+        setRating(0); // reset rating
+        handleClose(); // close the modal
+        onSuccess(); 
       } else {
         const error = await response.json();
         alert(error.message || 'Error submitting rating.');
       }
     } catch (err) {
       console.error('Error submitting rating:', err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -84,24 +94,32 @@ const RatingModal = ({ open, handleClose, transactionId, onSuccess }) => {
           <Typography id="rating-modal-description" sx={{ mt: 2 }}>
             Please rate the other party anonymously.
           </Typography>
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0', fontSize: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0', fontSize: '30px' }}>
             {[1, 2, 3, 4, 5].map((star) => (
               <span
                 key={star}
                 style={{
                   cursor: 'pointer',
                   color: star <= rating ? 'gold' : 'lightgray',
-                  margin: '0 5px',
-                  transition: 'color 0.2s',
+                  margin: '0 10px',
+                  padding: '5px',
+                  transition: 'color 0.2s, transform 0.2s',
                 }}
                 onClick={() => setRating(star)}
+                onMouseEnter={(e) => (e.target.style.transform = 'scale(1.2)')}
+                onMouseLeave={(e) => (e.target.style.transform = 'scale(1)')}
               >
                 ★
               </span>
             ))}
           </div>
-          <Button variant="contained" color="primary" onClick={handleSubmit}>
-            Submit Rating
+          {successMessage && (
+            <Typography variant="body2" color="success.main" sx={{ mt: 2 }}>
+              {successMessage}
+            </Typography>
+          )}
+          <Button variant="contained" color="primary" onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? 'Submitting...' : 'Submit Rating'}
           </Button>
         </Box>
       </Fade>

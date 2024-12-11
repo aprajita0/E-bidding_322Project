@@ -407,7 +407,19 @@ const Superusers_profile = () => {
             if (response.ok) {
                 const data = await response.json();
                 console.log('Bid accepted successfully:', data);
-                alert('Bid accepted successfully!');
+
+                // Check if the buyer is a VIP and display discount information
+                const isVIP = parseFloat(selectedBid.amount) > parseFloat(data.transaction.amount);
+                if (isVIP) {
+                    alert(
+                        `Bid accepted successfully! You received a 10% discount. Final transaction amount: $${(
+                            parseFloat(data.transaction.amount) * 0.9
+                        ).toFixed(2)}`
+                    );
+                } else {
+                    alert(`Bid accepted successfully! Transaction amount: $${parseFloat(data.transaction.amount)}`);
+                }
+
                 // Update the UI
                 const updatedListings = userListings.filter(listing => listing._id !== listingSelect);
                 setUserListings(updatedListings);
