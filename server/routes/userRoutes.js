@@ -351,7 +351,7 @@ router.post('/bid-listing', authMiddleware, async (req, res) => {
     }
 });
 
-router.post('/suspend-reguser', async (req, res) => {
+router.post('/suspend-reguser', authMiddleware, async (req, res) => {
     try {
         const { user_id } = req.body;
 
@@ -365,76 +365,40 @@ router.post('/suspend-reguser', async (req, res) => {
             return res.status(404).json({ error: 'User not found or not a regular user.' });
         }
 
-        if (user.account_status === false) {
-            console.log('User is already suspended.');
-            return res.status(200).json({
-                message: 'User is already suspended.',
-                user,
-            });
-        }
-        
-        // Fetch transactions involving the user
-        const userTransactions = await Transaction.find({
-            $or: [{ buyer_id: user_id }, { seller_id: user_id }],
-        }).select('_id');
-
-        console.log('Fetched Transactions:', userTransactions); 
-
-        if (userTransactions.length === 0) {
-            console.log('No transactions found for this user. Skipping suspension check.');
-            return res.status(200).json({ message: 'User has no transactions. Suspension check not required.' });
+        // Check if the user is a VIP
+        const regularUser = await RegularUser.findOne({ user_id });
+        if (regularUser && regularUser.vip) {
+            // Downgrade from VIP to regular user
+            regularUser.vip = false;
+            await regularUser.save();
+            console.log(`User ${user.username} downgraded from VIP to regular user.`);
         }
 
-        // Fetch ratings for these transactions
-        const ratings = await Rating.find({
-            transaction_id: { $in: userTransactions.map((t) => t._id) },
-            rater_id: user_id, 
-        });
-        
-        console.log('Fetched Ratings for User:', ratings);
-        
-        if (!ratings || ratings.length === 0) {
-            console.log('No ratings found for this user.');
-            return res.status(200).json({ message: 'No ratings found for this user.' });
-        }
+        // Suspend the user
+        user.account_status = false; // Suspend account
+        await user.save();
 
-        if (ratings.length < 3) {
-            console.log('User has less than 3 ratings. Skipping suspension check.');
-            return res.status(200).json({ message: 'User does not have enough ratings to evaluate suspension.' });
-        }
-
-        // Calculate the average rating
+        // Fetch the user's ratings
+        const ratings = await Rating.find({ rater_id: user_id });
         const averageRating = ratings.reduce((sum, rating) => sum + rating.rating, 0) / ratings.length;
-        console.log('Average Rating:', averageRating);
 
         if (averageRating < 2 || averageRating > 4) {
-            // Suspend the user
-            user.account_status = false; // Suspended
+            // Suspend if average rating is too low or too high
             user.suspension_count += 1;
-
-            // Check if the user is permanently banned
             if (user.suspension_count >= 3) {
-                user.role = 'banned'; // Forcibly remove the user
+                user.role = 'banned'; // Permanently ban the user after 3 suspensions
             }
             await user.save();
-        
-            const reason =
-                averageRating < 2
-                    ? 'too mean (average rating below 2)'
-                    : 'too generous (average rating above 4)';
-
-            res.status(200).json({ 
-                message: `User suspended successfully for being ${reason}.`,
-                user,
-            });
+            res.status(200).json({ message: `User suspended for having ${averageRating < 2 ? 'too low' : 'too high'} average rating.` });
         } else {
-            res.status(200).json({ error: 'User does not meet the suspension criteria.' });
+            res.status(200).json({ message: 'User does not meet the suspension criteria.' });
         }
     } catch (error) {
         console.error('Error suspending user:', error);
         res.status(500).json({ error: 'Internal server error.' });
     }
 });
+
 
 
 router.post('/approve-reguser', authMiddleware, async (req, res) => {
