@@ -10,6 +10,33 @@ const Deposit = () => {
     const [accountBalance, setAccountBalance] = useState(0);
     const [error, setError] = useState('');
 
+    const checkVIPStatus = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                return false; 
+            }
+    
+            const response = await fetch('/api/users/check-vip', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+    
+            if (!response.ok) {
+                return false; 
+            }
+    
+            const result = await response.json();
+            return result.vip || false; 
+        } catch (error) {
+            return false; 
+        }
+    };
+    
+
     useEffect(() => {
         const fetchBalance = async () => {
             try {
@@ -48,35 +75,41 @@ const Deposit = () => {
 
     const handleDeposit = async () => {
         setError('');
-
-        if (!depositAmount || depositAmount <= 0) {
-            setError('Please enter a valid amount');
-            return;
-        }
-
         try {
             const token = localStorage.getItem('token');
+            if (!token) {
+                return;
+            }
+    
             const response = await fetch('/api/users/add-balance', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({ amount: depositAmount }),
             });
-
+    
             if (response.ok) {
+                const isVIP = await checkVIPStatus();
+                if (isVIP) {
+                    localStorage.setItem('role', 'vip');
+                } else {
+                    console.log('User is not a VIP still');
+                }
+    
                 setDepositAmount('');
-                if (role === 'reguser') {
+                const updatedRole = localStorage.getItem('role');
+                if (updatedRole === 'reguser') {
                     navigate('/user_profile');
-                } else if (role === 'superuser') {
+                } else if (updatedRole === 'superuser') {
                     navigate('/superusers_profile');
-                } else if (role === 'vip') {
-                    navigate('/Vip_profile')
+                } else if (updatedRole === 'vip') {
+                    navigate('/Vip_profile');
                 }
             } else {
                 const result = await response.json();
-                setError(result.error || 'Deposit failed');
+                setError(result.error);
             }
         } catch (err) {
             console.error('Error during deposit:', err);
@@ -160,4 +193,3 @@ const Deposit = () => {
 }
 
 export default Deposit;
-
