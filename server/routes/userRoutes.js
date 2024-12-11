@@ -720,53 +720,68 @@ router.post('/accept-bid', authMiddleware, async (req, res) => {
       }
   
       // Check if the listing is available or renting
-      if (listing.status !== 'available' && listing.status !== 'renting') {
+      if (listing.status !== 'available' && listing.status !== 'renting' ){
         return res.status(400).json({ error: 'Listing is no longer available or is already rented.' });
       }
-  
-      // Find the buyer and seller
+      
       const buyer = await User.findById(bid.bidder_id);
       const seller = await User.findById(listing.user_id);
       if (!buyer || !seller) {
         return res.status(404).json({ error: 'User(s) not found.' });
       }
+      
+      const reguserBuyer = await RegularUser.findOne({ user_id: buyer._id });
+      const reguserSeller = await RegularUser.findOne({ user_id: seller._id });
+      const buyerIsVIP = reguserBuyer?.vip || false;
+      const sellerIsVIP = reguserSeller?.vip || false;
   
-      // Check if the buyer has enough balance to cover the bid amount
+    
+      const bidType = listing.type === 'buying' ? 'buying' : listing.type === 'selling' ? 'selling' : 'rental';
       const bidAmount = parseFloat(bid.amount.toString());
-      if (parseFloat(buyer.account_balance.toString()) < bidAmount) {
-        return res.status(400).json({ error: 'Buyer has insufficient balance.' });
+  
+      let finalAmount;
+      if (bidType === 'selling' || bidType === 'renting') {
+        finalAmount = buyerIsVIP ? bidAmount * 0.9 : bidAmount;
       }
-  
-      // Deduct the amount from the buyer's account balance
-      buyer.account_balance = mongoose.Types.Decimal128.fromString(
-        (parseFloat(buyer.account_balance.toString()) - bidAmount).toString()
-      );
-  
-      // Add the amount to the seller's account balance
-      seller.account_balance = mongoose.Types.Decimal128.fromString(
-        (parseFloat(seller.account_balance.toString()) + bidAmount).toString()
-      );
-  
-      // Determine if the listing is selling or renting
-      if (listing.type === 'renting') {
-        // Renting: Set the listing as renting and calculate the rental expiry date
-        const rentalPeriod = bid.rental_period || 30; // Default to 30 days if not provided
-        listing.status = 'renting'; // Update status to 'renting' (not 'rented')
-        listing.rental_expiry = new Date(Date.now() + rentalPeriod * 24 * 60 * 60 * 1000); // Set the rental expiry date
-      } else {
-        // Selling: Mark the listing as sold
-        listing.status = 'sold';
+      else if (bidType === 'buying') {
+        finalAmount = sellerIsVIP ? bidAmount * 0.9 : bidAmount;
       }
-  
+     else {
+        finalAmount = bidAmount;
+    }
+    if (bidType === 'selling' || bidType === 'renting') {
+        if (parseFloat(buyer.account_balance.toString()) < finalAmount) {
+          return res.status(400).json({ error: 'Buyer has insufficient balance.' });
+        }
+        
+        buyer.account_balance = mongoose.Types.Decimal128.fromString(
+          (parseFloat(buyer.account_balance.toString()) - finalAmount).toString()
+        );
+        seller.account_balance = mongoose.Types.Decimal128.fromString(
+          (parseFloat(seller.account_balance.toString()) + finalAmount).toString()
+        );
+      } else {  // 'buying' type
+        if (parseFloat(seller.account_balance.toString()) < finalAmount) {
+          return res.status(400).json({ error: 'Seller has insufficient balance.' });
+        }
+        seller.account_balance = mongoose.Types.Decimal128.fromString(
+          (parseFloat(seller.account_balance.toString()) - finalAmount).toString()
+        );
+        buyer.account_balance = mongoose.Types.Decimal128.fromString(
+          (parseFloat(buyer.account_balance.toString()) + finalAmount).toString()
+        );
+      }
       // Create a transaction for the purchase/rental
       const transaction = new Transaction({
         buyer_id: buyer._id,
         seller_id: seller._id,
         listing_id: listing._id,
-        amount: bid.amount,
+        amount: finalAmount,
         transaction_date: new Date(),
       });
-  
+     
+      await Listing.findByIdAndUpdate(listing._id, { status: 'sold' }, { new: true });
+
       // Save the updates
       await buyer.save();
       await seller.save();
@@ -788,7 +803,6 @@ router.post('/accept-bid', authMiddleware, async (req, res) => {
       res.status(500).json({ error: 'Internal server error.' });
     }
   });
-  
   router.get('/get-complaint', authMiddleware, async (req, res) => {
     try {
         // Extract query parameters for filtering
