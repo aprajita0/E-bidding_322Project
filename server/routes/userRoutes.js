@@ -1268,15 +1268,23 @@ router.get('/get_user_ratings', authMiddleware, async (req, res) => {
             return res.status(400).json({ error: 'User ID is required.' });
         }
 
+        // Validate if user_id is a valid ObjectId
+        if (!mongoose.Types.ObjectId.isValid(user_id)) {
+            return res.status(400).json({ error: 'Invalid user ID format.' });
+        }
+
+        // Convert user_id to ObjectId using 'new'
+        const objectId = new mongoose.Types.ObjectId(user_id);
+
         // Fetch pending ratings where the user is the buyer or seller
         const pendingRatingsAsBuyer = await Transaction.find({
-            buyer_id: user_id,  // Check if user is the buyer
+            buyer_id: objectId,  // Check if user is the buyer
             buyer_rating_given: false, // Ensure no rating is given by the buyer
         }).populate('listing_id', 'name description price_from price_to')
           .exec();
 
         const pendingRatingsAsSeller = await Transaction.find({
-            seller_id: user_id,  // Check if user is the seller
+            seller_id: objectId,  // Check if user is the seller
             seller_rating_given: false, // Ensure no rating is given by the seller
         }).populate('listing_id', 'name description price_from price_to')
           .exec();
@@ -1297,6 +1305,9 @@ router.get('/get_user_ratings', authMiddleware, async (req, res) => {
         res.status(500).json({ error: 'Internal server error.', details: err.message });
     }
 });
+
+
+
 
 
 module.exports = router;
