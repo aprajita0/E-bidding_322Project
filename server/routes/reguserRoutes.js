@@ -73,6 +73,10 @@ router.post('/add-listing', authMiddleware, async (req, res) => {
 });
 
 
+<<<<<<< HEAD
+=======
+            
+>>>>>>> 2c267aa2d65625092645c56a77cee1db650c248c
 router.post('/pay-fine', authMiddleware, async (req, res) => {
     try {
         const user = await User.findById(req.user.id);  // Get the logged-in user
