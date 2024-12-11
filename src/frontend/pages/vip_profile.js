@@ -5,7 +5,7 @@ import '@fontsource/dm-sans/700.css';
 import exchange_image from '../assets/exchange.png';
 import profile_pic from '../assets/profile_pic.png';
 
-const Vip_profile = () => {
+const Vip_profile = ({ setIsLoggedIn }) => {
     const navigate = useNavigate();
     const [error, setError] = useState('');
     const [accountBalance, setAccountBalance] = useState(0);
@@ -14,6 +14,41 @@ const Vip_profile = () => {
     const [bids, setBids] = useState([]);
     const [username, setUsername] = useState('');
     const [userListings, setUserListings] = useState([]);
+    const [transactionId, setTransactionId] = useState(''); 
+
+    const checkVIPStatus = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                return false;
+            }
+
+            const response = await fetch('/api/users/check-vip', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                return false;
+            }
+
+            const result = await response.json();
+            return result.vip || false;
+        } catch (error) {
+            return false;
+        }
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+        window.location.href = '/U_login';
+    };
+
+
 
     const formatMin = (price_from) => {
         if (price_from && typeof price_from === 'object' && price_from.$numberDecimal) {
@@ -172,8 +207,16 @@ const Vip_profile = () => {
                 const data = await response.json();
                 console.log('Bid accepted successfully:', data);
                 alert('Bid accepted successfully!');
+                const isVIP = await checkVIPStatus();
+                if (!isVIP) {
+                    localStorage.setItem('role', 'reguser');
+                    alert('You are no longer a VIP. Please sign back in to see your profile.');
+                    handleLogout();
+                } else {
+                    console.log('User is still a VIP');
+                }
                 const transactionId = data.transaction._id;
-                setTransactionId(transactionId);
+                setTransactionId(transactionId); 
                 setIsModalOpen(true);
 
                 const updatedListings = userListings.filter(listing => listing._id !== listingSelect);
@@ -183,12 +226,10 @@ const Vip_profile = () => {
                 setBids([]);
             } else {
                 const error = await response.json();
-                console.error('Error accepting bid:', error.error);
                 alert(error.error || 'Error accepting bid.');
             }
         } catch (err) {
             console.error('Error accepting bid:', err.message);
-            alert('Server error while accepting bid.');
         }
     };
     
