@@ -137,6 +137,46 @@
     color: #ffffff;
 }
 
+.progress-bar-section {
+    margin: 20px 0;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+}
+
+.progress-container {
+    text-align: center;
+    margin: 10px 0;
+}
+
+.progress-bar {
+    width: 100%;
+    background-color: #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+    height: 20px;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: #4caf50;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+.winning-message {
+    margin-top: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #28a745;
+}
+
 .add-container {
     display: flex;
     justify-content: flex-end;

@@ -51,6 +51,7 @@ const Raffle_clicked = () => {
             });
     
             const data = await response.json();
+            console.log("data from entering raffle:", data);
             if (response.ok) {
                 alert("Congratulations, you have been entered into our raffle!");
             } else {

@@ -15,6 +15,9 @@ const Vip_profile = () => {
     const [username, setUsername] = useState('');
     const [userListings, setUserListings] = useState([]);
     const [transactionId, setTransactionId] = useState(null);
+    const [raffleEntries, setRaffleEntries] = useState([]);
+    const [progress, setProgress] = useState(0);
+    const [winningMessage, setWinningMessage] = useState('')
 
     const formatMin = (price_from) => {
         if (price_from && typeof price_from === 'object' && price_from.$numberDecimal) {
@@ -31,6 +34,42 @@ const Vip_profile = () => {
         const number = Number(price_to);
         return isNaN(number) ? "Not entered" : number.toFixed(2);
     };
+
+    useEffect(() => {
+        const fetchRaffleEntries = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/users/get-raffle-entries', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                if (response.ok) {
+                    const entries = await response.json();
+
+                    // Check if the user has won a prize
+                    const hasWon = entries.some((entry) => entry.won_prize === true);
+                    if (hasWon) {
+                        setWinningMessage('Congratulations! You have won a prize.');
+                    }
+
+                    // Update the progress bar
+                    setProgress(entries.length > 0 ? 100 : 0);
+
+                    setRaffleEntries(entries);
+                } else {
+                    console.error('Failed to fetch raffle entries.');
+                }
+            } catch (error) {
+                console.error('Error fetching raffle entries:', error);
+            }
+        };
+
+        fetchRaffleEntries();
+    }, []);
 
     useEffect(() => {
         const fetchBalance = async () => {
@@ -276,17 +315,31 @@ const Vip_profile = () => {
 
     return (
         <div className="profile-container">
+            <section className="progress-bar-section">
+                <div className="progress-container">
+                    <progress-label>Raffle Participation Progress:</progress-label>
+                    <div className="progress-bar">
+                        <div className="progress-fill" style={{ width: `${progress}%`}}></div>
+                    </div>
+                    <p className="progress-text">{progress}%</p>
+                    {winningMessage && (
+                        <p className="winning-message">{winningMessage}</p>
+                    )}
+                </div>
+            </section>
             <div className="balance-container">
                 <label className="profile-balance" htmlFor="profile-balance">Account Balance: </label>
                 <div className="show-balance">${accountBalance}</div>
                 <button className="balance-button" onClick={() => navigate('/balance_menu')}>Manage Account Balance</button>
             </div>
+
             <section className="banner">
                 <div className="top-profile">
                     <img src={profile_pic} alt="Profile" className="profile_image" />
                     <div className="welcome">Congratulations {username}, you are now a VIP!</div>
                 </div>
             </section>
+
             <section className="user-grid">
                 <div className="user_profile-grid">
                     <div className="functionality-box">
