@@ -22,7 +22,8 @@ const Superusers_profile = () => {
     const [selectedComplaint, setSelectedComplaint] = useState(''); 
     const [formattedComplaints, setFormattedComplaints] = useState({});
     const [complaintDetails, setComplaintDetails] = useState('');
-    const [deletionUserSelect, setDeletionUserSelect] = useState('');
+    const [quitRequests, setQuitRequests] = useState([]); // State to store quit requests
+    const [selectedRequest, setSelectedRequest] = useState(""); // Track selected request
 
     const handleAcceptApp = async () => {
         if (!visitorSelect) {
@@ -294,6 +295,8 @@ const Superusers_profile = () => {
                 console.error('Error fetching complaints:', err);
             }
         };
+
+
         fetchComplaints();
         fetchSuspensions();
         fetchApplications();
@@ -333,6 +336,32 @@ const Superusers_profile = () => {
         fetchBids();
     }, [listingSelect]); 
 
+    const fetchQuitRequests = async () => {
+        try {
+            const token = localStorage.getItem("token"); 
+    
+            const response = await fetch('/api/users/quit-requests', {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`, 
+                },
+            });
+    
+            if (response.ok) {
+                const data = await response.json();
+                setQuitRequests(data); 
+            } else {
+                console.error("Failed to fetch quit requests.");
+            }
+        } catch (error) {
+            console.error("Error fetching quit requests:", error);
+        }
+    };
+    
+    useEffect(() => {
+        fetchQuitRequests();
+    }, []); 
+    
     const handleBidSelectChange = (e) => {
         const selectedBidId = e.target.value;
         console.log('Selected Bid ID:', selectedBidId);
@@ -505,10 +534,47 @@ const Superusers_profile = () => {
         }
     };
 
-    const handleDelete = async (e) => {
-        e.preventDefault();
+    const handleDelete = async (deleteAccount) => {
+        if (!selectedRequest) {
+            alert("Please select a request to approve.");
+            return;
+        }
+    
+        try {
+            const token = localStorage.getItem("token"); 
+    
+            const response = await fetch("/api/users/approve-quit-request", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`, 
+                },
+                body: JSON.stringify({
+                    user_id: selectedRequest, 
+                    approve: true, 
+                    delete_account: deleteAccount, 
+                }),
+            });
+    
+            const data = await response.json();
+            if (response.ok) {
+                alert(data.message || "User's quit request has been approved.");
+    
+                //re-fetch 
+                fetchQuitRequests();
+    
+                // clear dropdown
+                setSelectedRequest("");
+            } else {
+                alert(data.error || "Failed to approve the quit request.");
+            }
+        } catch (error) {
+            console.error("Error approving quit request:", error);
+            alert("An error occurred. Please try again later.");
+        }
     };
-
+    
+    
   return (
     <div className="profile-container">
         <div className="balance-container">
@@ -616,12 +682,17 @@ const Superusers_profile = () => {
                 <div className="my-listings">Account Deletion Requests:</div>
                 <div className="my-listings-container">
                     <div className="my-listings_label">Pending:</div>
-                    <select className="show-listings" id="deletion_request_select" value={deletionUserSelect} onChange={(e) => setDeletionSelect(e.target.value)}required>
+                    <select className="show-listings" id="deletion_request_select" value={selectedRequest} onChange={(e) => setSelectedRequest(e.target.value)}required>
                         <option value="">Select an Account</option>
+                        {quitRequests.map((request) => (
+                            <option key={request._id} value={request._id}>
+                                {`${request.first_name} ${request.last_name} - ${request.quit_request.reason}`}
+                            </option>
+                        ))}  
                     </select>
-                    </div>
+                </div>
                 <div>
-                    <button className="read" type="button" onClick={handleDelete}> Approve Deletion</button>
+                    <button className="read" type="button" onClick={() => handleDelete(true)}> Approve Deletion</button>
                 </div>
             </div>
             <div className="functionality-box">

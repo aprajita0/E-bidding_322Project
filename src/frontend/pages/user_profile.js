@@ -246,9 +246,40 @@ const User_profile = () => {
         }
     };
     
-    const handleRequestDeletion = async (e) => {
-        e.preventDefault();
+    const handleRequestDeletion = async () => {
+        const reason = prompt("Please enter your reason for account deletion:"); // Ask the user for a reason
+        if (!reason) {
+            alert("Reason is required to proceed with the account deletion request.");
+            return;
+        }
+    
+        try {
+            const token = localStorage.getItem("token"); 
+    
+            const response = await fetch("/api/users/user-request-quit", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`, 
+                },
+                body: JSON.stringify({
+                    reason: reason, 
+                    delete_account: true, 
+                }),
+            });
+    
+            const data = await response.json();
+            if (response.ok) {
+                alert(data.message || "Your request to delete your account has been submitted for review.");
+            } else {
+                alert(data.error || "Failed to submit account deletion request.");
+            }
+        } catch (error) {
+            console.error("Error submitting account deletion request:", error);
+            alert("An error occurred. Please try again later.");
+        }
     };
+    
 
     return (
         <div className="profile-container">

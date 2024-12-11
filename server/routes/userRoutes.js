@@ -604,6 +604,7 @@ router.post('/rate-transactions', authMiddleware, async (req, res) => {
 
         await newRating.save();
 
+
         res.status(201).json({ message: 'Rating submitted successfully.', rating: newRating });
     } catch (error) {
         console.error('Error rating transaction:', error.message);
@@ -1145,6 +1146,13 @@ router.post('/user-request-quit', authMiddleware, async (req, res) => {
     try {
         // Find the user
         const user = await User.findById(req.user.id);
+        console.log("Authenticated User ID:", req.user.id);
+
+
+        if (!user) {
+            console.log("User not found for ID:", req.user.id); // Debugging
+            return res.status(404).json({ error: 'User not found.' });
+        }
 
         if (!user) {
             return res.status(404).json({ error: 'User not found.' });
@@ -1157,7 +1165,11 @@ router.post('/user-request-quit', authMiddleware, async (req, res) => {
             status: 'pending'  // Pending approval
         };
 
+        console.log("Quit Request Being Saved:", user.quit_request);
+        
         await user.save();
+
+        console.log("User updated with quit request:", await User.findById(req.user.id));
 
         // Notify the user that the request is received
         const notification = new Notification({
@@ -1166,6 +1178,7 @@ router.post('/user-request-quit', authMiddleware, async (req, res) => {
             notification: `Your request to quit the account is pending review by a Superuser.`
         });
 
+        console.log("Notification Being Saved:", notification);
         await notification.save();
 
         res.status(200).json({

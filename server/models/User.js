@@ -13,7 +13,12 @@ const userSchema = new Schema({
     role: { type: String, enum: ['reguser', 'superuser', 'visitor', 'banned'], default: 'visitor' },
     account_balance: { type: mongoose.Types.Decimal128, default: 0.00 },
     suspension_count: { type: Number, default: 0 },
-    account_status: { type: Boolean, default: true }
+    account_status: { type: Boolean, default: true },
+    quit_request: {
+        reason: { type: String },
+        delete_account: { type: Boolean },
+        status: { type: String, enum: ['pending', 'approved', 'denied'] },
+    }
 });
 
 module.exports = mongoose.model('User', userSchema);

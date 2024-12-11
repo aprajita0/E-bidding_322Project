@@ -140,5 +140,20 @@ router.post('/unban-user', authMiddleware, async (req, res) => {
     }
   });
 
+// Fetch all pending quit requests
+router.get('/quit-requests', authMiddleware, async (req, res) => {
+    try {
+        // Find all users with pending quit requests
+        const quitRequests = await User.find(
+            { 'quit_request.status': 'pending' }, // Filter for pending quit requests
+            '_id first_name last_name email quit_request' // Select only necessary fields
+        );
+
+        res.status(200).json(quitRequests);
+    } catch (error) {
+        console.error('Error fetching quit requests:', error.message);
+        res.status(500).json({ error: 'Internal server error.', details: error.message });
+    }
+});
 
 module.exports = router;
