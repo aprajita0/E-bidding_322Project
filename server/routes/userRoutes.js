@@ -351,7 +351,7 @@ router.post('/bid-listing', authMiddleware, async (req, res) => {
     }
 });
 
-router.post('/suspend-reguser', async (req, res) => {
+router.post('/suspend-reguser', authMiddleware, async (req, res) => {
     try {
         const { user_id } = req.body;
 
@@ -365,77 +365,39 @@ router.post('/suspend-reguser', async (req, res) => {
             return res.status(404).json({ error: 'User not found or not a regular user.' });
         }
 
-        if (user.account_status === false) {
-            console.log('User is already suspended.');
-            return res.status(200).json({
-                message: 'User is already suspended.',
-                user,
-            });
-        }
-        
-        // Fetch transactions involving the user
-        const userTransactions = await Transaction.find({
-            $or: [{ buyer_id: user_id }, { seller_id: user_id }],
-        }).select('_id');
-
-        console.log('Fetched Transactions:', userTransactions); 
-
-        if (userTransactions.length === 0) {
-            console.log('No transactions found for this user. Skipping suspension check.');
-            return res.status(200).json({ message: 'User has no transactions. Suspension check not required.' });
+        // Check if the user is a VIP
+        const regularUser = await RegularUser.findOne({ user_id });
+        if (regularUser && regularUser.vip) {
+            // Downgrade from VIP to regular user
+            regularUser.vip = false;
+            await regularUser.save();
+            console.log(`User ${user.username} downgraded from VIP to regular user.`);
         }
 
-        // Fetch ratings for these transactions
-        const ratings = await Rating.find({
-            transaction_id: { $in: userTransactions.map((t) => t._id) },
-            rater_id: user_id, 
-        });
-        
-        console.log('Fetched Ratings for User:', ratings);
-        
-        if (!ratings || ratings.length === 0) {
-            console.log('No ratings found for this user.');
-            return res.status(200).json({ message: 'No ratings found for this user.' });
-        }
+        // Suspend the user
+        user.account_status = false; // Suspend account
+        await user.save();
 
-        if (ratings.length < 3) {
-            console.log('User has less than 3 ratings. Skipping suspension check.');
-            return res.status(200).json({ message: 'User does not have enough ratings to evaluate suspension.' });
-        }
-
-        // Calculate the average rating
+        // Fetch the user's ratings
+        const ratings = await Rating.find({ rater_id: user_id });
         const averageRating = ratings.reduce((sum, rating) => sum + rating.rating, 0) / ratings.length;
-        console.log('Average Rating:', averageRating);
 
         if (averageRating < 2 || averageRating > 4) {
-            // Suspend the user
-            user.account_status = false; // Suspended
+            // Suspend if average rating is too low or too high
             user.suspension_count += 1;
-
-            // Check if the user is permanently banned
             if (user.suspension_count >= 3) {
-                user.role = 'banned'; // Forcibly remove the user
+                user.role = 'banned'; // Permanently ban the user after 3 suspensions
             }
             await user.save();
-        
-            const reason =
-                averageRating < 2
-                    ? 'too mean (average rating below 2)'
-                    : 'too generous (average rating above 4)';
-
-            res.status(200).json({ 
-                message: `User suspended successfully for being ${reason}.`,
-                user,
-            });
+            res.status(200).json({ message: `User suspended for having ${averageRating < 2 ? 'too low' : 'too high'} average rating.` });
         } else {
-            res.status(200).json({ error: 'User does not meet the suspension criteria.' });
+            res.status(200).json({ message: 'User does not meet the suspension criteria.' });
         }
     } catch (error) {
         console.error('Error suspending user:', error);
         res.status(500).json({ error: 'Internal server error.' });
     }
 });
-
 
 router.post('/approve-reguser', authMiddleware, async (req, res) => {
     try {
@@ -758,61 +720,68 @@ router.post('/accept-bid', authMiddleware, async (req, res) => {
       }
   
       // Check if the listing is available or renting
-      if (listing.status !== 'available' && listing.status !== 'renting') {
+      if (listing.status !== 'available' && listing.status !== 'renting' ){
         return res.status(400).json({ error: 'Listing is no longer available or is already rented.' });
       }
-  
-      // Find the buyer and seller
+      
       const buyer = await User.findById(bid.bidder_id);
       const seller = await User.findById(listing.user_id);
       if (!buyer || !seller) {
         return res.status(404).json({ error: 'User(s) not found.' });
       }
+      
+      const reguserBuyer = await RegularUser.findOne({ user_id: buyer._id });
+      const reguserSeller = await RegularUser.findOne({ user_id: seller._id });
+      const buyerIsVIP = reguserBuyer?.vip || false;
+      const sellerIsVIP = reguserSeller?.vip || false;
   
-      // Check if the buyer has enough balance to cover the bid amount
+    
+      const bidType = listing.type === 'buying' ? 'buying' : listing.type === 'selling' ? 'selling' : 'rental';
       const bidAmount = parseFloat(bid.amount.toString());
-
-      const buyerVIPStatus = await RegularUser.findOne({ vip: true, user_id: buyer._id });
-      let finalBidAmount = bidAmount;
-      if (buyerVIPStatus) {
-        finalBidAmount *= 0.9;
+  
+      let finalAmount;
+      if (bidType === 'selling' || bidType === 'renting') {
+        finalAmount = buyerIsVIP ? bidAmount * 0.9 : bidAmount;
       }
-
-
-      if (parseFloat(buyer.account_balance.toString()) < finalBidAmount) {
-        return res.status(400).json({ error: 'Buyer has insufficient balance.' });
+      else if (bidType === 'buying') {
+        finalAmount = sellerIsVIP ? bidAmount * 0.9 : bidAmount;
       }
-  
-      // Deduct the amount from the buyer's account balance
-      buyer.account_balance = mongoose.Types.Decimal128.fromString(
-        (parseFloat(buyer.account_balance.toString()) - finalBidAmount).toFixed(2)
-      );
-  
-      // Add the amount to the seller's account balance
-      seller.account_balance = mongoose.Types.Decimal128.fromString(
-        (parseFloat(seller.account_balance.toString()) + finalBidAmount).toFixed(2)
-      );
-  
-      // Determine if the listing is selling or renting
-      if (listing.type === 'renting') {
-        // Renting: Set the listing as renting and calculate the rental expiry date
-        const rentalPeriod = bid.rental_period || 30; // Default to 30 days if not provided
-        listing.status = 'renting'; // Update status to 'renting' (not 'rented')
-        listing.rental_expiry = new Date(Date.now() + rentalPeriod * 24 * 60 * 60 * 1000); // Set the rental expiry date
-      } else {
-        // Selling: Mark the listing as sold
-        listing.status = 'sold';
+     else {
+        finalAmount = bidAmount;
+    }
+    if (bidType === 'selling' || bidType === 'renting') {
+        if (parseFloat(buyer.account_balance.toString()) < finalAmount) {
+          return res.status(400).json({ error: 'Buyer has insufficient balance.' });
+        }
+        
+        buyer.account_balance = mongoose.Types.Decimal128.fromString(
+          (parseFloat(buyer.account_balance.toString()) - finalAmount).toString()
+        );
+        seller.account_balance = mongoose.Types.Decimal128.fromString(
+          (parseFloat(seller.account_balance.toString()) + finalAmount).toString()
+        );
+      } else {  // 'buying' type
+        if (parseFloat(seller.account_balance.toString()) < finalAmount) {
+          return res.status(400).json({ error: 'Seller has insufficient balance.' });
+        }
+        seller.account_balance = mongoose.Types.Decimal128.fromString(
+          (parseFloat(seller.account_balance.toString()) - finalAmount).toString()
+        );
+        buyer.account_balance = mongoose.Types.Decimal128.fromString(
+          (parseFloat(buyer.account_balance.toString()) + finalAmount).toString()
+        );
       }
-  
       // Create a transaction for the purchase/rental
       const transaction = new Transaction({
         buyer_id: buyer._id,
         seller_id: seller._id,
         listing_id: listing._id,
-        amount: bid.amount,
+        amount: finalAmount,
         transaction_date: new Date(),
       });
-  
+     
+      await Listing.findByIdAndUpdate(listing._id, { status: 'sold' }, { new: true });
+
       // Save the updates
       await buyer.save();
       await seller.save();
@@ -834,7 +803,6 @@ router.post('/accept-bid', authMiddleware, async (req, res) => {
       res.status(500).json({ error: 'Internal server error.' });
     }
   });
-  
   router.get('/get-complaint', authMiddleware, async (req, res) => {
     try {
         // Extract query parameters for filtering
@@ -931,6 +899,7 @@ router.get('/check-vip', authMiddleware, async (req, res) => {
 
       // Fetch the RegularUser record associated with the user
       const regularUser = await RegularUser.findOne({ user_id: req.user.id });
+     
       if (!regularUser) {
         return res.status(404).json({ error: 'RegularUser record not found.' });
       }
@@ -940,25 +909,30 @@ router.get('/check-vip', authMiddleware, async (req, res) => {
       const minTransactions = 5;
       const maxComplaints = 0;
 
-      const accountBalance = parseFloat(user.account_balance.toString()); //converting from Decimal128 to number so js can recognize
+
+      const buyerTransactions = await Transaction.countDocuments({ buyer_id: req.user.id });
+      const sellerTransactions = await Transaction.countDocuments({ seller_id: req.user.id });
+      const totalTransactions = buyerTransactions + sellerTransactions;
+      regularUser.transaction_count = totalTransactions;
+      await regularUser.save();
+      console.log("Total Transactions (Buyer + Seller):", totalTransactions);
+      const accountBalance = parseFloat(user.account_balance.toString()); 
       console.log("User Account Balance:", user.account_balance);
       console.log("Transaction Count:", regularUser.transaction_count);
       console.log("Complaints Count:", regularUser.complaints_count);
-
-      // Check if user meets VIP conditions
+      
       if (
         accountBalance >= minBalance &&
-        regularUser.transaction_count > minTransactions &&
-        regularUser.complaints_count === maxComplaints
-      ) {
-        // Promote to VIP if not already VIP
-        if (!regularUser.vip) {
-          console.log("Promoting user to VIP...")
-          regularUser.vip = true;
-          await regularUser.save();
+        totalTransactions >= minTransactions &&
+        regularUser.complaints_count === maxComplaints)  {
+             if (!regularUser.vip) {
+                console.log("Promoting user to VIP...")
+                regularUser.vip = true;
+                await regularUser.save();
         }
+        
         return res.status(200).json({ message: 'User is VIP', vip: true });
-      } else {
+    } else {
         // Downgrade to ordinary user if they were VIP
         if (regularUser.vip) {
           regularUser.vip = false;
@@ -982,17 +956,18 @@ router.get('/get-transactions', authMiddleware, async (req, res) => {
             return res.status(404).json({ error: 'User not found.' });
         }
 
-        const transactions = await Transaction.find({ buyer_id: buyerId })
-            .populate('seller_id', 'first_name last_name email') 
-            .populate('listing_id', 'name price_from price_to'); 
-
-        
-        res.status(200).json(transactions);
+        const transactions = await Transaction.find({
+            $or: [{ buyer_id: buyerId }, { seller_id: buyerId }]
+          })
+            .populate('seller_id', 'first_name last_name email')  // Populating seller fields
+            .populate('listing_id', 'name price_from price_to'); // Populating listing fields
+            res.status(200).json(transactions);
     } catch (error) {
         console.error('Error fetching transactions:', error);
         res.status(500).json({ error: 'Server error.' });
     }
 });
+
 
 router.post('/deny-user', authMiddleware, async (req, res) => {
     const { user_id } = req.body;
@@ -1298,49 +1273,54 @@ router.post('/approve-quit-request', authMiddleware, async (req, res) => {
     }
 });
 
-router.get('/:id/pending-ratings', authMiddleware, async (req, res) => {
+router.get('/get_user_ratings', authMiddleware, async (req, res) => {
     try {
-        const userId = req.params.id;
+        const { user_id } = req.query;
 
-        // Ensure the user exists
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ error: 'User not found.' });
+        // Validate user_id
+        if (!user_id) {
+            return res.status(400).json({ error: 'User ID is required.' });
         }
 
-        // Fetch transactions where the user is the buyer and hasn't rated the seller yet
+        // Validate if user_id is a valid ObjectId
+        if (!mongoose.Types.ObjectId.isValid(user_id)) {
+            return res.status(400).json({ error: 'Invalid user ID format.' });
+        }
+
+        // Convert user_id to ObjectId using 'new'
+        const objectId = new mongoose.Types.ObjectId(user_id);
+
+        // Fetch pending ratings where the user is the buyer or seller
         const pendingRatingsAsBuyer = await Transaction.find({
-            buyer_id: userId,
-            buyer_rating_given: false,
-        })
-            .populate('seller_id', 'username')
-            .populate('listing_id', 'name');
+            buyer_id: objectId,  // Check if user is the buyer
+            buyer_rating_given: false, // Ensure no rating is given by the buyer
+        }).populate('listing_id', 'name description price_from price_to')
+          .exec();
 
-        // Fetch transactions where the user is the seller and hasn't rated the buyer yet
         const pendingRatingsAsSeller = await Transaction.find({
-            seller_id: userId,
-            seller_rating_given: false,
-        })
-            .populate('buyer_id', 'username')
-            .populate('listing_id', 'name');
+            seller_id: objectId,  // Check if user is the seller
+            seller_rating_given: false, // Ensure no rating is given by the seller
+        }).populate('listing_id', 'name description price_from price_to')
+          .exec();
 
+        // If no pending ratings are found
+        if (pendingRatingsAsBuyer.length === 0 && pendingRatingsAsSeller.length === 0) {
+            return res.status(404).json({ message: 'No pending ratings found.' });
+        }
+
+        // Return the pending ratings
         res.status(200).json({
-            pendingRatingsAsBuyer: pendingRatingsAsBuyer.map((t) => ({
-                transaction_id: t._id,
-                listing_name: t.listing_id.name,
-                other_party: t.seller_id.username,
-            })),
-            pendingRatingsAsSeller: pendingRatingsAsSeller.map((t) => ({
-                transaction_id: t._id,
-                listing_name: t.listing_id.name,
-                other_party: t.buyer_id.username,
-            })),
+            message: 'Pending ratings fetched successfully.',
+            pendingRatingsAsBuyer,
+            pendingRatingsAsSeller,
         });
-    } catch (error) {
-        console.error('Error fetching pending ratings:', error);
-        res.status(500).json({ error: 'Internal server error.' });
+    } catch (err) {
+        console.error('Error fetching pending ratings:', err);
+        res.status(500).json({ error: 'Internal server error.', details: err.message });
     }
 });
+
+
 
 
 

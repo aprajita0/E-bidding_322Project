@@ -10,6 +10,32 @@ const Withdraw = () => {
     const [withdrawAmount, setWithdrawAmount] = useState('');
     const [error, setError] = useState(''); 
 
+    const checkVIPStatus = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                return false; 
+            }
+    
+            const response = await fetch('/api/users/check-vip', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+    
+            if (!response.ok) {
+                return false; 
+            }
+    
+            const result = await response.json();
+            return result.vip || false; 
+        } catch (error) {
+            return false; 
+        }
+    };
+
     useEffect(() => {
         const fetchBalance = async () => {
             try {
@@ -70,21 +96,28 @@ const Withdraw = () => {
             });
     
             if (response.ok) {
+                const isVIP = await checkVIPStatus();
+                if (!isVIP) {
+                    localStorage.setItem('role', 'reguser');
+                } else {
+                    console.log('User is still a VIP');
+                }
+    
                 setWithdrawAmount('');
-                
-                if (role === 'reguser') {
+                const updatedRole = localStorage.getItem('role');
+                if (updatedRole === 'reguser') {
                     navigate('/user_profile');
-                } else if (role === 'superuser') {
+                } else if (updatedRole === 'superuser') {
                     navigate('/superusers_profile');
-                } else if (role === 'vip'){
+                } else if (updatedRole === 'vip') {
                     navigate('/Vip_profile');
                 }
-            
+            } else {
                 const result = await response.json();
-                setError(result.error || 'Withdrawal failed');
+                setError(result.error);
             }
         } catch (err) {
-            console.error('Error during withdrawal:', err);
+            console.error('Error during withdraw:', err);
             setError('Server error');
         }
     }; 
@@ -170,6 +203,5 @@ const Withdraw = () => {
 }
 
 export default Withdraw;
-
 
 
