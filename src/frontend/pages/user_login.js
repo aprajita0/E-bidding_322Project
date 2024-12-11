@@ -97,6 +97,12 @@ const U_login = ({ onLogin }) => {
                     navigate('/');
                     return;
                 }
+
+                localStorage.setItem('username', data.username);
+                localStorage.setItem('role', data.role);
+                localStorage.setItem('user_id', data.user_id);
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('userId', data.userId);
     
                 if (data.role === 'reguser') {
                     const suspensionStatus = await checkUserSuspension(data.userId);
@@ -108,12 +114,6 @@ const U_login = ({ onLogin }) => {
                         return;
                     }
                 }
-    
-                localStorage.setItem('username', data.username);
-                localStorage.setItem('role', data.role);
-                localStorage.setItem('user_id', data.user_id);
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('userId', data.userId);
     
                 let isVIP = false;
                 if (data.role === 'reguser' || data.role === 'vip') {
@@ -204,4 +204,5 @@ const U_login = ({ onLogin }) => {
 };
 
 export default U_login;
+
 
