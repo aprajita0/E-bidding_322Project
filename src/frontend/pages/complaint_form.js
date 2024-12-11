@@ -34,10 +34,13 @@ const Complaint_form = () => {
             });
             if (response.ok) {
                 alert('Your complaint has been submitted!');
-                if (data.role === 'reguser') {
+                const userRole = localStorage.getItem('role');
+                if (userRole === 'reguser') {
                     navigate('/user_profile');
-                } else if (data.role === 'superuser') {
+                } else if (userRole === 'superuser') {
                     navigate('/superusers_profile');
+                } else {
+                    console.error('Unknown role:', userRole);
                 }
             } else {
                 alert(`Server error, failed to submit complaint`);
