@@ -399,8 +399,6 @@ router.post('/suspend-reguser', authMiddleware, async (req, res) => {
     }
 });
 
-
-
 router.post('/approve-reguser', authMiddleware, async (req, res) => {
     try {
         const { visitor_id } = req.body; // Extract visitor_id from the request body
@@ -1254,6 +1252,44 @@ router.post('/approve-quit-request', authMiddleware, async (req, res) => {
     }
 });
 
+router.get('/get_user_ratings', authMiddleware, async (req, res) => {
+    try {
+        const { user_id } = req.query;
+
+        // Validate user_id
+        if (!user_id) {
+            return res.status(400).json({ error: 'User ID is required.' });
+        }
+
+        // Fetch pending ratings where the user is the buyer or seller
+        const pendingRatingsAsBuyer = await Transaction.find({
+            buyer_id: user_id,  // Check if user is the buyer
+            buyer_rating_given: false, // Ensure no rating is given by the buyer
+        }).populate('listing_id', 'name description price_from price_to')
+          .exec();
+
+        const pendingRatingsAsSeller = await Transaction.find({
+            seller_id: user_id,  // Check if user is the seller
+            seller_rating_given: false, // Ensure no rating is given by the seller
+        }).populate('listing_id', 'name description price_from price_to')
+          .exec();
+
+        // If no pending ratings are found
+        if (pendingRatingsAsBuyer.length === 0 && pendingRatingsAsSeller.length === 0) {
+            return res.status(404).json({ message: 'No pending ratings found.' });
+        }
+
+        // Return the pending ratings
+        res.status(200).json({
+            message: 'Pending ratings fetched successfully.',
+            pendingRatingsAsBuyer,
+            pendingRatingsAsSeller,
+        });
+    } catch (err) {
+        console.error('Error fetching pending ratings:', err);
+        res.status(500).json({ error: 'Internal server error.', details: err.message });
+    }
+});
 
 
 module.exports = router;
