@@ -887,6 +887,7 @@ router.get('/check-vip', authMiddleware, async (req, res) => {
 
       // Fetch the RegularUser record associated with the user
       const regularUser = await RegularUser.findOne({ user_id: req.user.id });
+     
       if (!regularUser) {
         return res.status(404).json({ error: 'RegularUser record not found.' });
       }
@@ -896,25 +897,30 @@ router.get('/check-vip', authMiddleware, async (req, res) => {
       const minTransactions = 5;
       const maxComplaints = 0;
 
-      const accountBalance = parseFloat(user.account_balance.toString()); //converting from Decimal128 to number so js can recognize
+
+      const buyerTransactions = await Transaction.countDocuments({ buyer_id: req.user.id });
+      const sellerTransactions = await Transaction.countDocuments({ seller_id: req.user.id });
+      const totalTransactions = buyerTransactions + sellerTransactions;
+      regularUser.transaction_count = totalTransactions;
+      await regularUser.save();
+      console.log("Total Transactions (Buyer + Seller):", totalTransactions);
+      const accountBalance = parseFloat(user.account_balance.toString()); 
       console.log("User Account Balance:", user.account_balance);
       console.log("Transaction Count:", regularUser.transaction_count);
       console.log("Complaints Count:", regularUser.complaints_count);
-
-      // Check if user meets VIP conditions
+      
       if (
         accountBalance >= minBalance &&
-        regularUser.transaction_count > minTransactions &&
-        regularUser.complaints_count === maxComplaints
-      ) {
-        // Promote to VIP if not already VIP
-        if (!regularUser.vip) {
-          console.log("Promoting user to VIP...")
-          regularUser.vip = true;
-          await regularUser.save();
+        totalTransactions >= minTransactions &&
+        regularUser.complaints_count === maxComplaints)  {
+             if (!regularUser.vip) {
+                console.log("Promoting user to VIP...")
+                regularUser.vip = true;
+                await regularUser.save();
         }
+        
         return res.status(200).json({ message: 'User is VIP', vip: true });
-      } else {
+    } else {
         // Downgrade to ordinary user if they were VIP
         if (regularUser.vip) {
           regularUser.vip = false;
@@ -938,17 +944,18 @@ router.get('/get-transactions', authMiddleware, async (req, res) => {
             return res.status(404).json({ error: 'User not found.' });
         }
 
-        const transactions = await Transaction.find({ buyer_id: buyerId })
-            .populate('seller_id', 'first_name last_name email') 
-            .populate('listing_id', 'name price_from price_to'); 
-
-        
-        res.status(200).json(transactions);
+        const transactions = await Transaction.find({
+            $or: [{ buyer_id: buyerId }, { seller_id: buyerId }]
+          })
+            .populate('seller_id', 'first_name last_name email')  // Populating seller fields
+            .populate('listing_id', 'name price_from price_to'); // Populating listing fields
+            res.status(200).json(transactions);
     } catch (error) {
         console.error('Error fetching transactions:', error);
         res.status(500).json({ error: 'Server error.' });
     }
 });
+
 
 router.post('/deny-user', authMiddleware, async (req, res) => {
     const { user_id } = req.body;
