@@ -756,9 +756,9 @@ router.post('/accept-bid', authMiddleware, async (req, res) => {
         return res.status(404).json({ error: 'Listing not found.' });
       }
   
-      // Check if the listing is still available
-      if (listing.status !== 'available') {
-        return res.status(400).json({ error: 'Listing is no longer available.' });
+      // Check if the listing is available or renting
+      if (listing.status !== 'available' && listing.status !== 'renting') {
+        return res.status(400).json({ error: 'Listing is no longer available or is already rented.' });
       }
   
       // Find the buyer and seller
@@ -770,28 +770,32 @@ router.post('/accept-bid', authMiddleware, async (req, res) => {
   
       // Check if the buyer has enough balance to cover the bid amount
       const bidAmount = parseFloat(bid.amount.toString());
-      
-      const buyerVIPStatus = await RegularUser.findOne({ vip: true, user_id: buyer._id });
-      let finalBidAmount = bidAmount;
-      if (buyerVIPStatus) {
-        finalBidAmount *= 0.9; 
-        }
-      if (parseFloat(buyer.account_balance.toString()) < finalBidAmount) {
+      if (parseFloat(buyer.account_balance.toString()) < bidAmount) {
         return res.status(400).json({ error: 'Buyer has insufficient balance.' });
       }
+  
+      // Deduct the amount from the buyer's account balance
       buyer.account_balance = mongoose.Types.Decimal128.fromString(
-        (parseFloat(buyer.account_balance.toString()) - finalBidAmount).toFixed(2)
+        (parseFloat(buyer.account_balance.toString()) - bidAmount).toString()
       );
   
       // Add the amount to the seller's account balance
       seller.account_balance = mongoose.Types.Decimal128.fromString(
-        (parseFloat(seller.account_balance.toString()) + finalBidAmount).toFixed(2)
+        (parseFloat(seller.account_balance.toString()) + bidAmount).toString()
       );
   
-      // Mark the listing as sold
-      listing.status = 'sold';
-
-      // Create a transaction for the purchase
+      // Determine if the listing is selling or renting
+      if (listing.type === 'renting') {
+        // Renting: Set the listing as renting and calculate the rental expiry date
+        const rentalPeriod = bid.rental_period || 30; // Default to 30 days if not provided
+        listing.status = 'renting'; // Update status to 'renting' (not 'rented')
+        listing.rental_expiry = new Date(Date.now() + rentalPeriod * 24 * 60 * 60 * 1000); // Set the rental expiry date
+      } else {
+        // Selling: Mark the listing as sold
+        listing.status = 'sold';
+      }
+  
+      // Create a transaction for the purchase/rental
       const transaction = new Transaction({
         buyer_id: buyer._id,
         seller_id: seller._id,
