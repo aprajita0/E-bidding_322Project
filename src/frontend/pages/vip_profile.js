@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './styles/vip_profile.css';
 import { useNavigate } from 'react-router-dom';
 import '@fontsource/dm-sans/700.css'; 
+import BuyerRatings from '../components/buyer_ratings.js';
+import RatingModal from '../components/rating_modal.js';
 import exchange_image from '../assets/exchange.png';
 import profile_pic from '../assets/profile_pic.png';
 
@@ -14,6 +16,7 @@ const Vip_profile = ({ setIsLoggedIn }) => {
     const [bids, setBids] = useState([]);
     const [username, setUsername] = useState('');
     const [userListings, setUserListings] = useState([]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [transactionId, setTransactionId] = useState(''); 
 
     const checkVIPStatus = async () => {
@@ -397,7 +400,19 @@ const Vip_profile = ({ setIsLoggedIn }) => {
                 <div className="add-container">
                     <button className="add-button" onClick={() => navigate('/add_listings')}>+</button>
                 </div>
+                <div className="functionality-box">
+                            <p>Below are your transactions that need a rating:</p>
+                            <BuyerRatings />
+                    </div>
             </section>
+            <RatingModal
+            open={isModalOpen}
+            handleClose={() => setIsModalOpen(false)}
+            transactionId={transactionId}
+            onSuccess={() => {
+                setIsModalOpen(false);
+            }}
+            />
         </div>
     );
 };
