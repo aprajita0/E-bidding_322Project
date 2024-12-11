@@ -769,23 +769,27 @@ router.post('/accept-bid', authMiddleware, async (req, res) => {
   
       // Check if the buyer has enough balance to cover the bid amount
       const bidAmount = parseFloat(bid.amount.toString());
-      if (parseFloat(buyer.account_balance.toString()) < bidAmount) {
+      
+      const buyerVIPStatus = await RegularUser.findOne({ vip: true, user_id: buyer._id });
+      let finalBidAmount = bidAmount;
+      if (buyerVIPStatus) {
+        finalBidAmount *= 0.9; 
+        }
+      if (parseFloat(buyer.account_balance.toString()) < finalBidAmount) {
         return res.status(400).json({ error: 'Buyer has insufficient balance.' });
       }
-  
-      // Deduct the amount from the buyer's account balance
       buyer.account_balance = mongoose.Types.Decimal128.fromString(
-        (parseFloat(buyer.account_balance.toString()) - bidAmount).toString()
+        (parseFloat(buyer.account_balance.toString()) - finalBidAmount).toFixed(2)
       );
   
       // Add the amount to the seller's account balance
       seller.account_balance = mongoose.Types.Decimal128.fromString(
-        (parseFloat(seller.account_balance.toString()) + bidAmount).toString()
+        (parseFloat(seller.account_balance.toString()) + finalBidAmount).toFixed(2)
       );
   
       // Mark the listing as sold
       listing.status = 'sold';
-  
+
       // Create a transaction for the purchase
       const transaction = new Transaction({
         buyer_id: buyer._id,
