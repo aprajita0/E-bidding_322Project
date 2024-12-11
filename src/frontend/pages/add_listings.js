@@ -20,6 +20,8 @@ const Add_Listings = () => {
             navigate('/withdraw');
         } else if (role === 'superuser') {
             navigate('/superusers_profile');
+        } else if (role === 'vip') {
+            navigate('/Vip_profile')
         }
     };
 
@@ -54,6 +56,8 @@ const Add_Listings = () => {
                     navigate('/withdraw');
                 } else if (role === 'superuser') {
                     navigate('/superusers_profile');
+                }else if (role === 'vip'){
+                    navigate('/Vip_profile');
                 }
             } else {
                 alert(`Failed to add listing: ${result.error}`);

@@ -22,6 +22,8 @@ const Balance_menu = () => {
             navigate('/user_profile')
         } else if (role === 'superuser') {
             navigate('/superusers_profile');
+        } else if (role === 'vip') {
+            navigate('/Vip_profile')
         }
     };
 

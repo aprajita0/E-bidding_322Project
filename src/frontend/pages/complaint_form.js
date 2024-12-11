@@ -38,6 +38,8 @@ const Complaint_form = () => {
                     navigate('/user_profile');
                 } else if (data.role === 'superuser') {
                     navigate('/superusers_profile');
+                } else if (role === 'vip') {
+                    navigate('/Vip_profile')
                 }
             } else {
                 alert(`Server error, failed to submit complaint`);
@@ -52,6 +54,8 @@ const Complaint_form = () => {
             navigate('/user_profile');
         } else if (role === 'superuser') {
             navigate('/superusers_profile');
+        } else if (role === 'vip') {
+            navigate('/Vip_profile')
         }
     };
     

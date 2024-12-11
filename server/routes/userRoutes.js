@@ -909,34 +909,48 @@ router.get('/get-suspended-account', authMiddleware, async (req, res) => {
 // Check VIP status API
 router.get('/check-vip', authMiddleware, async (req, res) => {
     try {
-        
-        const user = await User.findById(req.user.id);
-        if (!user) {
-            return res.status(404).json({ error: 'User not found.' });
-        }
+      // Fetch the user from the database
+      const user = await User.findById(req.user.id);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found.' });
+      }
 
-        
-        const regularUser = await RegularUser.findOne({ user_id: req.user.id });
-        if (!regularUser) {
-            return res.status(404).json({ error: 'RegularUser record not found.' });
-        }
+      // Fetch the RegularUser record associated with the user
+      const regularUser = await RegularUser.findOne({ user_id: req.user.id });
+      if (!regularUser) {
+        return res.status(404).json({ error: 'RegularUser record not found.' });
+      }
 
-  
-      const amount = 5000;
-  
-      if (user.account_balance >= amount) {
+      // Define VIP conditions
+      const minBalance = 5000;
+      const minTransactions = 5;
+      const maxComplaints = 0;
+
+      const accountBalance = parseFloat(user.account_balance.toString()); //converting from Decimal128 to number so js can recognize
+      console.log("User Account Balance:", user.account_balance);
+      console.log("Transaction Count:", regularUser.transaction_count);
+      console.log("Complaints Count:", regularUser.complaints_count);
+
+      // Check if user meets VIP conditions
+      if (
+        accountBalance >= minBalance &&
+        regularUser.transaction_count > minTransactions &&
+        regularUser.complaints_count === maxComplaints
+      ) {
+        // Promote to VIP if not already VIP
         if (!regularUser.vip) {
+          console.log("Promoting user to VIP...")
           regularUser.vip = true;
-          await regularUser.save(); 
+          await regularUser.save();
         }
-        return res.status(200).json({ message: 'User is VIP' });
+        return res.status(200).json({ message: 'User is VIP', vip: true });
       } else {
-        
+        // Downgrade to ordinary user if they were VIP
         if (regularUser.vip) {
           regularUser.vip = false;
-          await regularUser.save(); // Save the RegularUser document
+          await regularUser.save();
         }
-        return res.status(200).json({ message: 'User is not VIP' });
+        return res.status(200).json({ message: 'User is not VIP', vip: false });
       }
     } catch (error) {
       console.error(error);
@@ -1058,6 +1072,7 @@ router.post('/', authMiddleware, async (req, res) => {
             description,
         });
         await complaint.save();
+        console.log("New complaint:", complaint);
         res.status(201).json({ message: 'Complaint created successfully', complaint });
     } catch (err) {
         console.error(err);

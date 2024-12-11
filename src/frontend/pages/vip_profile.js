@@ -90,10 +90,10 @@ const Vip_profile = () => {
     }, []);
 
     useEffect(() => {
-        const fetchBids = async () => {
+        const fetchBids = async (listingId) => {
             try {
-                if (!listingSelect) {
-                    console.error('Listing ID needed');
+                if (!listingId) {
+                    console.error('Listing ID is required to fetch bids.');
                     return;
                 }
                 const token = localStorage.getItem('token');
@@ -103,41 +103,175 @@ const Vip_profile = () => {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`,
                     },
-                    body: JSON.stringify({ listing_id: listingSelect }), 
+                    body: JSON.stringify({ listing_id: listingId }), 
                 });
     
                 if (response.ok) {
                     const data = await response.json();
-                    setBids(data.bids);
+                    console.log('Fetched Bids:', data.bids)
+                    setBids(data.bids || []);
                 } else {
-                    console.error('Failed to fetch bids');
+                    const errorData = await response.json();
+                    console.error('Failed to fetch bids:', errorData.error);
+                    setBids([]);
                 }
             } catch (err) {
-                console.error('Error fetching bids:', err);
+                console.error('Error fetching bids:', err.message);
                 setError('Error fetching bids.');
+                setBids([]);
             }
         };
-    
-        fetchBids();
+
+        if (listingSelect) {
+            fetchBids(listingSelect);
+        }
     }, [listingSelect]); 
 
     const handleBidSelectChange = (e) => {
-        const selectedBidId = parseInt(e.target.value);
-        const selectedBid = bids.find(bid => bid.id === selectedBidId);
-        setBidSelect(selectedBidId);
+        const selectedBidId = e.target.value;
+        console.log('Selected Bid ID:', selectedBidId);
+
+        const selectedBid = bids.find(bid => bid._id === selectedBidId);
+        if (selectedBid) {
+            setBidSelect(selectedBidId);
+        } else {
+            console.error('Selected bid not found in the bids list');
+        }
     };
 
-    const handleAccept = () => {
-        navigate('/');
+    const handleAccept = async () => {
+        if (!bidSelect || !listingSelect) {
+            alert('Please select both a bid and a listing first.');
+            return;
+        }
+    
+        const selectedBid = bids.find(bid => bid._id === bidSelect); // Match the selected bid
+        if (!selectedBid) {
+            alert('Invalid bid selected.');
+            return;
+        }
+    
+        console.log('Selected Bid ID:', bidSelect);
+        console.log('Selected Listing ID:', listingSelect);
+    
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/users/accept-bid', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    bid_id: bidSelect, //mongoDB _id of the bid
+                    listing_id: listingSelect, 
+                }),
+            });
+    
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Bid accepted successfully:', data);
+                alert('Bid accepted successfully!');
+                const transactionId = data.transaction._id;
+                setTransactionId(transactionId);
+                setIsModalOpen(true);
+
+                const updatedListings = userListings.filter(listing => listing._id !== listingSelect);
+                setUserListings(updatedListings);
+                setBidSelect('');
+                setListingSelect('');
+                setBids([]);
+            } else {
+                const error = await response.json();
+                console.error('Error accepting bid:', error.error);
+                alert(error.error || 'Error accepting bid.');
+            }
+        } catch (err) {
+            console.error('Error accepting bid:', err.message);
+            alert('Server error while accepting bid.');
+        }
+    };
+    
+
+    const handleDeny = async () => {
+        if (!bidSelect) {
+            alert('Please select a bid to deny.');
+            return;
+        }
+
+        const selectedBid = bids.find(bid => bid._id === bidSelect); // match the selected bid
+        if (!selectedBid) {
+            alert('The bid you selected is no longer valid.');
+            setBidSelect('');
+            return;
+        }
+    
+        console.log('Selected Bid ID to deny:', bidSelect);
+    
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/users/deny-bid', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ bid_id: bidSelect }), // send the selected bid's _id
+            });
+    
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Bid denied successfully:', data);
+                alert('Bid denied successfully!');
+                // Remove the denied bid from the state
+                const updatedBids = bids.filter(bid => bid._id !== bidSelect);
+                setBids(updatedBids);
+                setBidSelect(''); // Reset bid selection
+            } else {
+                const error = await response.json();
+                console.error('Error denying bid:', error.error);
+                alert(error.error || 'Error denying bid.');
+            }
+        } catch (err) {
+            console.error('Error denying bid:', err.message);
+            alert('Server error while denying bid.');
+        }
     };
 
-    const handleDeny = () => {
-        navigate('/');
+    const handleRequestDeletion = async () => {
+        const reason = prompt("Please enter your reason for account deletion:"); // Ask the user for a reason
+        if (!reason) {
+            alert("Reason is required to proceed with the account deletion request.");
+            return;
+        }
+    
+        try {
+            const token = localStorage.getItem("token"); 
+    
+            const response = await fetch("/api/users/user-request-quit", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`, 
+                },
+                body: JSON.stringify({
+                    reason: reason, 
+                    delete_account: true, 
+                }),
+            });
+    
+            const data = await response.json();
+            if (response.ok) {
+                alert(data.message || "Your request to delete your account has been submitted for review.");
+            } else {
+                alert(data.error || "Failed to submit account deletion request.");
+            }
+        } catch (error) {
+            console.error("Error submitting account deletion request:", error);
+            alert("An error occurred. Please try again later.");
+        }
     };
-
-    const handleRequestDeletion = async (e) => {
-        e.preventDefault();
-    };
+    
 
     return (
         <div className="profile-container">
@@ -170,9 +304,9 @@ const Vip_profile = () => {
                         <div className="my-listings-container"><div className="my-listings_label">Select a Bid:</div>
                         <select className="show-listings" id="bid_select" value={bidSelect} onChange={handleBidSelectChange}required>
                             <option value="">Select a Bid</option>
-                            {bids.map((bid, index) => (
-                                <option key={index} value={index}>
-                                    Amount Offered: ${bid.amount && typeof bid.amount === 'object' && bid.amount.$numberDecimal? parseFloat(bid.amount.$numberDecimal).toFixed(2): bid.amount}, Deadline: {bid.bid_expiration || "No deadline"}
+                            {bids.map((bid) => (
+                                <option key={bid._id} value={bid._id}>
+                                    Amount Offered: ${bid.amount.$numberDecimal || bid.amount}, Deadline: {bid.bid_expiration || 'No deadline'}
                                 </option>
                             ))}
                         </select>

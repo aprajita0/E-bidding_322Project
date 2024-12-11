@@ -10,7 +10,7 @@ const Create_raffle = () => {
     const [endDate, setEndDate] = useState('');
     const navigate = useNavigate();
     const handleReturn = () => {
-       navigate('/vip_profile');
+       navigate('/Vip_profile');
     };
 
     const handleRaffle = async (event) => {
@@ -36,7 +36,7 @@ const Create_raffle = () => {
             const result = await response.json();
             if (response.ok) {
                 alert('Your raffle has been created!');
-                navigate('/vip_profile');
+                navigate('/Vip_profile');
             } else {
                 alert(`Failed to add raffle: ${result.error}`);
             }

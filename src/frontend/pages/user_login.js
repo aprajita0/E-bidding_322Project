@@ -14,7 +14,7 @@ const U_login = ({ onLogin }) => {
     };
 
     //for checking VIP- waiting for updated check-VIP api
-    /*const checkVIPStatus = async () => {
+    const checkVIPStatus = async () => {
         try {
             const token = localStorage.getItem('token');
             if (!token) {
@@ -38,7 +38,7 @@ const U_login = ({ onLogin }) => {
             console.error('Error checking VIP status:', error);
             throw error;
         }
-    }; */
+    }; 
     
     const checkUserSuspension = async (userId) => {
         try {
@@ -115,7 +115,7 @@ const U_login = ({ onLogin }) => {
                     }
                 }
 
-                /*let isVIP = false;
+                let isVIP = false;
                 if (data.role === 'reguser' || data.role === 'vip') {
                     try {
                         isVIP = await checkVIPStatus(data.token);
@@ -128,7 +128,7 @@ const U_login = ({ onLogin }) => {
                     console.log('User upgraded to VIP based on VIP check.');
                     data.role = 'vip';
                     localStorage.setItem('role', 'vip');
-                }*/
+                }
                 
                 onLogin();
                 if (data.role === 'reguser') {
