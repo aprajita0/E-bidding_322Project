@@ -21,8 +21,9 @@ const SuspensionPage = () => {
             if (response.ok) {
                 const data = await response.json();
                 console.log("Fine Payment successful:", data);
+                localStorage.setItem("token", data.token); 
                 alert("Your account has been successfully reactivated!");
-                navigate("/user_profile"); // Redirect to user profile after payment
+                navigate("/U_login"); // Redirect to  after payment
             } else {
                 const error = await response.json();
                 console.error("Error paying fine:", error.error);
