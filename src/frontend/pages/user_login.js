@@ -19,7 +19,7 @@ const U_login = ({ onLogin }) => {
             if (!token) {
                 return false; 
             }
-
+    
             const response = await fetch('/api/users/check-vip', {
                 method: 'GET',
                 headers: {
@@ -27,19 +27,19 @@ const U_login = ({ onLogin }) => {
                     Authorization: `Bearer ${token}`,
                 },
             });
-
+    
             if (!response.ok) {
                 return false; 
             }
-
+    
             const result = await response.json();
-            return result.isVIP || false;
+            return result.vip || false; 
         } catch (error) {
-            console.error('Error checking status');
             return false; 
         }
     };
-
+    
+    
     const checkUserSuspension = async (userId) => {
         try {
             const token = localStorage.getItem('token');
@@ -202,5 +202,4 @@ const U_login = ({ onLogin }) => {
 };
 
 export default U_login;
-
 
