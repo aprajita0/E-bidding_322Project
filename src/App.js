@@ -123,10 +123,10 @@ function App() {
                         <Route path="/my_account" element={isLoggedIn ? <div>My Account Page</div> : <Navigate to="/U_login" />} />
                         <Route path="/Raffle_listings" element={isLoggedIn ? <Raffle_listings /> : <Navigate to="/U_login" />} />
                         <Route path="/V_registration" element={<V_registration />} />
-                        <Route path="/User_profile" element={<User_profile />} />
+                        <Route path="/User_profile" element={<User_profile setIsLoggedIn={setIsLoggedIn} />} />
                         <Route path="/Superusers_profile" element={<Superusers_profile />} />
                         <Route path="/visitor_profile" element={<VisitorProfile />} />
-                        <Route path="/Vip_profile" element={<Vip_profile />} />
+                        <Route path="/Vip_profile" element={<Vip_profile setIsLoggedIn={setIsLoggedIn}  />} />
                         <Route path="/browse_listings/:id" element={<Listing_clicked />} />
                         <Route path="/raffle_listings/:id" element={<Raffle_clicked />} />
                         <Route path="/suspension_info" element={<SuspensionPage />} />
@@ -151,5 +151,6 @@ function App() {
 }
 
 export default App;
+
 
 
