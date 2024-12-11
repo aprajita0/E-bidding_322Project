@@ -388,10 +388,11 @@ router.post('/suspend-reguser', async (req, res) => {
         // Fetch ratings for these transactions
         const ratings = await Rating.find({
             transaction_id: { $in: userTransactions.map((t) => t._id) },
-        });        
-
+            rater_id: user_id, 
+        });
+        
         console.log('Fetched Ratings for User:', ratings);
-
+        
         if (!ratings || ratings.length === 0) {
             console.log('No ratings found for this user.');
             return res.status(200).json({ message: 'No ratings found for this user.' });
