@@ -132,8 +132,8 @@ function App() {
                         <Route path="/suspension_info" element={<SuspensionPage />} />
                         <Route path="/place_bid/:id" element={<Place_bid />} />
                         <Route path="/Create_raffle" element={<Create_raffle />} />
-                        <Route path="/Deposit" element={isLoggedIn ? <Deposit /> : <Navigate to="/U_login" />} />
-                        <Route path="/Withdraw" element={isLoggedIn ? <Withdraw /> : <Navigate to="/U_login" />} />
+                        <Route path="/Deposit" element={isLoggedIn ? <Deposit setIsLoggedIn={setIsLoggedIn}/> : <Navigate to="/U_login" />} />
+                        <Route path="/Withdraw" element={isLoggedIn ? <Withdraw setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/U_login" />} />
                         <Route path="/Add_Listings" element={isLoggedIn ? <Add_Listings /> : <Navigate to="/U_login" />} />
                         <Route path="/Complaint" element={isLoggedIn ? <Complaint /> : <Navigate to="/U_login" />} />
                         <Route path="/Balance_menu" element={isLoggedIn ? <Balance_menu /> : <Navigate to="/U_login" />} />
@@ -151,6 +151,5 @@ function App() {
 }
 
 export default App;
-
 
 
