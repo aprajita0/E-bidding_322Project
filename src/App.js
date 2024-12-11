@@ -18,6 +18,8 @@ import VisitorProfile from './frontend/pages/visitor_profile';
 import V_registration from './frontend/pages/visitor_registration';
 import Browse_listings from './frontend/pages/browse_listings';
 import Listing_clicked from './frontend/components/listing_clicked';
+import Raffle_clicked from './frontend/components/raffle_clicked';
+import Raffle_listings from './frontend/pages/raffle_listings';
 import trustsphere_logo from './frontend/assets/logo.png';
 import '@fontsource/dm-sans';
 
@@ -97,19 +99,17 @@ function App() {
                             <Link to="/browse_listings">Browse</Link>
                         </li>
                         <li>
-                            {isLoggedIn ? (
-                                role === 'reguser' ? (
-                                <Link to="/user_profile">Profile</Link>
-                            ) : role === 'visitor' ? (
-                                <Link to="/visitor_profile">Profile</Link>
-                            ) : role === 'superuser' ? (
-                                <Link to="/superusers_profile">Profile</Link>
-                            ) : role === 'vip' ? (
-                                <Link to ="/Vip_profile">Profile</Link>
-                            ) : null
-                        ) : (                            
-                                <Link to="/U_login">Login/Registration</Link>
-                            )}
+                        {isLoggedIn ? (
+                            <>
+                            {role === 'vip' && <Link to="/raffle_listings">Raffles</Link>}
+                            {role === 'reguser' && <Link to="/user_profile">Profile</Link>}
+                            {role === 'visitor' && <Link to="/visitor_profile">Profile</Link>}
+                            {role === 'superuser' && <Link to="/superusers_profile">Profile</Link>}
+                            {role === 'vip' && <Link to="/Vip_profile">Profile</Link>}
+                            </>
+                            ) : (
+                            <Link to="/U_login">Login/Registration</Link>
+                        )}
                         </li>
                     </ul>
                     {isLoggedIn && <LogoutButton setIsLoggedIn={setIsLoggedIn} />}
@@ -121,12 +121,14 @@ function App() {
                         <Route path="/U_login" element={<U_login onLogin={handleLogin} />} />
                         <Route path="/Browse_listings" element={isLoggedIn ? <Browse_listings /> : <Navigate to="/U_login" />} />
                         <Route path="/my_account" element={isLoggedIn ? <div>My Account Page</div> : <Navigate to="/U_login" />} />
+                        <Route path="/Raffle_listings" element={isLoggedIn ? <Raffle_listings /> : <Navigate to="/U_login" />} />
                         <Route path="/V_registration" element={<V_registration />} />
                         <Route path="/User_profile" element={<User_profile />} />
                         <Route path="/Superusers_profile" element={<Superusers_profile />} />
                         <Route path="/visitor_profile" element={<VisitorProfile />} />
                         <Route path="/Vip_profile" element={<Vip_profile />} />
                         <Route path="/browse_listings/:id" element={<Listing_clicked />} />
+                        <Route path="/raffle_listings/:id" element={<Raffle_clicked />} />
                         <Route path="/suspension_info" element={<SuspensionPage />} />
                         <Route path="/place_bid/:id" element={<Place_bid />} />
                         <Route path="/Create_raffle" element={<Create_raffle />} />
@@ -149,5 +151,6 @@ function App() {
 }
 
 export default App;
+
 
 
