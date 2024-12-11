@@ -736,7 +736,7 @@ router.post('/accept-bid', authMiddleware, async (req, res) => {
       const sellerIsVIP = reguserSeller?.vip || false;
   
     
-      const bidType = listing.type === 'buying' ? 'buying' : listing.type === 'selling' ? 'selling' : 'rental';
+      const bidType = listing.type === 'buying' ? 'buying' : listing.type === 'selling' ? 'selling' : 'renting';
       const bidAmount = parseFloat(bid.amount.toString());
   
       let finalAmount;
