@@ -167,6 +167,8 @@ router.post('/pay-fine', authMiddleware, async (req, res) => {
         // Save the transaction record
         await transaction.save();
 
+        const deletedRatings = await Rating.deleteMany({ rater_id: user._id });
+
         // Respond with success
         res.status(200).json({
             message: 'Fine paid successfully. User is now unsuspended.',
@@ -180,13 +182,15 @@ router.post('/pay-fine', authMiddleware, async (req, res) => {
                 transaction_id: transaction._id,
                 amount: transaction.amount,
                 transaction_date: transaction.transaction_date,
-            }
+            },
+            ratings_removed: deletedRatings.deletedCount,
         });
     } catch (error) {
         console.error('Error paying fine:', error.message);
         res.status(500).json({ error: 'Internal server error.', details: error.message });
     }
 });
+        
 
 
 
