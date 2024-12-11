@@ -8,7 +8,7 @@ import exchange_image from '../assets/exchange.png';
 import profile_pic from '../assets/profile_pic.png';
 import message_pic from '../assets/message.png';
 
-const User_profile = () => {
+const User_profile = ({ setIsLoggedIn }) => {
     const navigate = useNavigate();
     const [error, setError] = useState('');
     const [accountBalance, setAccountBalance] = useState(0);
@@ -19,6 +19,38 @@ const User_profile = () => {
     const [userListings, setUserListings] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [transactionId, setTransactionId] = useState(null);
+
+    const checkVIPStatus = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                return false;
+            }
+
+            const response = await fetch('/api/users/check-vip', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                return false;
+            }
+
+            const result = await response.json();
+            return result.vip || false;
+        } catch (error) {
+            return false;
+        }
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+        window.location.href = '/U_login';
+    };
 
 
     const formatMin = (price_from) => {
@@ -180,6 +212,14 @@ const User_profile = () => {
                 const data = await response.json();
                 console.log('Bid accepted successfully:', data);
                 alert('Bid accepted successfully!');
+                const isVIP = await checkVIPStatus();
+                if (isVIP) {
+                    localStorage.setItem('role', 'vip');
+                    alert('You are now a VIP. Please sign back in to see your profile.');
+                    handleLogout();
+                } else {
+                    console.log('User is still not a VIP');
+                }
                 const transactionId = data.transaction._id;
                 setTransactionId(transactionId);
                 setIsModalOpen(true);
@@ -374,4 +414,3 @@ const User_profile = () => {
 };
 
 export default User_profile;
-
