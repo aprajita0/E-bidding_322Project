@@ -247,13 +247,14 @@ router.post('/add-listing', authMiddleware, async (req, res) => {
 router.get('/get-user-listings', authMiddleware, async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
-        const listings = await Listing.find({ user_id: user.id });
+        const listings = await Listing.find({ user_id: user.id, status: { $ne: 'sold' }  });
         res.status(200).json(listings);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal server error.' });
     }
 });
+
 
 //New route to get a specific listing by ID
 router.get('/get-listing/:id', async (req, res) => {
