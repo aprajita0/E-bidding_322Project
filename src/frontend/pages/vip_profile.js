@@ -274,7 +274,6 @@ const Vip_profile = ({ setIsLoggedIn }) => {
             } else {
                 const error = await response.json();
                 console.error('Error denying bid:', error.error);
-                alert(error.error || 'Error denying bid.');
             }
         } catch (err) {
             console.error('Error denying bid:', err.message);
