@@ -101,7 +101,6 @@ router.post('/pay-fine', authMiddleware, async (req, res) => {
 
         // Reactivate the user and update their account status
         user.account_status = true;  // Set the account status to active
-        user.suspension_count = 0;  // Reset suspension count
 
         // Save the updated user data
         await user.save();
