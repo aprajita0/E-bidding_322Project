@@ -383,12 +383,24 @@ router.post('/suspend-reguser', async (req, res) => {
             return res.status(200).json({ message: 'User has no transactions. Suspension check not required.' });
         }
 
+        
         const ratingsAgainstUser = await Rating.find({
             transaction_id: { $in: userTransactions.map((t) => t._id) },
             rater_id: { $ne: user_id }, 
         });
         
         console.log('Fetched Ratings Against User:', ratingsAgainstUser);
+
+        const uniqueRaterIds = new Set(ratingsAgainstUser.map(rating => rating.rater_id.toString()));
+        console.log('Unique Rater IDs:', uniqueRaterIds);
+        
+        if (uniqueRaterIds.size < 3) {
+            console.log('User has ratings from less than 3 different users. Skipping suspension check.');
+            return res.status(200).json({ 
+                message: 'User does not have ratings from at least 3 different users.',
+                uniqueRaters: uniqueRaterIds.size
+            });
+        }
         
         if (!ratingsAgainstUser || ratingsAgainstUser.length === 0) {
             console.log('No ratings found against this user.');
@@ -400,7 +412,7 @@ router.post('/suspend-reguser', async (req, res) => {
             return res.status(200).json({ message: 'User does not have enough ratings to evaluate suspension.' });
         }
 
-
+        
         const averageRatingAgainstUser = ratingsAgainstUser.reduce((sum, rating) => sum + rating.rating, 0) / ratingsAgainstUser.length;
         console.log('Average Rating Against User:', averageRatingAgainstUser);
 
@@ -408,7 +420,6 @@ router.post('/suspend-reguser', async (req, res) => {
 
         if (regularUser && regularUser.vip) {
             if (averageRatingAgainstUser < 2 || averageRatingAgainstUser > 4) {
-                // Downgrade VIP to regular user
                 regularUser.vip = false;
                 await regularUser.save();
                 
@@ -464,6 +475,7 @@ router.post('/suspend-reguser', async (req, res) => {
         res.status(500).json({ error: 'Internal server error.' });
     }
 });
+
 router.post('/approve-reguser', authMiddleware, async (req, res) => {
     try {
         const { visitor_id } = req.body; // Extract visitor_id from the request body
