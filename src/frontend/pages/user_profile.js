@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import './styles/user_profile.css';
 import { useNavigate } from 'react-router-dom';
-//import BuyerRatings from '../components/buyer_ratings.js';
+import BuyerRatings from '../components/buyer_ratings.js';
 import RatingModal from '../components/rating_modal.js';
 import '@fontsource/dm-sans/700.css'; 
-import CircularProgress from '@mui/material/CircularProgress';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
 import exchange_image from '../assets/exchange.png';
 import profile_pic from '../assets/profile_pic.png';
 import message_pic from '../assets/message.png';
@@ -23,9 +19,6 @@ const User_profile = ({ setIsLoggedIn }) => {
     const [userListings, setUserListings] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [transactionId, setTransactionId] = useState(null);
-    const [pendingRatings, setPendingRatings] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [selectedTransaction, setSelectedTransaction] = useState(null);
 
     const checkVIPStatus = async () => {
         try {
@@ -174,47 +167,6 @@ const User_profile = ({ setIsLoggedIn }) => {
         }
     }, [listingSelect]); // trigger whenever listingSelect changes
     
-    useEffect(() => {
-        const fetchPendingRatings = async () => {
-            try {
-                setIsLoading(true);
-                const token = localStorage.getItem('token');
-                const userId = localStorage.getItem('userId');
-                const response = await fetch(`/api/users/${userId}/pending-ratings`, {
-                    method: 'GET',
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                });
-                const data = await response.json();
-                setPendingRatings(data.pendingRatingsAsBuyer); //shows ratings as a buyer
-            } catch (error) {
-                console.error('Error fetching pending ratings:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-    
-        fetchPendingRatings();
-    }, []);
-
-    const openRatingModal = (transactionId, listingName) => {
-        setSelectedTransaction({ transactionId, listingName });
-        setIsModalOpen(true);
-    };
-    
-    const closeRatingModal = () => {
-        setSelectedTransaction(null);
-        setIsModalOpen(false);
-    };
-    
-    const refreshPendingRatings = () => {
-        setPendingRatings((prev) =>
-            prev.filter((rating) => rating.transaction_id !== selectedTransaction.transactionId)
-        );
-    };
-    
     const handleBidSelectChange = (e) => {
         const selectedBidId = e.target.value;
         console.log('Selected Bid ID:', selectedBidId);
@@ -288,7 +240,7 @@ const User_profile = ({ setIsLoggedIn }) => {
         }
     };
     
-    //denying bids
+
     const handleDeny = async () => {
         if (!bidSelect) {
             alert('Please select a bid to deny.');
@@ -444,71 +396,20 @@ const User_profile = ({ setIsLoggedIn }) => {
                 <div className="add-container">
                     <button className="add-button" onClick={() => navigate('/add_listings')}>+</button>
                 </div>
-                <Box sx={{ mt: 4 }}>
-                   <Typography variant="h5" gutterBottom>
-                        Pending Ratings
-                   </Typography>
-                   {isLoading ? (
-                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '150px' }}>
-                             <CircularProgress />
-                        </Box>
-                   ) : pendingRatings.length === 0 ? (
-                       <Typography variant="body1" color="text.secondary">
-                           No pending ratings to complete.
-                       </Typography>
-                   ) : (
-                       <Box
-                           sx={{ 
-                                display: 'grid',
-                                gap: 2,
-                                gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                           }}
-                       >
-                         {pendingRatings.map((rating) => (
-                             <Box
-                                key={rating.transaction_id}
-                                sx={{
-                                    p: 2,
-                                    border: '1px solid #ddd',
-                                    borderRadius: 2,
-                                    boxShadow: 1,
-                                    transition: 'transform 0.2s',
-                                    '&:hover': {
-                                        transform: 'scale(1:03)',
-                                        boxShadow: 4,
-                                    },
-                                }}
-                            >
-                                <Typography variant="h6">{rating.listing_name}</Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    Seller: {rating.other_party}
-                                </Typography>
-                                <Button
-                                     variant="contained"
-                                     color="primary"
-                                     size="small"
-                                     sx={{ mt: 2 }}
-                                     onClick={() => openRatingModal(rating.transaction_id, rating.listing_name)}
-                                >
-                                    Rate
-                                </Button>
-                            </Box>
-                         ))}
-                   </Box> 
-                )}
-            
+                    <div className="functionality-box">
+                            <p>Below are your transactions that need a rating:</p>
+                            <BuyerRatings />
+                    </div>
+            </section>
             <RatingModal
-                open={isModalOpen}
-                handleClose={closeRatingModal}
-                transactionId={selectedTransaction?.transactionId}
-                onSuccess={() => {refreshPendingRatings}
-                }
+            open={isModalOpen}
+            handleClose={() => setIsModalOpen(false)}
+            transactionId={transactionId}
+            onSuccess={() => {
+                setIsModalOpen(false);
+            }}
             />
-        </Box>
-    </section>
-    </div>
-
-            
+        </div>
     );
 };
 
