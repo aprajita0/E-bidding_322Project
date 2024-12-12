@@ -412,11 +412,25 @@ router.post('/suspend-reguser', async (req, res) => {
                 regularUser.vip = false;
                 await regularUser.save();
                 
-                console.log(`VIP User ${user.username} downgraded due to rating: ${averageRatingAgainstUser}`);
+                // Remove all transactions for this VIP user
+                const deletedTransactions = await Transaction.deleteMany({
+                    $or: [{ buyer_id: user_id }, { seller_id: user_id }]
+                });
                 
-                return res.status(200).json({ 
+                // Remove all ratings associated with these transactions
+                const deletedRatings = await Rating.deleteMany({
+                    transaction_id: { $in: userTransactions.map((t) => t._id) }
+                });
+                
+                console.log(`VIP User ${user.username} downgraded due to rating: ${averageRatingAgainstUser}`);
+                console.log(`Deleted Transactions: ${deletedTransactions.deletedCount}`);
+                console.log(`Deleted Ratings: ${deletedRatings.deletedCount}`);
+                
+                return res.status(200).json({
                     message: 'VIP user downgraded to regular user due to poor ratings.',
-                    averageRating: averageRatingAgainstUser
+                    averageRating: averageRatingAgainstUser,
+                    deletedTransactions: deletedTransactions.deletedCount,
+                    deletedRatings: deletedRatings.deletedCount
                 });
             }
         }
@@ -450,7 +464,6 @@ router.post('/suspend-reguser', async (req, res) => {
         res.status(500).json({ error: 'Internal server error.' });
     }
 });
-
 router.post('/approve-reguser', authMiddleware, async (req, res) => {
     try {
         const { visitor_id } = req.body; // Extract visitor_id from the request body
