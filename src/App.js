@@ -61,7 +61,7 @@ function App() {
     const role = localStorage.getItem('role');
     const [menuOpen, setMenuOpen] = useState(false);
 
-   /* useEffect(() => {
+    useEffect(() => {
         const handleUnload = () => {
             localStorage.removeItem('isLoggedIn');
             localStorage.removeItem('token');
@@ -71,7 +71,7 @@ function App() {
         return () => {
             window.removeEventListener('beforeunload', handleUnload);
         };
-    }, []); */
+    }, []); 
 
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
