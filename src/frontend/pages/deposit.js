@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '@fontsource/dm-sans'; 
 import './styles/deposit.css'; 
 
-const Deposit = () => {
+const Deposit = ({ setIsLoggedIn }) => {
     const navigate = useNavigate();
     const role = localStorage.getItem('role');
     const [depositAmount, setDepositAmount] = useState('');
@@ -14,9 +14,9 @@ const Deposit = () => {
         try {
             const token = localStorage.getItem('token');
             if (!token) {
-                return false; 
+                return false;
             }
-    
+
             const response = await fetch('/api/users/check-vip', {
                 method: 'GET',
                 headers: {
@@ -24,16 +24,22 @@ const Deposit = () => {
                     Authorization: `Bearer ${token}`,
                 },
             });
-    
+
             if (!response.ok) {
-                return false; 
+                return false;
             }
-    
+
             const result = await response.json();
-            return result.vip || false; 
+            return result.vip || false;
         } catch (error) {
-            return false; 
+            return false;
         }
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+        window.location.href = '/U_login';
     };
     
 
@@ -94,10 +100,12 @@ const Deposit = () => {
                 const isVIP = await checkVIPStatus();
                 if (isVIP) {
                     localStorage.setItem('role', 'vip');
+                    alert('Congratulations, you are now a VIP. Please sign back in to see your profile!');
+                    handleLogout();
                 } else {
-                    console.log('User is not a VIP still');
+                    console.log('User is still not a VIP');
                 }
-    
+
                 setDepositAmount('');
                 const updatedRole = localStorage.getItem('role');
                 if (updatedRole === 'reguser') {

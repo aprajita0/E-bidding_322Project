@@ -4,10 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import '@fontsource/dm-sans/700.css'; 
 import WinRaffle from '../components/win_raffle.js';
 import RaffleHistory from '../components/raffle_history.js';
+import BuyerRatings from '../components/buyer_ratings.js';
+import RaffleNotification from '../components/raffle_notification.js';
+import RatingModal from '../components/rating_modal.js';
 import exchange_image from '../assets/exchange.png';
 import profile_pic from '../assets/profile_pic.png';
 
-const Vip_profile = () => {
+const Vip_profile = ({ setIsLoggedIn }) => {
     const navigate = useNavigate();
     const [error, setError] = useState('');
     const [accountBalance, setAccountBalance] = useState(0);
@@ -16,10 +19,45 @@ const Vip_profile = () => {
     const [bids, setBids] = useState([]);
     const [username, setUsername] = useState('');
     const [userListings, setUserListings] = useState([]);
-    const [transactionId, setTransactionId] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [raffleModalOpen, setRaffleModalOpen] = useState(false);
+    const [transactionId, setTransactionId] = useState(''); 
     const [raffleEntries, setRaffleEntries] = useState([]);
     const [progress, setProgress] = useState(0);
     const [winningMessage, setWinningMessage] = useState('')
+    const [winningEntry, setWinningEntry] = useState(null);
+
+    const checkVIPStatus = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                return false;
+            }
+
+            const response = await fetch('/api/users/check-vip', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                return false;
+            }
+
+            const result = await response.json();
+            return result.vip || false;
+        } catch (error) {
+            return false;
+        }
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+        window.location.href = '/U_login';
+    };
 
     const formatMin = (price_from) => {
         if (price_from && typeof price_from === 'object' && price_from.$numberDecimal) {
@@ -52,15 +90,18 @@ const Vip_profile = () => {
                 if (response.ok) {
                     const entries = await response.json();
 
-                    // Check if the user has won a prize
-                    const hasWon = entries.some((entry) => entry.won_prize === true);
-                    if (hasWon) {
-                        setWinningMessage('Congratulations! You have won a prize.');
+                    // Find the unread winning entry
+                    const unreadWinningEntry = entries.find(
+                        (entry) => entry.won_prize === true && entry.read_status === false
+                    );
+
+                    if (unreadWinningEntry) {
+                        setWinningEntry(unreadWinningEntry); // Set the winning entry
+                        setRaffleModalOpen(true);
                     }
 
                     // Update the progress bar
                     setProgress(entries.length > 0 ? 100 : 0);
-
                     setRaffleEntries(entries);
                 } else {
                     console.error('Failed to fetch raffle entries.');
@@ -72,6 +113,33 @@ const Vip_profile = () => {
 
         fetchRaffleEntries();
     }, []);
+
+    const handleMarkAsRead = async () => {
+        if (!winningEntry) return;
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/users/read-status-raffle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ raffle_id: winningEntry.raffle_id }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log("read-status data:", data);
+                setWinningEntry(null); // Hide the notification
+                setRaffleModalOpen(false); //close modal
+            } else {
+                console.error('Failed to update read status.');
+            }
+        } catch (error) {
+            console.error('Error updating read status:', error);
+        }
+    };
 
     useEffect(() => {
         const fetchBalance = async () => {
@@ -214,8 +282,16 @@ const Vip_profile = () => {
                 const data = await response.json();
                 console.log('Bid accepted successfully:', data);
                 alert('Bid accepted successfully!');
+                const isVIP = await checkVIPStatus();
+                if (!isVIP) {
+                    localStorage.setItem('role', 'reguser');
+                    alert('You are no longer a VIP. Please sign back in to see your profile.');
+                    handleLogout();
+                } else {
+                    console.log('User is still a VIP');
+                }
                 const transactionId = data.transaction._id;
-                setTransactionId(transactionId);
+                setTransactionId(transactionId); 
                 setIsModalOpen(true);
 
                 const updatedListings = userListings.filter(listing => listing._id !== listingSelect);
@@ -225,12 +301,10 @@ const Vip_profile = () => {
                 setBids([]);
             } else {
                 const error = await response.json();
-                console.error('Error accepting bid:', error.error);
                 alert(error.error || 'Error accepting bid.');
             }
         } catch (err) {
             console.error('Error accepting bid:', err.message);
-            alert('Server error while accepting bid.');
         }
     };
     
@@ -272,7 +346,6 @@ const Vip_profile = () => {
             } else {
                 const error = await response.json();
                 console.error('Error denying bid:', error.error);
-                alert(error.error || 'Error denying bid.');
             }
         } catch (err) {
             console.error('Error denying bid:', err.message);
@@ -317,6 +390,13 @@ const Vip_profile = () => {
 
     return (
         <div className="profile-container">
+            <RaffleNotification 
+             open={raffleModalOpen}
+             winningEntry={winningEntry}
+             onClose={() => setIsModalOpen(false)}
+             onMarkAsRead={handleMarkAsRead} 
+             />
+             
             <section className="progress-bar-section">
                 <div className="progress-container">
                     <progress-label>Raffle Participation Progress:</progress-label>
@@ -324,11 +404,9 @@ const Vip_profile = () => {
                         <div className="progress-fill" style={{ width: `${progress}%`}}></div>
                     </div>
                     <p className="progress-text">{progress}%</p>
-                    {winningMessage && (
-                        <p className="winning-message">{winningMessage}</p>
-                    )}
                 </div>
             </section>
+
             <div className="balance-container">
                 <label className="profile-balance" htmlFor="profile-balance">Account Balance: </label>
                 <div className="show-balance">${accountBalance}</div>
@@ -426,7 +504,19 @@ const Vip_profile = () => {
                 <div className="add-container">
                     <button className="add-button" onClick={() => navigate('/add_listings')}>+</button>
                 </div>
+                <div className="functionality-box">
+                            <p>Below are your transactions that need a rating:</p>
+                            <BuyerRatings />
+                    </div>
             </section>
+            <RatingModal
+            open={isModalOpen}
+            handleClose={() => setIsModalOpen(false)}
+            transactionId={transactionId}
+            onSuccess={() => {
+                setIsModalOpen(false);
+            }}
+            />
         </div>
     );
 };

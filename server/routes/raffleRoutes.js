@@ -91,6 +91,19 @@ router.get('/get-raffle/:id', async (req, res) => {
     }
 });
 
+router.get('/get-raffles-owned', authMiddleware, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+        const raffles = await Raffle.find({ owner_id: user._id });
+        res.status(200).json(raffles);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
 
 router.post('/enter-raffle', authMiddleware, async (req, res) => {
     try {

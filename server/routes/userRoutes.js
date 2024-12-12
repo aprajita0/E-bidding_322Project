@@ -351,7 +351,7 @@ router.post('/bid-listing', authMiddleware, async (req, res) => {
     }
 });
 
-router.post('/suspend-reguser', authMiddleware, async (req, res) => {
+router.post('/suspend-reguser', async (req, res) => {
     try {
         const { user_id } = req.body;
 
@@ -359,39 +359,116 @@ router.post('/suspend-reguser', authMiddleware, async (req, res) => {
             return res.status(400).json({ error: 'User ID is required.' });
         }
 
-        // Check if the user exists and is a regular user
         const user = await User.findById(user_id);
         if (!user || user.role !== 'reguser') {
             return res.status(404).json({ error: 'User not found or not a regular user.' });
         }
 
-        // Check if the user is a VIP
-        const regularUser = await RegularUser.findOne({ user_id });
-        if (regularUser && regularUser.vip) {
-            // Downgrade from VIP to regular user
-            regularUser.vip = false;
-            await regularUser.save();
-            console.log(`User ${user.username} downgraded from VIP to regular user.`);
+        if (user.account_status === false) {
+            console.log('User is already suspended.');
+            return res.status(200).json({
+                message: 'User is already suspended.',
+                user,
+            });
+        }
+        
+        const userTransactions = await Transaction.find({
+            $or: [{ buyer_id: user_id }, { seller_id: user_id }],
+        }).select('_id');
+
+        console.log('Fetched Transactions:', userTransactions); 
+
+        if (userTransactions.length === 0) {
+            console.log('No transactions found for this user. Skipping suspension check.');
+            return res.status(200).json({ message: 'User has no transactions. Suspension check not required.' });
         }
 
-        // Suspend the user
-        user.account_status = false; // Suspend account
-        await user.save();
+        
+        const ratingsAgainstUser = await Rating.find({
+            transaction_id: { $in: userTransactions.map((t) => t._id) },
+            rater_id: { $ne: user_id }, 
+        });
+        
+        console.log('Fetched Ratings Against User:', ratingsAgainstUser);
 
-        // Fetch the user's ratings
-        const ratings = await Rating.find({ rater_id: user_id });
-        const averageRating = ratings.reduce((sum, rating) => sum + rating.rating, 0) / ratings.length;
+        const uniqueRaterIds = new Set(ratingsAgainstUser.map(rating => rating.rater_id.toString()));
+        console.log('Unique Rater IDs:', uniqueRaterIds);
+        
+        if (uniqueRaterIds.size < 3) {
+            console.log('User has ratings from less than 3 different users. Skipping suspension check.');
+            return res.status(200).json({ 
+                message: 'User does not have ratings from at least 3 different users.',
+                uniqueRaters: uniqueRaterIds.size
+            });
+        }
+        
+        if (!ratingsAgainstUser || ratingsAgainstUser.length === 0) {
+            console.log('No ratings found against this user.');
+            return res.status(200).json({ message: 'No ratings found against this user.' });
+        }
 
-        if (averageRating < 2 || averageRating > 4) {
-            // Suspend if average rating is too low or too high
+        if (ratingsAgainstUser.length < 2) {
+            console.log('User has less than 2 ratings from others. Skipping suspension check.');
+            return res.status(200).json({ message: 'User does not have enough ratings to evaluate suspension.' });
+        }
+
+        
+        const averageRatingAgainstUser = ratingsAgainstUser.reduce((sum, rating) => sum + rating.rating, 0) / ratingsAgainstUser.length;
+        console.log('Average Rating Against User:', averageRatingAgainstUser);
+
+        const regularUser = await RegularUser.findOne({ user_id });
+
+        if (regularUser && regularUser.vip) {
+            if (averageRatingAgainstUser < 2 || averageRatingAgainstUser > 4) {
+                regularUser.vip = false;
+                await regularUser.save();
+                
+                // Remove all transactions for this VIP user
+                const deletedTransactions = await Transaction.deleteMany({
+                    $or: [{ buyer_id: user_id }, { seller_id: user_id }]
+                });
+                
+                // Remove all ratings associated with these transactions
+                const deletedRatings = await Rating.deleteMany({
+                    transaction_id: { $in: userTransactions.map((t) => t._id) }
+                });
+                
+                console.log(`VIP User ${user.username} downgraded due to rating: ${averageRatingAgainstUser}`);
+                console.log(`Deleted Transactions: ${deletedTransactions.deletedCount}`);
+                console.log(`Deleted Ratings: ${deletedRatings.deletedCount}`);
+                
+                return res.status(200).json({
+                    message: 'VIP user downgraded to regular user due to poor ratings.',
+                    averageRating: averageRatingAgainstUser,
+                    deletedTransactions: deletedTransactions.deletedCount,
+                    deletedRatings: deletedRatings.deletedCount
+                });
+            }
+        }
+        
+        // Suspension conditions
+        if (averageRatingAgainstUser < 2 || averageRatingAgainstUser > 4) {
+           
+            user.account_status = false; 
             user.suspension_count += 1;
+
+            
             if (user.suspension_count >= 3) {
-                user.role = 'banned'; // Permanently ban the user after 3 suspensions
+                user.role = 'banned'; 
             }
             await user.save();
-            res.status(200).json({ message: `User suspended for having ${averageRating < 2 ? 'too low' : 'too high'} average rating.` });
+        
+            const reason =
+                averageRatingAgainstUser < 2
+                    ? 'too mean (average rating below 2)'
+                    : 'too generous (average rating above 4)';
+
+            res.status(200).json({ 
+                message: `User suspended successfully for being ${reason}.`,
+                user,
+            });
         } else {
-            res.status(200).json({ message: 'User does not meet the suspension criteria.' });
+            res.status(200).json({ error: 'User does not meet the suspension criteria.' });
         }
     } catch (error) {
         console.error('Error suspending user:', error);
@@ -736,7 +813,7 @@ router.post('/accept-bid', authMiddleware, async (req, res) => {
       const sellerIsVIP = reguserSeller?.vip || false;
   
     
-      const bidType = listing.type === 'buying' ? 'buying' : listing.type === 'selling' ? 'selling' : 'rental';
+      const bidType = listing.type === 'buying' ? 'buying' : listing.type === 'selling' ? 'selling' : 'renting';
       const bidAmount = parseFloat(bid.amount.toString());
   
       let finalAmount;

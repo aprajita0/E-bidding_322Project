@@ -8,7 +8,7 @@ const listingSchema = new Schema({
     type: { type: String, maxlength: 50 },
     price_from: { type: mongoose.Types.Decimal128, required: true },
     price_to: { type: mongoose.Types.Decimal128, required: true },
-    status: { type: String, enum: ['available', 'sold'], default: 'available' }, // added status
+    status: { type: String, enum: ['available', 'sold', 'renting'], default: 'available' }, // added status
     date_listed: { type: Date, default: Date.now }
   
   });

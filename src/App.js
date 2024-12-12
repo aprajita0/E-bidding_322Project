@@ -63,7 +63,7 @@ function App() {
     const role = localStorage.getItem('role');
     const [menuOpen, setMenuOpen] = useState(false);
 
-   /* useEffect(() => {
+    useEffect(() => {
         const handleUnload = () => {
             localStorage.removeItem('isLoggedIn');
             localStorage.removeItem('token');
@@ -73,7 +73,7 @@ function App() {
         return () => {
             window.removeEventListener('beforeunload', handleUnload);
         };
-    }, []); */
+    }, []); 
 
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
@@ -125,17 +125,17 @@ function App() {
                         <Route path="/my_account" element={isLoggedIn ? <div>My Account Page</div> : <Navigate to="/U_login" />} />
                         <Route path="/Raffle_listings" element={isLoggedIn ? <Raffle_listings /> : <Navigate to="/U_login" />} />
                         <Route path="/V_registration" element={<V_registration />} />
-                        <Route path="/User_profile" element={<User_profile />} />
+                        <Route path="/User_profile" element={<User_profile setIsLoggedIn={setIsLoggedIn} />} />
                         <Route path="/Superusers_profile" element={<Superusers_profile />} />
                         <Route path="/visitor_profile" element={<VisitorProfile />} />
-                        <Route path="/Vip_profile" element={<Vip_profile />} />
+                        <Route path="/Vip_profile" element={<Vip_profile setIsLoggedIn={setIsLoggedIn}  />} />
                         <Route path="/browse_listings/:id" element={<Listing_clicked />} />
                         <Route path="/raffle_listings/:id" element={<Raffle_clicked />} />
                         <Route path="/suspension_info" element={<SuspensionPage />} />
                         <Route path="/place_bid/:id" element={<Place_bid />} />
                         <Route path="/Create_raffle" element={<Create_raffle />} />
-                        <Route path="/Deposit" element={isLoggedIn ? <Deposit /> : <Navigate to="/U_login" />} />
-                        <Route path="/Withdraw" element={isLoggedIn ? <Withdraw /> : <Navigate to="/U_login" />} />
+                        <Route path="/Deposit" element={isLoggedIn ? <Deposit setIsLoggedIn={setIsLoggedIn}/> : <Navigate to="/U_login" />} />
+                        <Route path="/Withdraw" element={isLoggedIn ? <Withdraw setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/U_login" />} />
                         <Route path="/Add_Listings" element={isLoggedIn ? <Add_Listings /> : <Navigate to="/U_login" />} />
                         <Route path="/Complaint" element={isLoggedIn ? <Complaint /> : <Navigate to="/U_login" />} />
                         <Route path="/Balance_menu" element={isLoggedIn ? <Balance_menu /> : <Navigate to="/U_login" />} />

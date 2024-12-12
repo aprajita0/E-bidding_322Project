@@ -100,7 +100,6 @@ router.post('/pay-fine', authMiddleware, async (req, res) => {
 
         // Reactivate the user and update their account status
         user.account_status = true;  // Set the account status to active
-        user.suspension_count = 0;  // Reset suspension count
 
         // Save the updated user data
         await user.save();
@@ -122,7 +121,15 @@ router.post('/pay-fine', authMiddleware, async (req, res) => {
         // Save the transaction record
         await transaction.save();
 
-        const deletedRatings = await Rating.deleteMany({ rater_id: user._id });
+        const userTransactions = await Transaction.find({
+            $or: [{ buyer_id: user._id }, { seller_id: user._id }]
+        });
+
+        
+        const deletedRatings = await Rating.deleteMany({ 
+            transaction_id: { $in: userTransactions.map(t => t._id) },
+            rater_id: { $ne: user._id }  
+        });
 
         // Respond with success
         res.status(200).json({
@@ -145,7 +152,6 @@ router.post('/pay-fine', authMiddleware, async (req, res) => {
         res.status(500).json({ error: 'Internal server error.', details: error.message });
     }
 });
-        
 
 
 

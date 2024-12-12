@@ -38,6 +38,15 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.raffle-title {  
+    font-size: 0.9em;
+} 
+
+.raffle-info { 
+    font-size: 0.9em; 
+    color:blueviolet;
+}
+
 .error {
     color: red;
 }

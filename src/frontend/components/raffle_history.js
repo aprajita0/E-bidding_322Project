@@ -7,14 +7,14 @@ const RaffleHistory = () => {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        fetchRaffles();
+        fetchRafflesOwned();
         fetchRaffleEntries();
     }, []);
 
-    const fetchRaffles = async () => {
+    const fetchRafflesOwned = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('/api/users/get-raffles', {
+            const response = await fetch('/api/users/get-raffles-owned', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -49,11 +49,7 @@ const RaffleHistory = () => {
             if (response.ok) {
                 const data = await response.json();
                 console.log("Fetched raffle entries:", data);
-                if (data.message === 'You have won a prize.') {
-                    alert(data.message);
-                } else {
-                    setEntries(data);
-                }
+                setEntries(data);
             } else {
                 const errorData = await response.json();
                 setError(`Error fetching raffle entries: ${errorData.error}`);
@@ -72,7 +68,13 @@ const RaffleHistory = () => {
                 {raffles.length > 0 ? (
                     <ul>
                         {raffles.map(raffle => (
-                            <li key={raffle._id}>{raffle.name}</li>
+                            <li key={raffle._id}>
+                             <strong>{raffle.raffle_name}</strong><br />
+                             {raffle._id && <span><span className="raffle-title"></span><span className="raffle-info">{raffle._id}</span><br /></span>}
+                             {raffle.prize && <span><span className="raffle-title">Prize: </span><span className="raffle-info">{raffle.prize}</span><br /></span>}
+                             {raffle.start_date && <span><span className="raffle-title">Start Date: </span><span className="raffle-info">{new Date(raffle.start_date).toLocaleDateString()}</span><br /></span>}
+                             {raffle.end_date && <span><span className="raffle-title">End Date: </span><span className="raffle-info">{new Date(raffle.end_date).toLocaleDateString()}</span></span>}
+                             </li>
                         ))}
                     </ul>
                 ) : (
@@ -84,7 +86,9 @@ const RaffleHistory = () => {
                 {entries.length > 0 ? (
                     <ul>
                         {entries.map(entry => (
-                            <li key={entry._id}>{entry.raffle_id}</li>
+                            <li key={entry._id}>
+                             {entry.raffle_id && <span><span className="raffle-title">Raffle Id:  </span><span className="raffle-info">{entry.raffle_id}</span><br /></span>}
+                            </li>
                         ))}
                     </ul>
                 ) : (

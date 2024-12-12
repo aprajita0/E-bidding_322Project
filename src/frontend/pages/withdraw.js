@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '@fontsource/dm-sans'; 
-import './styles/withdraw.css'; 
+import '@fontsource/dm-sans';
+import './styles/withdraw.css';
 
-const Withdraw = () => {
+const Withdraw = ({ setIsLoggedIn }) => {
     const navigate = useNavigate();
     const role = localStorage.getItem('role');
     const [accountBalance, setAccountBalance] = useState(0);
     const [withdrawAmount, setWithdrawAmount] = useState('');
-    const [error, setError] = useState(''); 
+    const [error, setError] = useState('');
 
     const checkVIPStatus = async () => {
         try {
             const token = localStorage.getItem('token');
             if (!token) {
-                return false; 
+                return false;
             }
-    
+
             const response = await fetch('/api/users/check-vip', {
                 method: 'GET',
                 headers: {
@@ -24,57 +24,63 @@ const Withdraw = () => {
                     Authorization: `Bearer ${token}`,
                 },
             });
-    
+
             if (!response.ok) {
-                return false; 
+                return false;
             }
-    
+
             const result = await response.json();
-            return result.vip || false; 
+            return result.vip || false;
         } catch (error) {
-            return false; 
+            return false;
         }
     };
 
     useEffect(() => {
         const fetchBalance = async () => {
             try {
-                const token = localStorage.getItem('token'); 
+                const token = localStorage.getItem('token');
                 const response = await fetch('/api/users/get-balance', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`, 
+                        Authorization: `Bearer ${token}`,
                     },
                 });
-    
+
                 if (response.ok) {
                     const data = await response.json();
                     let balance = data.account_balance;
-    
+
                     if (balance && typeof balance === 'object' && balance.$numberDecimal) {
-                        balance = parseFloat(balance.$numberDecimal); 
+                        balance = parseFloat(balance.$numberDecimal);
                     } else {
-                        balance = parseFloat(balance) || 0;  
+                        balance = parseFloat(balance) || 0;
                     }
-    
-                    setAccountBalance(balance); 
+
+                    setAccountBalance(balance);
                 } else {
                     const result = await response.json();
-                    setError(result.error || 'Cannot show balance'); 
+                    setError(result.error || 'Cannot show balance');
                 }
             } catch (err) {
                 console.error('Error fetching balance:', err);
-                setError('Server error'); 
+                setError('Server error');
             }
         };
-    
+
         fetchBalance();
     }, []);
 
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+        window.location.href = '/U_login';
+    };
+
     const handleWithdraw = async () => {
         setError('');
-    
+
         if (!withdrawAmount || withdrawAmount <= 0) {
             setError('Please enter a valid amount');
             return;
@@ -83,26 +89,27 @@ const Withdraw = () => {
             setError('Insufficient balance.');
             return;
         }
-    
+
         try {
             const token = localStorage.getItem('token');
             const response = await fetch('/api/users/withdraw-balance', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({ amount: withdrawAmount }),
             });
-    
-            if (response.ok) {
+
+              if (response.ok) {
                 const isVIP = await checkVIPStatus();
-                if (!isVIP) {
-                    localStorage.setItem('role', 'reguser');
+                if (isVIP) {
+                    localStorage.setItem('role', 'vip');
+                    alert('Congrats, you are now a VIP! Please sign back in to see your profile.');
+                    handleLogout();
                 } else {
-                    console.log('User is still a VIP');
+                    console.log('User is still not a VIP');
                 }
-    
                 setWithdrawAmount('');
                 const updatedRole = localStorage.getItem('role');
                 if (updatedRole === 'reguser') {
@@ -120,8 +127,7 @@ const Withdraw = () => {
             console.error('Error during withdraw:', err);
             setError('Server error');
         }
-    }; 
-
+    };
     return (
         <div className="withdraw-container">
             <div className="withdraw-box">
