@@ -11,6 +11,8 @@ import User_profile from './frontend/pages/user_profile';
 import Vip_profile from './frontend/pages/vip_profile';
 import Superusers_profile from './frontend/pages/superusers_profile';
 import Create_raffle from './frontend/pages/create_raffle';
+import WinRaffle from './frontend/components/win_raffle';
+import RaffleHistory from './frontend/components/raffle_history';
 import Add_Listings from './frontend/pages/add_listings';
 import Place_bid from './frontend/pages/place_bid';
 import SuspensionPage from './frontend/pages/suspension_info';
@@ -137,6 +139,8 @@ function App() {
                         <Route path="/Add_Listings" element={isLoggedIn ? <Add_Listings /> : <Navigate to="/U_login" />} />
                         <Route path="/Complaint" element={isLoggedIn ? <Complaint /> : <Navigate to="/U_login" />} />
                         <Route path="/Balance_menu" element={isLoggedIn ? <Balance_menu /> : <Navigate to="/U_login" />} />
+                        <Route path="/win_raffle" element={isLoggedIn ? <WinRaffle /> : <Navigate to="/U_login" />} />
+                        <Route path="/raffle_history" element={isLoggedIn ? <RaffleHistory /> : <Navigate to="/U_login" />} />
                     </Routes>
                 </div>
                 <footer className="footer-box">

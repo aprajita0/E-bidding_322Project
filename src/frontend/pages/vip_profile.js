@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './styles/vip_profile.css';
 import { useNavigate } from 'react-router-dom';
 import '@fontsource/dm-sans/700.css'; 
+import WinRaffle from '../components/win_raffle.js';
+import RaffleHistory from '../components/raffle_history.js';
 import exchange_image from '../assets/exchange.png';
 import profile_pic from '../assets/profile_pic.png';
 
@@ -342,6 +344,20 @@ const Vip_profile = () => {
 
             <section className="user-grid">
                 <div className="user_profile-grid">
+                <div className="winner-container">
+                        <div className="my-listings-container">
+                            <div className="file-label">
+                                <WinRaffle/>
+                            </div>
+                        </div>
+                </div>
+                <div className="winner-container">
+                        <div className="my-listings-container">
+                            <div className="file-label">
+                                <RaffleHistory/>
+                            </div>
+                        </div>
+                </div>
                     <div className="functionality-box">
                         <div className="my-listings">My Current Listings</div>
                         <div className="my-listings-container">

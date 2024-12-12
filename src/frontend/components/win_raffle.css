@@ -1,0 +1,53 @@
+.win-raffle-container{
+    background-color: #f5f5f5; 
+    padding: 20px; 
+    margin: 20px auto; 
+    border-radius: 10px; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    max-width: 400px; 
+    text-align: center; 
+    font-family: 'DM Sans', sans-serif;
+}
+
+.win-raffle-container h2{
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+.win-raffle-container input{
+    width: calc(100% - 24px); 
+    padding: 10px; 
+    margin-bottom: 20px; 
+    border: 1px solid #ccc; 
+    border-radius: 5px; 
+    font-size: 16px;
+}
+
+.win-raffle-container button {
+    background-color: #007BFF; 
+    color: white; 
+    border: none; 
+    border-radius: 5px; 
+    padding: 10px 20px; 
+    font-size: 16px; 
+    cursor: pointer; 
+    transition: background-color 0.3s;
+}
+
+.win-raffle-container button:hover { 
+    background-color: #0056b3; 
+}
+
+.win-raffle-container p { 
+    margin-top: 20px; 
+    font-size: 16px; 
+}
+
+.win-raffle-container p.success { 
+    color: green; 
+}
+
+.win-raffle-container p.error { 
+    color: red; 
+}

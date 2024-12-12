@@ -1,0 +1,43 @@
+.raffle-history-container {
+    background-color: #f5f5f5;
+    padding: 20px;
+    margin: 20px auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    text-align: center;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.raffle-history-container h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+.raffles, .entries {
+    margin: 20px 0;
+}
+
+.raffles h3, .entries h3 {
+    color: #666;
+    margin-bottom: 10px;
+    font-size: 20px;
+}
+
+.raffles ul, .entries ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.raffles li, .entries li {
+    background-color: #fff;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.error {
+    color: red;
+}
