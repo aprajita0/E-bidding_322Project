@@ -101,16 +101,15 @@ const Withdraw = ({ setIsLoggedIn }) => {
                 body: JSON.stringify({ amount: withdrawAmount }),
             });
 
-            if (response.ok) {
+              if (response.ok) {
                 const isVIP = await checkVIPStatus();
-                if (!isVIP) {
-                    localStorage.setItem('role', 'reguser');
-                    alert('You are no longer a VIP. Please sign back in to see your profile.');
+                if (isVIP) {
+                    localStorage.setItem('role', 'vip');
+                    alert('Congrats, you are now a VIP! Please sign back in to see your profile.');
                     handleLogout();
                 } else {
-                    console.log('User is still a VIP');
+                    console.log('User is still not a VIP');
                 }
-
                 setWithdrawAmount('');
                 const updatedRole = localStorage.getItem('role');
                 if (updatedRole === 'reguser') {
